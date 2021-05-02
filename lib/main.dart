@@ -1,46 +1,44 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:handle_it/feed_home.dart';
+import 'package:handle_it/push_notification_service.dart';
 
-class BackgroundClass {
-  MethodChannel platform;
-  BackgroundClass(platform) {
-    this.platform = platform;
-  }
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  //     'notifications', 'High Importance Notifications', 'This channel is used for important notifications.',
+  //     importance: Importance.max);
+  // final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  // flutterLocalNotificationsPlugin
+  //     .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+  //     ?.createNotificationChannel(channel);
 
-  Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    print("Handling a background message: ${message.notification.title} ${message.notification.body}");
-    String response = "";
-    try {
-      final int result = await this.platform.invokeMethod('getBatteryLevel');
-      response = "Response: $result";
-    } on PlatformException catch (e) {
-      response = "Failed to Invoke: '${e.message}'.";
-    }
-    print(response);
-    // AudioPlayer audioPlayer = AudioPlayer();
-    // await audioPlayer.setAudioSource(AudioSource.uri(Uri.parse("asset:///assets/audio/alarm.mp3"))).catchError((error) {
-    //   print("An error occured $error");
-    // });
-    // audioPlayer.play();
-  }
+  // const platform = const MethodChannel('samples.flutter.dev/battery');
+  // String response = "";
+  // try {
+  //   final int result = await platform.invokeMethod('getBatteryLevel');
+  //   response = "Response: $result";
+  // } on PlatformException catch (e) {
+  //   response = "Failed to Invoke: '${e.message}'.";
+  // }
+  // print(response);
 }
 
 void main() async {
+  print(">>>In main!");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  const platform = const MethodChannel('flutter.native/helper');
-  BackgroundClass backgroundClass = BackgroundClass(platform);
-  FirebaseMessaging.onBackgroundMessage(backgroundClass._firebaseMessagingBackgroundHandler);
+  // const platform = const MethodChannel('notifications');
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final pushNotificationService = PushNotificationService(_firebaseMessaging);
+  pushNotificationService.initialize();
+  // BackgroundClass backgroundClass = BackgroundClass(platform);
+  // FirebaseMessaging.onBackgroundMessage(backgroundClass._firebaseMessagingBackgroundHandler);
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  // final pushNotificationService = PushNotificationService(_firebaseMessaging);
-
   @override
   Widget build(BuildContext context) {
     // pushNotificationService.initialize();
