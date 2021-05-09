@@ -4,6 +4,7 @@ import 'package:handle_it/add_vehicle_wizard.dart';
 import 'package:handle_it/feed_card.dart';
 
 class FeedHome extends StatefulWidget {
+  const FeedHome({Key key}) : super(key: key);
   @override
   _FeedHomeState createState() => _FeedHomeState();
 }

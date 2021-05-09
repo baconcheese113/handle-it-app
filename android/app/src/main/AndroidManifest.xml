@@ -8,7 +8,8 @@
 
    <application
         android:label="handle_it"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"> <!-- Allows using http localhost -->
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
