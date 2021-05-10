@@ -5,8 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/app.dart';
-import 'package:handle_it/authentication_page.dart';
-import 'package:handle_it/show_alert.dart';
+import 'package:handle_it/auth/login.dart';
+import 'package:handle_it/notifications/show_alert.dart';
 import 'package:rxdart/subjects.dart';
 
 final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
@@ -30,8 +30,7 @@ void main() async {
   await Firebase.initializeApp();
 
   final NotificationAppLaunchDetails launchDetails = await localNotifications.getNotificationAppLaunchDetails();
-  String initialRoute =
-      launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : AuthenticationPage.routeName;
+  String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
   print("didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute");
 
   // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;

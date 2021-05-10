@@ -1,6 +1,8 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/login.dart';
+import 'package:handle_it/auth/login.dart';
+import 'package:handle_it/home.dart';
 
 class Register extends StatefulWidget {
   final Function reinitialize;
@@ -22,6 +24,12 @@ class _RegisterState extends State<Register> {
     await Navigator.pushReplacementNamed(context, Login.routeName);
   }
 
+  void switchToHome(String newToken) async {
+    this.widget.reinitialize(newToken);
+    await Future.delayed(Duration(seconds: 3));
+    await Navigator.pushReplacementNamed(context, Home.routeName);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,8 +40,8 @@ class _RegisterState extends State<Register> {
       body: Mutation(
           options: MutationOptions(
             document: gql(r'''
-            mutation registerMutation($email: String!, $password: String!, $firstName: String, $lastName: String) {
-              registerWithPassword(email: $email, password: $password, firstName: $firstName, lastName: $lastName)
+            mutation registerMutation($email: String!, $password: String!, $fcmToken: String!, $firstName: String, $lastName: String) {
+              registerWithPassword(email: $email, password: $password, fcmToken: $fcmToken, firstName: $firstName, lastName: $lastName)
             }
         '''),
           ),
@@ -43,12 +51,10 @@ class _RegisterState extends State<Register> {
           ) {
             if (result.isLoading) return Text("Loading...");
             if (result.data != null && result.data.containsKey("registerWithPassword")) {
-              this.widget.reinitialize(result.data['registerWithPassword']);
+              switchToHome(result.data['registerWithPassword']);
               return Text("Logging in...");
             }
-            if (result.hasException) {
-              print("Exception: ${result.exception.toString()}");
-            }
+
             return Column(
               children: [
                 Form(
@@ -62,14 +68,27 @@ class _RegisterState extends State<Register> {
                       TextFormField(
                           decoration: const InputDecoration(hintText: "Enter your password"),
                           onChanged: (newVal) => setState(() => _password = newVal)),
+                      TextFormField(
+                          decoration: const InputDecoration(hintText: "Enter your first name (optional)"),
+                          onChanged: (newVal) => setState(() => _firstName = newVal)),
+                      TextFormField(
+                          decoration: const InputDecoration(hintText: "Enter your last name (optional)"),
+                          onChanged: (newVal) => setState(() => _lastName = newVal)),
                       ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (_email.length < 3 || _password.length < 3) return; // TODO validate
-                          runMutation(
-                              {"email": _email, "password": _password, "firstName": _firstName, "lastName": _lastName});
+                          final fcmToken = await FirebaseMessaging.instance.getToken();
+                          runMutation({
+                            "email": _email,
+                            "fcmToken": fcmToken,
+                            "password": _password,
+                            "firstName": _firstName,
+                            "lastName": _lastName,
+                          });
                         },
                         child: Text("Register"),
-                      )
+                      ),
+                      if (result.hasException) Text(result.exception.toString()),
                     ],
                   ),
                 ),

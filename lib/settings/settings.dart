@@ -2,7 +2,7 @@ import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/login.dart';
+import 'package:handle_it/auth/login.dart';
 
 class Settings extends StatefulWidget {
   final user;
@@ -25,13 +25,7 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO Add authorization to api -- DONE!
-    // TODO Refactor routes to be off Viewer -- DONE!
-    // TODO Login/Register through app -- DONE!
-    // TODO Refactor to scalable login solution
     // TODO Logout through app
-    // TODO Add updateUser mutation
-    // TODO Get updateUser mutation working here
 
     void logout() async {
       await FlutterSecureStorage().delete(key: 'token');

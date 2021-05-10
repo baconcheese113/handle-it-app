@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ble_lib/flutter_ble_lib.dart';
-import 'package:handle_it/add_vehicle_wizard.dart';
+import 'package:handle_it/feed/add_vehicle_wizard.dart';
 
 class FeedCard extends StatefulWidget {
   final Peripheral hub;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed_home.dart';
-import 'package:handle_it/settings.dart';
+import 'package:handle_it/feed/feed_home.dart';
+import 'package:handle_it/settings/settings.dart';
 
-import 'client_provider.dart';
+import 'utils.dart';
 
 class Home extends StatefulWidget {
   Home({Key key}) : super(key: key);

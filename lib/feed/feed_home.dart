@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ble_lib/flutter_ble_lib.dart';
-import 'package:handle_it/add_vehicle_wizard.dart';
-import 'package:handle_it/feed_card.dart';
+import 'package:handle_it/feed/add_vehicle_wizard.dart';
+import 'package:handle_it/feed/feed_card.dart';
 
 class FeedHome extends StatefulWidget {
   const FeedHome({Key key}) : super(key: key);

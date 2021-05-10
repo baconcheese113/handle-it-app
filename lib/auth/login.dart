@@ -1,6 +1,8 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/register.dart';
+import 'package:handle_it/auth/register.dart';
+import 'package:handle_it/home.dart';
 
 class Login extends StatefulWidget {
   final Function reinitialize;
@@ -20,6 +22,12 @@ class _LoginState extends State<Login> {
     await Navigator.pushReplacementNamed(context, Register.routeName);
   }
 
+  void switchToHome(String newToken) async {
+    this.widget.reinitialize(newToken);
+    await Future.delayed(Duration(seconds: 3));
+    await Navigator.pushReplacementNamed(context, Home.routeName);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,8 +38,8 @@ class _LoginState extends State<Login> {
       body: Mutation(
         options: MutationOptions(
           document: gql(r'''
-            mutation loginMutation($email: String!, $password: String!) {
-              loginWithPassword(email: $email, password: $password)
+            mutation loginMutation($email: String!, $password: String!, $fcmToken: String!) {
+              loginWithPassword(email: $email, password: $password, fcmToken: $fcmToken)
             }
         '''),
         ),
@@ -40,9 +48,8 @@ class _LoginState extends State<Login> {
           QueryResult result,
         ) {
           if (result.isLoading) return Text("Loading...");
-          if (result.hasException) return Text("Exception: ${result.exception.toString()}");
           if (result.data != null && result.data.containsKey("loginWithPassword")) {
-            this.widget.reinitialize(result.data['loginWithPassword']);
+            switchToHome(result.data['loginWithPassword']);
             return Text("Logging in...");
           }
           return Column(
@@ -59,9 +66,10 @@ class _LoginState extends State<Login> {
                         decoration: const InputDecoration(hintText: "Enter your password"),
                         onChanged: (newVal) => setState(() => _password = newVal)),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_email.length < 3 || _password.length < 3) return; // TODO validate
-                        runMutation({"email": _email, "password": _password});
+                        final fcmToken = await FirebaseMessaging.instance.getToken();
+                        runMutation({"email": _email, "password": _password, "fcmToken": fcmToken});
                       },
                       child: Text("Login"),
                     )
@@ -72,6 +80,7 @@ class _LoginState extends State<Login> {
                 onPressed: switchToRegister,
                 child: Text("Create an account"),
               ),
+              if (result.hasException) Text(result.exception.toString()),
             ],
           );
         },
