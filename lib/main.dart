@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/app.dart';
 import 'package:handle_it/authentication_page.dart';
-import 'package:handle_it/client_provider.dart';
-import 'package:handle_it/feed_home.dart';
-import 'package:handle_it/settings.dart';
 import 'package:handle_it/show_alert.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -55,88 +53,5 @@ void main() async {
 
   // try to log in with existing token
   // if still not logged in, login route
-
-  runApp(ClientProvider(
-    child: MaterialApp(
-      title: 'HandleIt',
-      initialRoute: initialRoute,
-      routes: <String, WidgetBuilder>{
-        Home.routeName: (_) => Home(),
-        ShowAlert.routeName: (_) => ShowAlert(),
-        AuthenticationPage.routeName: (_) => AuthenticationPage(),
-      },
-      theme: ThemeData(
-        primaryColor: Colors.blue,
-      ),
-    ),
-  ));
-}
-
-class Home extends StatefulWidget {
-  static const String routeName = "/home";
-  @override
-  _HomeState createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
-  int _selectedIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    selectNotificationSubject.stream.listen((String payload) async {
-      print("heard $payload from the stream");
-      await Navigator.pushNamed(context, ShowAlert.routeName);
-    });
-  }
-
-  @override
-  void dispose() {
-    selectNotificationSubject.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // pushNotificationService.initialize();
-
-    return Query(
-      options: QueryOptions(
-        document: addFragments(gql(r"""
-        query mainQuery {
-          viewer {
-            user {
-              id
-              ...settingsFragment_user
-            }
-          }
-        }
-      """), [Settings.settingsFragment]),
-      ),
-      builder: (QueryResult result, {Refetch refetch, FetchMore fetchMore}) {
-        if (result.hasException) return Text(result.exception.toString());
-        if (result.isLoading) return Text("Loading...");
-        print(result.data['viewer']);
-        if (!result.data.containsKey('viewer') || result.data['viewer']['user'] == null) {
-          return null;
-        }
-
-        return Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: Text("HandleIt"),
-          ),
-          body: [FeedHome(), Settings(result.data['viewer']['user'])][_selectedIndex],
-          bottomNavigationBar: BottomNavigationBar(
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Feed"),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile')
-            ],
-            currentIndex: _selectedIndex,
-            onTap: (newIndex) => setState(() => _selectedIndex = newIndex),
-          ),
-        );
-      },
-    );
-  }
+  runApp(App(initialRoute: initialRoute, selectNotificationSubject: selectNotificationSubject));
 }
