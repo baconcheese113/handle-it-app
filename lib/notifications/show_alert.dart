@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:handle_it/home.dart';
 import 'package:just_audio/just_audio.dart';
 
 class ShowAlert extends StatefulWidget {
@@ -16,7 +17,7 @@ class _ShowAlert extends State<ShowAlert> {
     if (_audioPlayer != null) return;
     _audioPlayer = AudioPlayer();
     try {
-      await _audioPlayer?.setAudioSource(AudioSource.uri(Uri.parse("asset:///assets/audio/alarm.mp3")));
+      await _audioPlayer?.setAudioSource(AudioSource.uri(Uri.parse("asset:///assets/audio/mgs_alert.mp3")));
       _audioPlayer?.play();
     } catch (error) {
       print("An error occurred $error");
@@ -40,7 +41,7 @@ class _ShowAlert extends State<ShowAlert> {
   Widget build(BuildContext context) {
     void handleDismiss() {
       _audioPlayer?.stop();
-      Navigator.of(context).pop();
+      Navigator.of(context).pushReplacementNamed(Home.routeName);
     }
 
     return Flex(

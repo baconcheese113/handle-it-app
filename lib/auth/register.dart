@@ -66,8 +66,10 @@ class _RegisterState extends State<Register> {
                           decoration: const InputDecoration(hintText: "Enter your email"),
                           onChanged: (newVal) => setState(() => _email = newVal)),
                       TextFormField(
-                          decoration: const InputDecoration(hintText: "Enter your password"),
-                          onChanged: (newVal) => setState(() => _password = newVal)),
+                        decoration: const InputDecoration(hintText: "Enter your password"),
+                        onChanged: (newVal) => setState(() => _password = newVal),
+                        obscureText: true,
+                      ),
                       TextFormField(
                           decoration: const InputDecoration(hintText: "Enter your first name (optional)"),
                           onChanged: (newVal) => setState(() => _firstName = newVal)),

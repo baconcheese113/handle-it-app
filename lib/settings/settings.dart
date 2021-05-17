@@ -3,18 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
+import 'package:handle_it/settings/addTestHub.dart';
+import 'package:handle_it/utils.dart';
 
 class Settings extends StatefulWidget {
   final user;
   const Settings(this.user, {Key key}) : super(key: key);
 
-  static final settingsFragment = gql(r"""
+  static final settingsFragment = addFragments(gql(r"""
     fragment settingsFragment_user on User {
       id
       email
       firstName
+      ...addTestHubFragment_user
     }
-  """);
+  """), [AddTestHub.addTestHubFragment]);
 
   @override
   _SettingsState createState() => _SettingsState();
@@ -73,8 +76,13 @@ class _SettingsState extends State<Settings> {
                   return null;
                 },
               ),
-              ElevatedButton(onPressed: () => runMutation({'firstName': _firstName}), child: const Text("Submit")),
-              ElevatedButton(onPressed: logout, child: const Text("Logout"))
+              ElevatedButton(
+                  onPressed:
+                      _firstName == this.widget.user['firstName'] ? null : () => runMutation({'firstName': _firstName}),
+                  child: const Text("Update name")),
+              ElevatedButton(onPressed: logout, child: const Text("Logout")),
+              Divider(),
+              AddTestHub(user: this.widget.user),
             ],
           ),
         );

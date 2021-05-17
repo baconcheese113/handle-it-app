@@ -21,6 +21,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     // pushNotificationService.initialize();
+    print("Rendering home");
 
     return Query(
       options: QueryOptions(
@@ -36,7 +37,10 @@ class _HomeState extends State<Home> {
       """), [Settings.settingsFragment]),
       ),
       builder: (QueryResult result, {Refetch refetch, FetchMore fetchMore}) {
-        if (result.hasException) return Text(result.exception.toString());
+        if (result.hasException) {
+          print("Exception ${result.exception.toString()}");
+          return Text(result.exception.toString());
+        }
         if (result.isLoading) return Text("Loading...");
         print(result.data['viewer']);
         if (!result.data.containsKey('viewer') || result.data['viewer']['user'] == null) {

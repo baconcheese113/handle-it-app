@@ -23,6 +23,7 @@ class _LoginState extends State<Login> {
   }
 
   void switchToHome(String newToken) async {
+    print("switchToHome called");
     this.widget.reinitialize(newToken);
     await Future.delayed(Duration(seconds: 3));
     await Navigator.pushReplacementNamed(context, Home.routeName);
@@ -47,6 +48,7 @@ class _LoginState extends State<Login> {
           RunMutation runMutation,
           QueryResult result,
         ) {
+          print("Render of login called");
           if (result.isLoading) return Text("Loading...");
           if (result.data != null && result.data.containsKey("loginWithPassword")) {
             switchToHome(result.data['loginWithPassword']);
@@ -60,11 +62,14 @@ class _LoginState extends State<Login> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextFormField(
-                        decoration: const InputDecoration(hintText: "Enter your email"),
-                        onChanged: (newVal) => setState(() => _email = newVal)),
+                      decoration: const InputDecoration(hintText: "Enter your email"),
+                      onChanged: (newVal) => setState(() => _email = newVal),
+                    ),
                     TextFormField(
-                        decoration: const InputDecoration(hintText: "Enter your password"),
-                        onChanged: (newVal) => setState(() => _password = newVal)),
+                      decoration: const InputDecoration(hintText: "Enter your password"),
+                      onChanged: (newVal) => setState(() => _password = newVal),
+                      obscureText: true,
+                    ),
                     ElevatedButton(
                       onPressed: () async {
                         if (_email.length < 3 || _password.length < 3) return; // TODO validate
