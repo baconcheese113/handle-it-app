@@ -19,35 +19,25 @@ class AuthenticationState extends ChangeNotifier {
     loading = true;
     print("Looking for existing token");
     if (await storage.containsKey(key: 'token')) {
-      authenticate(await storage.read(key: 'token'));
-    } else {
-      loading = false;
-      notifyListeners();
+      token = await storage.read(key: 'token');
+      print("Token found $token");
     }
-  }
-
-  Future<void> authenticate(String newToken) async {
-    loading = true;
-    print("Authenticating");
-    token = newToken;
-    await storage.write(key: 'token', value: newToken);
     loading = false;
-    print("Authenticated");
     notifyListeners();
   }
 
-  Future<void> invalidate() async {
-    loading = true;
-    print("Invalidating");
-    await storage.delete(key: 'token');
-    token = null;
-    print("Invalidated");
-    loading = false;
-    notifyListeners();
+  ValueNotifier<GraphQLClient> getClient() {
+    final HttpLink httpLink = HttpLink(env['API_URL']);
+    final AuthLink authLink = AuthLink(getToken: () => token != null ? "Bearer $token" : null);
+    final link = authLink.concat(httpLink);
+    return ValueNotifier(
+      GraphQLClient(
+        cache: GraphQLCache(store: HiveStore()),
+        link: link,
+      ),
+    );
   }
 }
-
-// AuthenticationState authenticationState = AuthenticationState();
 
 class App extends StatefulWidget {
   final String initialRoute;
@@ -75,7 +65,6 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     authenticationState = AuthenticationState();
-    authenticationState.loading = true;
     isLoading = true;
     authenticationState.addListener(listenForAuthStateChanges);
     authenticationState.checkForExistingToken();
@@ -90,66 +79,32 @@ class _AppState extends State<App> {
   }
 
   @override
-  void reassemble() {
-    print("reassemble");
-    super.reassemble();
-  }
-
-  @override
-  void deactivate() {
-    print("deactivate");
-    super.deactivate();
-  }
-
-  @override
   void dispose() {
     print("disposing");
     isLoading = true;
     this.widget.selectNotificationSubject.close();
     authenticationState.removeListener(listenForAuthStateChanges);
-    // authenticationState.dispose();
     _bleManager?.destroyClient();
     super.dispose();
   }
 
-  void reinitialize([String newToken]) async {
-    print("Reinitializing with $newToken");
-    if (newToken == null) {
-      await authenticationState.invalidate();
-      return;
-    }
-    await authenticationState.authenticate(newToken);
+  void reinitialize([String newToken]) {
+    authenticationState.token = newToken;
   }
 
   @override
   Widget build(BuildContext context) {
     String initialRoute = this.widget.initialRoute;
 
-    final HttpLink httpLink = HttpLink(env['API_URL']);
-    Link link = httpLink;
-    if (authenticationState.token != null) {
-      print("Token found");
-      final AuthLink authLink = AuthLink(getToken: () {
-        print("Creating authLink in getToken with ${authenticationState.token}");
-        return "Bearer ${authenticationState.token}";
-      });
-      // final AuthLink authLink = AuthLink(getToken: () => "Bearer ${authenticationState.token}");
-      link = authLink.concat(httpLink);
-      if (initialRoute != ShowAlert.routeName) initialRoute = Home.routeName;
-    } else {
-      print("Rendering with null token and loading $isLoading");
-    }
-    ValueNotifier<GraphQLClient> client = ValueNotifier(
-      GraphQLClient(
-        cache: GraphQLCache(store: HiveStore()),
-        link: link,
-      ),
-    );
+    final client = authenticationState.getClient();
 
     print("Rendering authenticationState.loading ${authenticationState.loading}");
     print("Initialroute = $initialRoute");
     if (initialRoute != ShowAlert.routeName && (authenticationState.loading || isLoading)) {
       return Directionality(textDirection: TextDirection.ltr, child: Text("Checking for token..."));
+    }
+    if (initialRoute != ShowAlert.routeName && authenticationState.token != null) {
+      initialRoute = Home.routeName;
     }
     return GraphQLProvider(
       client: client,
@@ -158,13 +113,11 @@ class _AppState extends State<App> {
         initialRoute: initialRoute,
         navigatorKey: this.widget._navigator,
         routes: <String, WidgetBuilder>{
-          Home.routeName: (_) => Home(),
+          Home.routeName: (_) => Home(reinitialize: reinitialize),
           ShowAlert.routeName: (_) => ShowAlert(),
           Register.routeName: (_) => Register(reinitialize: reinitialize),
           Login.routeName: (_) => Login(reinitialize: reinitialize),
-          AddVehicleWizard.routeName: (_) => AddVehicleWizard(
-                bleManager: _bleManager,
-              ),
+          AddVehicleWizard.routeName: (_) => AddVehicleWizard(bleManager: _bleManager),
         },
         theme: ThemeData(
           primaryColor: Colors.blue,

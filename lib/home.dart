@@ -7,7 +7,8 @@ import 'package:handle_it/settings/settings.dart';
 import 'utils.dart';
 
 class Home extends StatefulWidget {
-  Home({Key key}) : super(key: key);
+  final Function reinitialize;
+  Home({Key key, this.reinitialize}) : super(key: key);
 
   static String routeName = "/home";
 
@@ -20,7 +21,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // pushNotificationService.initialize();
     print("Rendering home");
 
     return Query(
@@ -52,7 +52,7 @@ class _HomeState extends State<Home> {
             centerTitle: true,
             title: Text("HandleIt"),
           ),
-          body: [FeedHome(), Settings(result.data['viewer']['user'])][_selectedIndex],
+          body: [FeedHome(), Settings(result.data['viewer']['user'], this.widget.reinitialize)][_selectedIndex],
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Feed"),

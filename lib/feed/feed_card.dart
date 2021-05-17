@@ -94,8 +94,6 @@ class _FeedCardState extends State<FeedCard> {
     // print("Disposing of FeedCard that has ${this.widget.bleManager.toString()}");
   }
 
-  // TODO add new hubs directly to db
-
   @override
   Widget build(BuildContext context) {
     void _handleDisconnect() {
@@ -128,10 +126,10 @@ class _FeedCardState extends State<FeedCard> {
           title: Text("${this.widget.hubFrag['name']} (${this.widget.hubFrag['serial']})"),
           subtitle: Text("${this.widget.hubFrag['sensors'].length} Sensors | Outside BLE range"),
         ),
-        TextButton(
-          onPressed: handleArmToggle,
-          child: Text(armed ? "Disarm" : "Arm"),
-        ),
+        // TextButton(
+        //   onPressed: handleArmToggle,
+        //   child: Text(armed ? "Disarm" : "Arm"),
+        // ),
         Center(
           child: Stack(clipBehavior: Clip.none, children: [
             Icon(

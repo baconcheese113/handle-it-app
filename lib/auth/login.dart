@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/register.dart';
 import 'package:handle_it/home.dart';
@@ -24,9 +25,9 @@ class _LoginState extends State<Login> {
 
   void switchToHome(String newToken) async {
     print("switchToHome called");
+    await FlutterSecureStorage().write(key: 'token', value: newToken);
     this.widget.reinitialize(newToken);
-    await Future.delayed(Duration(seconds: 3));
-    await Navigator.pushReplacementNamed(context, Home.routeName);
+    Navigator.pushReplacementNamed(context, Home.routeName);
   }
 
   @override

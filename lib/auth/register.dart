@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/home.dart';
@@ -24,9 +25,9 @@ class _RegisterState extends State<Register> {
     await Navigator.pushReplacementNamed(context, Login.routeName);
   }
 
-  void switchToHome(String newToken) async {
-    this.widget.reinitialize(newToken);
-    await Future.delayed(Duration(seconds: 3));
+  Future<void> switchToHome(String newToken) async {
+    await FlutterSecureStorage().write(key: 'token', value: newToken);
+    await this.widget.reinitialize(newToken);
     await Navigator.pushReplacementNamed(context, Home.routeName);
   }
 

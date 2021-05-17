@@ -8,7 +8,8 @@ import 'package:handle_it/utils.dart';
 
 class Settings extends StatefulWidget {
   final user;
-  const Settings(this.user, {Key key}) : super(key: key);
+  final Function reinitialize;
+  const Settings(this.user, this.reinitialize, {Key key}) : super(key: key);
 
   static final settingsFragment = addFragments(gql(r"""
     fragment settingsFragment_user on User {
@@ -27,11 +28,16 @@ class _SettingsState extends State<Settings> {
   String _firstName = "";
 
   @override
-  Widget build(BuildContext context) {
-    // TODO Logout through app
+  void initState() {
+    _firstName = this.widget.user['firstName'];
+    super.initState();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     void logout() async {
       await FlutterSecureStorage().delete(key: 'token');
+      this.widget.reinitialize();
       Navigator.pushReplacementNamed(context, Login.routeName);
     }
 
@@ -81,7 +87,12 @@ class _SettingsState extends State<Settings> {
                       _firstName == this.widget.user['firstName'] ? null : () => runMutation({'firstName': _firstName}),
                   child: const Text("Update name")),
               ElevatedButton(onPressed: logout, child: const Text("Logout")),
+              Padding(padding: EdgeInsets.only(top: 40)),
               Divider(),
+              Padding(
+                padding: EdgeInsets.only(top: 40, bottom: 20),
+                child: Text("Developer tools", textScaleFactor: 1.4),
+              ),
               AddTestHub(user: this.widget.user),
             ],
           ),
