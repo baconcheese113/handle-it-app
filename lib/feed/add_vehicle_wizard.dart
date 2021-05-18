@@ -31,6 +31,10 @@ class _AddVehicleWizardState extends State<AddVehicleWizard> {
 
   String _hubCustomName = "";
 
+  // TODO extract requestBLEPermissions
+  // TODO extract tryPowerOnBLE
+  // TODO prevent hub from connecting to sensors before wizard
+  // TODO wizard for adding sensors to hub
   Future<void> findHub() async {
     if (Platform.isAndroid) {
       PermissionStatus status = await Permission.location.status;

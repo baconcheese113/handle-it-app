@@ -98,7 +98,7 @@ class _AppState extends State<App> {
 
     final client = authenticationState.getClient();
 
-    print("Rendering authenticationState.loading ${authenticationState.loading}");
+    print("Rendering authenticationState.loading ${authenticationState.loading} and isLoading $isLoading");
     print("Initialroute = $initialRoute");
     if (initialRoute != ShowAlert.routeName && (authenticationState.loading || isLoading)) {
       return Directionality(textDirection: TextDirection.ltr, child: Text("Checking for token..."));

@@ -48,6 +48,7 @@ class _FeedCardState extends State<FeedCard> {
   bool alarmTriggered = false;
   bool isConnectedBLE = false;
 
+  // TODO _bleManager.addListener(), then check if serial isConnected
   // void monitorHub() async {
   //   if (!await this.widget.hub.isConnected()) {
   //     print("Device not connected");

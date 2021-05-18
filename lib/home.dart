@@ -52,7 +52,10 @@ class _HomeState extends State<Home> {
             centerTitle: true,
             title: Text("HandleIt"),
           ),
-          body: [FeedHome(), Settings(result.data['viewer']['user'], this.widget.reinitialize)][_selectedIndex],
+          body: Padding(
+            padding: EdgeInsets.all(8),
+            child: [FeedHome(), Settings(result.data['viewer']['user'], this.widget.reinitialize)][_selectedIndex],
+          ),
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Feed"),
