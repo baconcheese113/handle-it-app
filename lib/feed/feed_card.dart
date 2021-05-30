@@ -25,9 +25,9 @@ class FeedCard extends StatefulWidget {
         isArmed
         doorRow
         doorColumn
-        events(orderBy: [{ time: desc }]) {
+        events(orderBy: [{ createdAt: desc }]) {
           id
-          time
+          createdAt
           sensor {
             id
             doorColumn
@@ -163,7 +163,7 @@ class _FeedCardState extends State<FeedCard> {
             final column = event['sensor']['doorColumn'] == 0 ? 'Front' : 'Back';
             final row = event['sensor']['doorRow'] == 0 ? 'left' : 'right';
             return DataRow(cells: [
-              DataCell(Text(timeago.format(DateTime.parse(event['time'])))),
+              DataCell(Text(timeago.format(DateTime.parse(event['createdAt'])))),
               DataCell(Text("$column $row handle pulled")),
             ]);
           }).toList(),

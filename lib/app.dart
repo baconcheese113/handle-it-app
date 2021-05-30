@@ -75,6 +75,7 @@ class _AppState extends State<App> {
     });
 
     _bleManager = BleManager();
+    if (_bleManager != null) print(">>>BLEManager valid");
     _bleManager?.createClient();
   }
 
