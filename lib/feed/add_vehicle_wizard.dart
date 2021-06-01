@@ -15,6 +15,8 @@ class AddVehicleWizard extends StatefulWidget {
 }
 
 class _AddVehicleWizardState extends State<AddVehicleWizard> {
+  int _pairedHubId;
+
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -44,6 +46,9 @@ class _AddVehicleWizardState extends State<AddVehicleWizard> {
         return AddVehicleWizardContent(
           bleManager: this.widget.bleManager,
           user: result.data['viewer']['user'],
+          pairedHubId: _pairedHubId,
+          setPairedHubId: (newHubId) => setState(() => _pairedHubId = newHubId),
+          refetch: refetch,
         );
       },
     );
