@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/auth/register.dart';
+import 'package:handle_it/feed/add_sensor_wizard.dart';
 import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/show_alert.dart';
@@ -119,6 +120,7 @@ class _AppState extends State<App> {
           Register.routeName: (_) => Register(reinitialize: reinitialize),
           Login.routeName: (_) => Login(reinitialize: reinitialize),
           AddVehicleWizard.routeName: (_) => AddVehicleWizard(bleManager: _bleManager),
+          AddSensorWizard.routeName: (_) => AddSensorWizard(bleManager: _bleManager),
         },
         theme: ThemeData(
           primaryColor: Colors.blue,

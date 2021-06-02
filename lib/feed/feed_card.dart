@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/feed/add_sensor_wizard.dart';
 import 'package:handle_it/feed/feed_card_delete.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -97,6 +98,10 @@ class _FeedCardState extends State<FeedCard> {
 
   @override
   Widget build(BuildContext context) {
+    void handleAddSensor() {
+      Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': this.widget.hubFrag['id']});
+    }
+
     void _handleDisconnect() {
       // this.widget.bleManager.cancelTransaction('monitor');
       // this.widget.hub.disconnectOrCancelConnection();
@@ -127,10 +132,10 @@ class _FeedCardState extends State<FeedCard> {
           title: Text("${this.widget.hubFrag['name']} (${this.widget.hubFrag['serial']})"),
           subtitle: Text("${this.widget.hubFrag['sensors'].length} Sensors | Outside BLE range"),
         ),
-        // TextButton(
-        //   onPressed: handleArmToggle,
-        //   child: Text(armed ? "Disarm" : "Arm"),
-        // ),
+        TextButton(
+          onPressed: handleAddSensor,
+          child: Text("Add sensor"),
+        ),
         Center(
           child: Stack(clipBehavior: Clip.none, children: [
             Icon(
