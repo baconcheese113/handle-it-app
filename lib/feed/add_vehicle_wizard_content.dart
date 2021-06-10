@@ -11,7 +11,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 const String HUB_NAME = "HandleIt Hub";
 const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
-const String SENSOR_VOLTS_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fc";
 const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
 
 class AddVehicleWizardContent extends StatefulWidget {

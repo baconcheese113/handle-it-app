@@ -1,9 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_ble_lib/flutter_ble_lib.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+const String HUB_NAME = "HandleIt Hub";
+const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
+const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
 
 class AddSensorWizardContent extends StatefulWidget {
   final BleManager bleManager;
@@ -28,6 +34,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   List<bool> _leftRightToggle = [true, false];
   List<bool> _frontRearToggle = [true, false];
   int _sensorId;
+  Peripheral _foundHub;
 
   Future<void> connectToHub() async {
     if (Platform.isAndroid) {
@@ -37,15 +44,53 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
         print("Status was not granted");
         if (!await Permission.location.request().isGranted) {
           print("Andddd, they denied me again!");
-          setState(() => _scanning = false);
           return;
         }
       }
     }
-    await Future.delayed(Duration(seconds: 3));
-    print("page is ${_formsPageViewController.page}");
-    if (_formsPageViewController.page == 0) {
-      _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+    print("about to listen");
+    bool attemptedRestart = false;
+    await for (BluetoothState state in this.widget.bleManager.observeBluetoothState()) {
+      print(">>>>>> Observed device bluetooth state: $state");
+      if (state == BluetoothState.POWERED_OFF && !attemptedRestart) {
+        await this.widget.bleManager.enableRadio();
+        attemptedRestart = true;
+      } else if (state == BluetoothState.RESETTING) {
+        attemptedRestart = false;
+      } else if (state == BluetoothState.POWERED_ON) {
+        break;
+      }
+    }
+
+    int scanStartSeconds = DateTime.now().second;
+    await for (ScanResult scanResult in this.widget.bleManager.startPeripheralScan(scanMode: ScanMode.lowLatency)) {
+      if (scanResult.peripheral.name == null) continue;
+      print("Scanned peripheral ${scanResult.peripheral.name}, RSSI ${scanResult.rssi}");
+      if (scanResult.peripheral.name == HUB_NAME) {
+        _foundHub = scanResult.peripheral;
+        print(">>> connecting");
+        await _foundHub.connect();
+        print(">>> discoveringservices");
+        await _foundHub.discoverAllServicesAndCharacteristics();
+      }
+      if (_foundHub != null || DateTime.now().second > scanStartSeconds + 10) {
+        print(">>> stopping peripheral scan");
+        await this.widget.bleManager.stopPeripheralScan();
+        break;
+      }
+    }
+    await for (PeripheralConnectionState connectionState
+        in _foundHub.observeConnectionState(emitCurrentValue: true, completeOnDisconnect: true)) {
+      print(">>Peripheral ${_foundHub.identifier} connection state is $connectionState");
+      if (connectionState == PeripheralConnectionState.connected) {
+        if (_formsPageViewController.page == 0) {
+          _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+        }
+        break;
+      } else {
+        print("Failed to connect");
+        return;
+      }
     }
   }
 
@@ -57,11 +102,30 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   }
 
   Future<void> startSensorSearch() async {
+    if (_foundHub == null) {
+      print("_foundHub is null");
+      return;
+    }
     setState(() => _scanning = true);
-    await Future.delayed(Duration(seconds: 3));
+
+    String command = "StartSensorSearch:1";
+    List<int> bytes = utf8.encode(command);
+    print(">>> writing characteristic with value $command");
+    Uint8List sensorSearchCharValue = Uint8List.fromList(bytes);
+    await _foundHub.writeCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID, sensorSearchCharValue, true);
+
+    String rawSensorId;
+    while (rawSensorId == null || rawSensorId.length < 12 || rawSensorId.substring(0, 11) != "SensorFound") {
+      CharacteristicWithValue c = await _foundHub.readCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID);
+      print(">>readCharacteristic ${c.toString()}");
+      rawSensorId = String.fromCharCodes(c.value);
+      print(">>rawSensorId = $rawSensorId");
+      await Future.delayed(Duration(milliseconds: 500));
+    }
+    int sensorId = int.parse(rawSensorId.substring(12));
     setState(() {
       _scanning = false;
-      _sensorId = 69;
+      _sensorId = sensorId;
     });
     _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
@@ -77,16 +141,46 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     // TODO Fix flow in hub to not register when connecting to a previously connected phone
 
     Future<bool> cancelForm() async {
+      if (_foundHub != null) await _foundHub.disconnectOrCancelConnection();
       Navigator.pop(context);
       return true;
     }
 
-    void addSensor() {
+    void addSensor(bool shouldExit) async {
       // add the sensor
       String leftOrRight = _leftRightToggle[0] ? 'Left' : 'Right';
       String frontOrRear = _frontRearToggle[0] ? 'Front' : 'Rear';
       print(">>Adding sensor id $_sensorId as a $leftOrRight/$frontOrRear door sensor");
-      Navigator.pop(context);
+
+      String command = "SensorConnect:$_sensorId";
+      List<int> bytes = utf8.encode(command);
+      print(">>> writing characteristic with value $command");
+      Uint8List sensorConnectCharValue = Uint8List.fromList(bytes);
+      await _foundHub.writeCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID, sensorConnectCharValue, true);
+
+      String sensorAddedResponse;
+      while (sensorAddedResponse == null ||
+          sensorAddedResponse.length < 12 ||
+          sensorAddedResponse.substring(0, 11) != "SensorAdded") {
+        CharacteristicWithValue c = await _foundHub.readCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID);
+        print(">>readCharacteristic ${c.toString()}");
+        sensorAddedResponse = String.fromCharCodes(c.value);
+        print(">>sensorAddedResponse = $sensorAddedResponse");
+        await Future.delayed(Duration(milliseconds: 500));
+      }
+      int sensorAddedResult = int.parse(sensorAddedResponse.substring(12));
+      print("Sensor added result: $sensorAddedResult");
+
+      if (shouldExit) {
+        cancelForm();
+        return;
+      }
+      setState(() {
+        _leftRightToggle = [true, false];
+        _frontRearToggle = [true, false];
+        _sensorId = null;
+      });
+      _formsPageViewController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
 
     _forms = [
@@ -103,9 +197,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                       CircularProgressIndicator(),
                     ])))),
             Row(children: [
-              Expanded(
-                child: TextButton(onPressed: () => cancelForm(), child: Text("Cancel")),
-              ),
+              Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
             ], mainAxisSize: MainAxisSize.max)
           ]),
           onWillPop: cancelForm),
@@ -124,9 +216,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                           : TextButton(onPressed: startSensorSearch, child: Text("Start")),
                     ])))),
             Row(children: [
-              Expanded(
-                child: TextButton(onPressed: () => cancelForm(), child: Text("Cancel")),
-              ),
+              Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
             ], mainAxisSize: MainAxisSize.max)
           ]),
           onWillPop: cancelForm),
@@ -157,12 +247,9 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                       ),
                     ])))),
             Row(children: [
-              Expanded(
-                child: TextButton(onPressed: cancelForm, child: Text("Cancel")),
-              ),
-              Expanded(
-                child: TextButton(onPressed: addSensor, child: Text("Connect")),
-              ),
+              Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
+              Expanded(child: TextButton(onPressed: () => addSensor(false), child: Text("Add Another"))),
+              Expanded(child: TextButton(onPressed: () => addSensor(true), child: Text("Exit"))),
             ], mainAxisSize: MainAxisSize.max)
           ]),
           onWillPop: cancelForm),

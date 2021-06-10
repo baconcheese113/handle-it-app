@@ -17,8 +17,8 @@ class _FeedCardDeleteState extends State<FeedCardDelete> {
   Widget build(BuildContext context) {
     return Mutation(
       options: MutationOptions(document: addFragments(gql(r'''
-        mutation feedCardDeleteMutation($where: HubWhereUniqueInput!) {
-          deleteOneHub(where: $where) {
+        mutation feedCardDeleteMutation($id: ID!) {
+          deleteHub(id: $id) {
             id
             ...feedCardFragment_hub
           }
@@ -30,9 +30,7 @@ class _FeedCardDeleteState extends State<FeedCardDelete> {
       ) {
         return TextButton(
             onPressed: () async {
-              await runMutation({
-                'where': {'id': this.widget.hub['id']}
-              }).networkResult;
+              await runMutation({'id': this.widget.hub['id']}).networkResult;
               this.widget.onDelete();
             },
             child: Text("Delete"));
