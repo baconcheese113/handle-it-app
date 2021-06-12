@@ -57,7 +57,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
               user {
                 id
                 hubs {
-                  ...feedCardFragment_hub
+                  ...feedCard_hub
                 }
               }
             }
@@ -77,6 +77,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
             return refetch();
           },
           child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,

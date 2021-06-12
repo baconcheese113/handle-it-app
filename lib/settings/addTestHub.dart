@@ -8,7 +8,7 @@ class AddTestHub extends StatefulWidget {
   const AddTestHub({Key key, this.user}) : super(key: key);
 
   static final addTestHubFragment = gql(r"""
-    fragment addTestHubFragment_user on User {
+    fragment addTestHub_user on User {
       id
     }
   """);
@@ -29,7 +29,7 @@ class _AddTestHubState extends State<AddTestHub> {
           mutation createOneHub($data: HubCreateInput!) {
             createOneHub(data: $data) {
               id
-              ...feedCardFragment_hub
+              ...feedCard_hub
             }
           }
         '''), [FeedCard.feedCardFragment])),

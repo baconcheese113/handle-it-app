@@ -12,11 +12,11 @@ class Settings extends StatefulWidget {
   const Settings(this.user, this.reinitialize, {Key key}) : super(key: key);
 
   static final settingsFragment = addFragments(gql(r"""
-    fragment settingsFragment_user on User {
+    fragment settings_user on User {
       id
       email
       firstName
-      ...addTestHubFragment_user
+      ...addTestHub_user
     }
   """), [AddTestHub.addTestHubFragment]);
 

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/feed_card.dart';
@@ -20,7 +22,7 @@ class _FeedCardDeleteState extends State<FeedCardDelete> {
         mutation feedCardDeleteMutation($id: ID!) {
           deleteHub(id: $id) {
             id
-            ...feedCardFragment_hub
+            ...feedCard_hub
           }
         }
       '''), [FeedCard.feedCardFragment])),
@@ -33,7 +35,10 @@ class _FeedCardDeleteState extends State<FeedCardDelete> {
               await runMutation({'id': this.widget.hub['id']}).networkResult;
               this.widget.onDelete();
             },
-            child: Text("Delete"));
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ));
       },
     );
   }

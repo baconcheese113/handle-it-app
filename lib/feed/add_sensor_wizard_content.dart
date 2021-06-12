@@ -62,6 +62,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       }
     }
 
+    // String postConnectHubName = "$HUB_NAME-${this.widget.hub['id']}";
     int scanStartSeconds = DateTime.now().second;
     await for (ScanResult scanResult in this.widget.bleManager.startPeripheralScan(scanMode: ScanMode.lowLatency)) {
       if (scanResult.peripheral.name == null) continue;
@@ -142,6 +143,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
 
     Future<bool> cancelForm() async {
       if (_foundHub != null) await _foundHub.disconnectOrCancelConnection();
+      await this.widget.bleManager.stopPeripheralScan();
       Navigator.pop(context);
       return true;
     }

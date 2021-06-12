@@ -30,7 +30,7 @@ class _HomeState extends State<Home> {
           viewer {
             user {
               id
-              ...settingsFragment_user
+              ...settings_user
             }
           }
         }
