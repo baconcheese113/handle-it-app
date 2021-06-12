@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
-import 'package:handle_it/settings/addTestHub.dart';
+import 'package:handle_it/settings/add_test_hub.dart';
 import 'package:handle_it/utils.dart';
 
 class Settings extends StatefulWidget {
