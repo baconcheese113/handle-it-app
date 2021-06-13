@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/settings/add_test_hub.dart';
+import 'package:handle_it/settings/notification_settings.dart';
 import 'package:handle_it/utils.dart';
 
 class Settings extends StatefulWidget {
@@ -17,8 +18,9 @@ class Settings extends StatefulWidget {
       email
       firstName
       ...addTestHub_user
+      ...notificationSettings_user
     }
-  """), [AddTestHub.addTestHubFragment]);
+  """), [AddTestHub.addTestHubFragment, NotificationSettings.notificationSettingsFragment]);
 
   @override
   _SettingsState createState() => _SettingsState();
@@ -43,8 +45,8 @@ class _SettingsState extends State<Settings> {
 
     return Mutation(
       options: MutationOptions(document: gql(r'''
-          mutation updateSettings($data: UpdateUserInfo!) {
-            updateUser(data: $data) {
+          mutation settingsMutation($firstName: String!) {
+            updateUser(firstName: $firstName) {
               id
               firstName
             }
@@ -55,46 +57,56 @@ class _SettingsState extends State<Settings> {
         QueryResult result,
       ) {
         print("building with ${this.widget.user}");
-        return Form(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextFormField(
-                readOnly: true,
-                initialValue: this.widget.user['email'],
-                decoration: const InputDecoration(hintText: 'Enter your email'),
-                validator: (String value) {
-                  if (EmailValidator.validate(value)) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                initialValue: this.widget.user['firstName'],
-                decoration: const InputDecoration(hintText: 'Enter your first name'),
-                onChanged: (newValue) => setState(() => _firstName = newValue),
-                validator: (String value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid name';
-                  }
-                  return null;
-                },
-              ),
-              ElevatedButton(
-                  onPressed:
-                      _firstName == this.widget.user['firstName'] ? null : () => runMutation({'firstName': _firstName}),
-                  child: const Text("Update name")),
-              ElevatedButton(onPressed: logout, child: const Text("Logout")),
-              Padding(padding: EdgeInsets.only(top: 40)),
-              Divider(),
-              Padding(
-                padding: EdgeInsets.only(top: 40, bottom: 20),
-                child: Text("Developer tools", textScaleFactor: 1.4),
-              ),
-              AddTestHub(user: this.widget.user),
-            ],
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Form(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextFormField(
+                  readOnly: true,
+                  initialValue: this.widget.user['email'],
+                  decoration: const InputDecoration(hintText: 'Enter your email'),
+                  validator: (String value) {
+                    if (EmailValidator.validate(value)) {
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  initialValue: this.widget.user['firstName'],
+                  decoration: const InputDecoration(hintText: 'Enter your first name'),
+                  onChanged: (newValue) => setState(() => _firstName = newValue),
+                  validator: (String value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a valid name';
+                    }
+                    return null;
+                  },
+                ),
+                ElevatedButton(
+                    onPressed: _firstName == this.widget.user['firstName']
+                        ? null
+                        : () => runMutation({'firstName': _firstName}),
+                    child: const Text("Update name")),
+                ElevatedButton(onPressed: logout, child: const Text("Logout")),
+                Padding(padding: EdgeInsets.only(top: 20)),
+                Padding(
+                  padding: EdgeInsets.only(top: 10, bottom: 10),
+                  child: Text("Notification type", textScaleFactor: 1.4),
+                ),
+                NotificationSettings(user: this.widget.user),
+                Padding(padding: EdgeInsets.only(top: 40)),
+                Divider(),
+                Padding(
+                  padding: EdgeInsets.only(top: 40, bottom: 20),
+                  child: Text("Developer tools", textScaleFactor: 1.4),
+                ),
+                AddTestHub(user: this.widget.user),
+              ],
+            ),
           ),
         );
       },

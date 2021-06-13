@@ -13,14 +13,16 @@ final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificat
 
 final BehaviorSubject<String> selectNotificationSubject = BehaviorSubject<String>();
 
+const String TAPPED_NOTIFICATION = "tapped_notification";
+
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("trying to show notification");
   const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails(
       "channel_id", "channel_name", "Test bed for all dem notifications",
       importance: Importance.max, priority: Priority.max, fullScreenIntent: true, showWhen: true);
   const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics);
-  await localNotifications.show(DateTime.now().second, "Plain title", "Plain body", platformSpecifics,
-      payload: "item x");
+  await localNotifications.show(DateTime.now().second, message.data['title'], message.data['body'], platformSpecifics,
+      payload: TAPPED_NOTIFICATION);
   print("showed notification");
 }
 
@@ -41,7 +43,7 @@ void main() async {
   const AndroidInitializationSettings androidSettings = AndroidInitializationSettings("app_icon");
   final InitializationSettings initializationSettings = InitializationSettings(android: androidSettings);
   await localNotifications.initialize(initializationSettings, onSelectNotification: (String payload) async {
-    initialRoute = ShowAlert.routeName;
+    initialRoute = Login.routeName;
     selectNotificationSubject.add(payload);
     print("Notification payload: $payload, and initialRoute: $initialRoute");
   });

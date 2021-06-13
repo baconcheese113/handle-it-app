@@ -210,7 +210,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                     padding: EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
                       Text(
-                        "Tap to start looking for sensors for ${this.widget.hub['name']}",
+                        "Turn on your sensor, then press start to search for a new sensor for ${this.widget.hub['name']}",
                         textScaleFactor: 1.3,
                       ),
                       _scanning
