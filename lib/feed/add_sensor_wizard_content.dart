@@ -149,6 +149,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     }
 
     void addSensor(bool shouldExit) async {
+      setState(() => _scanning = true);
       // add the sensor
       String leftOrRight = _leftRightToggle[0] ? 'Left' : 'Right';
       String frontOrRear = _frontRearToggle[0] ? 'Front' : 'Rear';
@@ -181,6 +182,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
         _leftRightToggle = [true, false];
         _frontRearToggle = [true, false];
         _sensorId = null;
+        _scanning = false;
       });
       _formsPageViewController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
@@ -230,28 +232,30 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                       Text("Found sensor $_sensorId!", textScaleFactor: 1.3),
                       Padding(padding: EdgeInsets.only(top: 20)),
-                      Text("Select which door this sensor is for"),
-                      ToggleButtons(
-                        children: <Widget>[
-                          Text("Left"),
-                          Text("Right"),
-                        ],
-                        isSelected: _leftRightToggle,
-                        onPressed: (idx) => setState(() => _leftRightToggle = [idx == 0, idx == 1]),
-                      ),
-                      ToggleButtons(
-                        children: <Widget>[
-                          Text("Front"),
-                          Text("Rear"),
-                        ],
-                        isSelected: _frontRearToggle,
-                        onPressed: (idx) => setState(() => _frontRearToggle = [idx == 0, idx == 1]),
-                      ),
+                      Text(_scanning ? "Saving, please wait..." : "Select which door this sensor is for"),
+                      if (!_scanning)
+                        ToggleButtons(
+                          children: <Widget>[
+                            Text("Left"),
+                            Text("Right"),
+                          ],
+                          isSelected: _leftRightToggle,
+                          onPressed: (idx) => setState(() => _leftRightToggle = [idx == 0, idx == 1]),
+                        ),
+                      if (!_scanning)
+                        ToggleButtons(
+                          children: <Widget>[
+                            Text("Front"),
+                            Text("Rear"),
+                          ],
+                          isSelected: _frontRearToggle,
+                          onPressed: (idx) => setState(() => _frontRearToggle = [idx == 0, idx == 1]),
+                        ),
                     ])))),
             Row(children: [
               Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
-              Expanded(child: TextButton(onPressed: () => addSensor(false), child: Text("Add Another"))),
-              Expanded(child: TextButton(onPressed: () => addSensor(true), child: Text("Exit"))),
+              // Expanded(child: TextButton(onPressed: () => addSensor(false), child: Text("Add Another"))),
+              Expanded(child: TextButton(onPressed: _scanning ? null : () => addSensor(true), child: Text("Save"))),
             ], mainAxisSize: MainAxisSize.max)
           ]),
           onWillPop: cancelForm),
