@@ -23,21 +23,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.4
   english_words: ^4.0.0
   flutter_ble_lib: ^2.3.2
-  permission_handler: ^7.1.0
-  firebase_core: ^1.0.4
-  firebase_messaging: ^9.1.2
-  just_audio: ^0.7.4
-  shared_preferences: ^2.0.5
-  flutter_local_notifications: ^5.0.0+3
-  rxdart: ^0.26.0
+  permission_handler: ^9.2.0
+  firebase_core: ^1.13.1
+  firebase_messaging: ^11.2.11
+  just_audio: ^0.9.20
+  shared_preferences: ^2.0.13
+  flutter_local_notifications: ^9.4.0
+  rxdart: ^0.27.3
   email_validator: ^2.0.1
-  graphql_flutter: ^5.0.0-nullsafety.2
-  flutter_secure_storage: ^4.2.0
-  flutter_dotenv: ^3.1.0
-  timeago: ^3.0.2
+  graphql_flutter: ^5.0.1
+  flutter_secure_storage: ^5.0.2
+  flutter_dotenv: ^5.0.2
+  timeago: ^3.2.2
 
 dev_dependencies:
   flutter_test:

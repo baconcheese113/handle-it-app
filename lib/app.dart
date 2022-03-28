@@ -28,7 +28,7 @@ class AuthenticationState extends ChangeNotifier {
   }
 
   ValueNotifier<GraphQLClient> getClient() {
-    final HttpLink httpLink = HttpLink(env['API_URL']);
+    final HttpLink httpLink = HttpLink(dotenv.env['API_URL']);
     final AuthLink authLink = AuthLink(getToken: () => token != null ? "Bearer $token" : null);
     final link = authLink.concat(httpLink);
     return ValueNotifier(

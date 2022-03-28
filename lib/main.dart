@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/app.dart';
@@ -17,9 +17,12 @@ const String TAPPED_NOTIFICATION = "tapped_notification";
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("trying to show notification");
-  const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails(
-      "channel_id", "channel_name", "Test bed for all dem notifications",
-      importance: Importance.max, priority: Priority.max, fullScreenIntent: true, showWhen: true);
+  const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails("channel_id", "channel_name",
+      channelDescription: "Test bed for all dem notifications",
+      importance: Importance.max,
+      priority: Priority.max,
+      fullScreenIntent: true,
+      showWhen: true);
   const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics);
   await localNotifications.show(DateTime.now().second, message.data['title'], message.data['body'], platformSpecifics,
       payload: TAPPED_NOTIFICATION);
@@ -27,7 +30,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-  await DotEnv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
