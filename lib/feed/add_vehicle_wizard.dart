@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ble_lib/flutter_ble_lib.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/utils.dart';
 
 class AddVehicleWizard extends StatefulWidget {
-  final BleManager bleManager;
-  const AddVehicleWizard({Key key, this.bleManager}) : super(key: key);
+  const AddVehicleWizard({Key key}) : super(key: key);
 
   static String routeName = "/add-vehicle";
 
@@ -44,7 +42,6 @@ class _AddVehicleWizardState extends State<AddVehicleWizard> {
         }
 
         return AddVehicleWizardContent(
-          bleManager: this.widget.bleManager,
           user: result.data['viewer']['user'],
           pairedHubId: _pairedHubId,
           setPairedHubId: (newHubId) => setState(() => _pairedHubId = newHubId),

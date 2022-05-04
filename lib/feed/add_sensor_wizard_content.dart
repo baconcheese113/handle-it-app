@@ -3,18 +3,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_ble_lib/flutter_ble_lib.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
+import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-const String HUB_NAME = "HandleIt Hub";
-const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
-const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
-
 class AddSensorWizardContent extends StatefulWidget {
-  final BleManager bleManager;
   final hub;
-  const AddSensorWizardContent({Key key, this.bleManager, this.hub}) : super(key: key);
+  const AddSensorWizardContent({Key key, this.hub}) : super(key: key);
 
   static final addSensorWizardContentFragment = gql(r'''
     fragment addSensorWizardContent_hub on Hub {
@@ -33,65 +30,50 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   bool _scanning = false;
   List<bool> _leftRightToggle = [true, false];
   List<bool> _frontRearToggle = [true, false];
-  int _sensorId;
-  Peripheral _foundHub;
+  String _sensorSerial;
+  FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
+  BluetoothDevice _foundHub;
+  BluetoothCharacteristic _commandChar;
 
   Future<void> connectToHub() async {
     if (Platform.isAndroid) {
-      PermissionStatus status = await Permission.location.status;
-      print("Current status is $status");
-      if (!status.isGranted) {
-        print("Status was not granted");
-        if (!await Permission.location.request().isGranted) {
-          print("Andddd, they denied me again!");
-          return;
-        }
-      }
-    }
-    print("about to listen");
-    bool attemptedRestart = false;
-    await for (BluetoothState state in this.widget.bleManager.observeBluetoothState()) {
-      print(">>>>>> Observed device bluetooth state: $state");
-      if (state == BluetoothState.POWERED_OFF && !attemptedRestart) {
-        await this.widget.bleManager.enableRadio();
-        attemptedRestart = true;
-      } else if (state == BluetoothState.RESETTING) {
-        attemptedRestart = false;
-      } else if (state == BluetoothState.POWERED_ON) {
-        break;
+      if (!await requestPermission(Permission.location) ||
+          // !await requestPermission(Permission.bluetooth) ||
+          !await requestPermission(Permission.bluetoothScan) ||
+          !await requestPermission(Permission.bluetoothConnect)) {
+        setState(() => _scanning = false);
+        return;
       }
     }
 
-    // String postConnectHubName = "$HUB_NAME-${this.widget.hub['id']}";
-    int scanStartSeconds = DateTime.now().second;
-    await for (ScanResult scanResult in this.widget.bleManager.startPeripheralScan(scanMode: ScanMode.lowLatency)) {
-      if (scanResult.peripheral.name == null) continue;
-      print("Scanned peripheral ${scanResult.peripheral.name}, RSSI ${scanResult.rssi}");
-      if (scanResult.peripheral.name == HUB_NAME) {
-        _foundHub = scanResult.peripheral;
-        print(">>> connecting");
-        await _foundHub.connect();
-        print(">>> discoveringservices");
-        await _foundHub.discoverAllServicesAndCharacteristics();
-      }
-      if (_foundHub != null || DateTime.now().second > scanStartSeconds + 10) {
-        print(">>> stopping peripheral scan");
-        await this.widget.bleManager.stopPeripheralScan();
+    print("about to listen");
+    if (!await tryPowerOnBLE()) {
+      setState(() => _scanning = false);
+      return;
+    }
+
+    print("bluetooth state is now POWERED_ON, starting peripheral scan");
+    await for (final r in _flutterBlue.scan(timeout: Duration(seconds: 10))) {
+      if (r.device.name.isEmpty) continue;
+      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
+      if (r.device.name == HUB_NAME) {
+        _flutterBlue.stopScan();
+        setState(() => _foundHub = r.device);
         break;
       }
     }
-    await for (PeripheralConnectionState connectionState
-        in _foundHub.observeConnectionState(emitCurrentValue: true, completeOnDisconnect: true)) {
-      print(">>Peripheral ${_foundHub.identifier} connection state is $connectionState");
-      if (connectionState == PeripheralConnectionState.connected) {
-        if (_formsPageViewController.page == 0) {
-          _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
-        }
-        break;
-      } else {
-        print("Failed to connect");
-        return;
-      }
+    if (_foundHub == null) {
+      print("no devices found and scan stopped");
+      setState(() => _scanning = false);
+      return;
+    }
+
+    print(">>> connecting");
+    await _foundHub.connect();
+    print(">>> connecting finished");
+    if (_formsPageViewController.page == 0) {
+      print(">>>changing page");
+      _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
@@ -109,24 +91,31 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     }
     setState(() => _scanning = true);
 
+    print(">>> discoveringservices");
+    List<BluetoothService> services = await _foundHub.discoverServices();
+
+    BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
+    BluetoothCharacteristic commandChar =
+        hubService.characteristics.firstWhere((c) => c.uuid == Guid(COMMAND_CHARACTERISTIC_UUID));
+
     String command = "StartSensorSearch:1";
     List<int> bytes = utf8.encode(command);
     print(">>> writing characteristic with value $command");
     Uint8List sensorSearchCharValue = Uint8List.fromList(bytes);
-    await _foundHub.writeCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID, sensorSearchCharValue, true);
+    await commandChar.write(sensorSearchCharValue);
+    setState(() => _commandChar = commandChar);
 
-    String rawSensorId;
-    while (rawSensorId == null || rawSensorId.length < 12 || rawSensorId.substring(0, 11) != "SensorFound") {
-      CharacteristicWithValue c = await _foundHub.readCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID);
-      print(">>readCharacteristic ${c.toString()}");
-      rawSensorId = String.fromCharCodes(c.value);
+    String rawSensorId = "";
+    while (rawSensorId.length < 12 || rawSensorId.substring(0, 11) != "SensorFound") {
+      List<int> bytes = await _commandChar.read();
+      print(">>readCharacteristic ${bytes.toString()}");
+      rawSensorId = String.fromCharCodes(bytes);
       print(">>rawSensorId = $rawSensorId");
       await Future.delayed(Duration(milliseconds: 500));
     }
-    int sensorId = int.parse(rawSensorId.substring(12));
     setState(() {
       _scanning = false;
-      _sensorId = sensorId;
+      _sensorSerial = rawSensorId.substring(12);
     });
     _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
@@ -142,8 +131,11 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     // TODO Fix flow in hub to not register when connecting to a previously connected phone
 
     Future<bool> cancelForm() async {
-      if (_foundHub != null) await _foundHub.disconnectOrCancelConnection();
-      await this.widget.bleManager.stopPeripheralScan();
+      if (_foundHub != null) {
+        if (_commandChar != null) await _commandChar.write([]);
+        await _foundHub.disconnect();
+      }
+      await _flutterBlue.stopScan();
       Navigator.pop(context);
       return true;
     }
@@ -153,21 +145,19 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       // add the sensor
       String leftOrRight = _leftRightToggle[0] ? 'Left' : 'Right';
       String frontOrRear = _frontRearToggle[0] ? 'Front' : 'Rear';
-      print(">>Adding sensor id $_sensorId as a $leftOrRight/$frontOrRear door sensor");
+      print(">>Adding sensor id $_sensorSerial as a $leftOrRight/$frontOrRear door sensor");
 
-      String command = "SensorConnect:$_sensorId";
+      String command = "SensorConnect:1";
       List<int> bytes = utf8.encode(command);
       print(">>> writing characteristic with value $command");
       Uint8List sensorConnectCharValue = Uint8List.fromList(bytes);
-      await _foundHub.writeCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID, sensorConnectCharValue, true);
+      await _commandChar.write(sensorConnectCharValue);
 
-      String sensorAddedResponse;
-      while (sensorAddedResponse == null ||
-          sensorAddedResponse.length < 12 ||
-          sensorAddedResponse.substring(0, 11) != "SensorAdded") {
-        CharacteristicWithValue c = await _foundHub.readCharacteristic(HUB_SERVICE_UUID, COMMAND_CHARACTERISTIC_UUID);
-        print(">>readCharacteristic ${c.toString()}");
-        sensorAddedResponse = String.fromCharCodes(c.value);
+      String sensorAddedResponse = "";
+      while (sensorAddedResponse.length < 12 || sensorAddedResponse.substring(0, 11) != "SensorAdded") {
+        List<int> bytes = await _commandChar.read();
+        print(">>readCharacteristic ${bytes.toString()}");
+        sensorAddedResponse = String.fromCharCodes(bytes);
         print(">>sensorAddedResponse = $sensorAddedResponse");
         await Future.delayed(Duration(milliseconds: 500));
       }
@@ -181,7 +171,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       setState(() {
         _leftRightToggle = [true, false];
         _frontRearToggle = [true, false];
-        _sensorId = null;
+        _sensorSerial = null;
         _scanning = false;
       });
       _formsPageViewController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
@@ -230,7 +220,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                 child: Padding(
                     padding: EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                      Text("Found sensor $_sensorId!", textScaleFactor: 1.3),
+                      Text("Found sensor $_sensorSerial!", textScaleFactor: 1.3),
                       Padding(padding: EdgeInsets.only(top: 20)),
                       Text(_scanning ? "Saving, please wait..." : "Select which door this sensor is for"),
                       if (!_scanning)

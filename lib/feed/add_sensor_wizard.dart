@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ble_lib/flutter_ble_lib.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_sensor_wizard_content.dart';
 import 'package:handle_it/utils.dart';
 
 class AddSensorWizard extends StatefulWidget {
-  final BleManager bleManager;
-  const AddSensorWizard({Key key, this.bleManager}) : super(key: key);
+  const AddSensorWizard({Key key}) : super(key: key);
 
   static String routeName = "/add-sensor";
 
@@ -52,7 +50,6 @@ class _AddSensorWizardState extends State<AddSensorWizard> {
         if (hub == null) return null;
 
         return AddSensorWizardContent(
-          bleManager: this.widget.bleManager,
           hub: hub,
         );
       },

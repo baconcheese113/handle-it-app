@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ble_lib/flutter_ble_lib.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -53,7 +52,6 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   bool isLoading = true;
-  BleManager _bleManager;
   AuthenticationState authenticationState;
 
   void listenForAuthStateChanges() {
@@ -74,10 +72,6 @@ class _AppState extends State<App> {
       print("heard $payload from the stream");
       await this.widget._navigator.currentState.pushNamed(ShowAlert.routeName);
     });
-
-    _bleManager = BleManager();
-    if (_bleManager != null) print(">>>BLEManager valid");
-    _bleManager?.createClient();
   }
 
   @override
@@ -86,7 +80,6 @@ class _AppState extends State<App> {
     isLoading = true;
     this.widget.selectNotificationSubject.close();
     authenticationState.removeListener(listenForAuthStateChanges);
-    _bleManager?.destroyClient();
     super.dispose();
   }
 
@@ -119,8 +112,8 @@ class _AppState extends State<App> {
           ShowAlert.routeName: (_) => ShowAlert(),
           Register.routeName: (_) => Register(reinitialize: reinitialize),
           Login.routeName: (_) => Login(reinitialize: reinitialize),
-          AddVehicleWizard.routeName: (_) => AddVehicleWizard(bleManager: _bleManager),
-          AddSensorWizard.routeName: (_) => AddSensorWizard(bleManager: _bleManager),
+          AddVehicleWizard.routeName: (_) => AddVehicleWizard(),
+          AddSensorWizard.routeName: (_) => AddSensorWizard(),
         },
         theme: ThemeData(
           primaryColor: Colors.blue,
