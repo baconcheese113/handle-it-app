@@ -26,14 +26,14 @@ dependencies:
   cupertino_icons: ^1.0.4
   english_words: ^4.0.0
   permission_handler: ^9.2.0
-  firebase_core: ^1.14.0
-  firebase_messaging: ^11.2.12
+  firebase_core: ^1.16.0
+  firebase_messaging: ^11.3.0
   just_audio: ^0.9.20
   shared_preferences: ^2.0.13
-  flutter_local_notifications: ^9.4.0
+  flutter_local_notifications: ^9.5.0
   rxdart: ^0.27.3
   email_validator: ^2.0.1
-  graphql_flutter: ^5.0.1
+  graphql_flutter: ^5.1.0
   flutter_secure_storage: ^5.0.2
   flutter_dotenv: ^5.0.2
   timeago: ^3.2.2
