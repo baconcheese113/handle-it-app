@@ -1,11 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/app.dart';
 import 'package:handle_it/auth/login.dart';
+import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -16,6 +18,20 @@ final BehaviorSubject<String> selectNotificationSubject = BehaviorSubject<String
 const String TAPPED_NOTIFICATION = "tapped_notification";
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
+  bool hubIsNearby = false;
+  if (await flutterBlue.isOn) {
+    await for (final r in flutterBlue.scan(timeout: Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
+      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
+      if (r.rssi.abs() < 75) hubIsNearby = true;
+      flutterBlue.stopScan();
+      break;
+    }
+    if (hubIsNearby) {
+      print("Hub is nearby so discarding notification");
+      return;
+    }
+  }
   print("trying to show notification");
   const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails("channel_id", "channel_name",
       channelDescription: "Test bed for all dem notifications",
