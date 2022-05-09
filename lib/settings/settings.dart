@@ -5,7 +5,9 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/settings/add_test_hub.dart';
 import 'package:handle_it/settings/notification_settings.dart';
+import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:handle_it/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
   final user;
@@ -33,6 +35,12 @@ class _SettingsState extends State<Settings> {
   void initState() {
     _firstName = this.widget.user['firstName'];
     super.initState();
+  }
+
+  void removeTutPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey(introTutPrefKey)) return null;
+    await prefs.remove(introTutPrefKey);
   }
 
   @override
@@ -105,6 +113,9 @@ class _SettingsState extends State<Settings> {
                   child: Text("Developer tools", textScaleFactor: 1.4),
                 ),
                 AddTestHub(user: this.widget.user),
+                Padding(
+                    padding: EdgeInsets.only(top: 20),
+                    child: ElevatedButton(onPressed: removeTutPrefs, child: Text("Remove Tut Prefs")))
               ],
             ),
           ),

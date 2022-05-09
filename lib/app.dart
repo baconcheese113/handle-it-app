@@ -8,6 +8,7 @@ import 'package:handle_it/feed/add_sensor_wizard.dart';
 import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/show_alert.dart';
+import 'package:handle_it/utils.dart';
 import 'package:rxdart/subjects.dart';
 
 class AuthenticationState extends ChangeNotifier {
@@ -115,9 +116,7 @@ class _AppState extends State<App> {
           AddVehicleWizard.routeName: (_) => AddVehicleWizard(),
           AddSensorWizard.routeName: (_) => AddSensorWizard(),
         },
-        theme: ThemeData(
-          primaryColor: Colors.blue,
-        ),
+        theme: buildTheme(),
       ),
     );
   }

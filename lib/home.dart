@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/feed_home.dart';
 import 'package:handle_it/settings/settings.dart';
+import 'package:handle_it/tutorial/intro_tutorial.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils.dart';
 
@@ -17,6 +19,23 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
+  bool _introTutComplete = false;
+
+  void loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey(introTutPrefKey)) {
+      print("prefs has already set $introTutPrefKey");
+      _introTutComplete = prefs.getBool(introTutPrefKey);
+    } else {
+      print("prefs doesn't contain $introTutPrefKey");
+    }
+  }
+
+  @override
+  void initState() {
+    loadPrefs();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +63,12 @@ class _HomeState extends State<Home> {
         print(result.data['viewer']);
         if (!result.data.containsKey('viewer') || result.data['viewer']['user'] == null) {
           return null;
+        }
+
+        if (!_introTutComplete) {
+          return IntroTutorial(tutorialComplete: () {
+            setState(() => _introTutComplete = true);
+          });
         }
 
         return Scaffold(

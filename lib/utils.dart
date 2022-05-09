@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:gql/ast.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -35,4 +36,11 @@ Future<bool> tryPowerOnBLE() async {
     }
   }
   return true;
+}
+
+ThemeData buildTheme() {
+  final ThemeData base = ThemeData.light();
+  return base.copyWith(
+    primaryColor: Color.fromRGBO(125, 229, 120, 1),
+  );
 }

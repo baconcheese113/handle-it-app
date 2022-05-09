@@ -44,8 +44,7 @@ class _ShowAlert extends State<ShowAlert> {
       Navigator.of(context).pushReplacementNamed(Home.routeName);
     }
 
-    return Flex(
-      direction: Axis.vertical,
+    return Column(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
