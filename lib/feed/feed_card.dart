@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_sensor_wizard.dart';
+import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/feed/feed_card_arm.dart';
 import 'package:handle_it/feed/feed_card_delete.dart';
+import 'package:handle_it/feed/updater.dart';
 import 'package:handle_it/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -43,33 +46,47 @@ class FeedCard extends StatefulWidget {
 }
 
 class _FeedCardState extends State<FeedCard> {
-  int sensorValue = 0;
-  bool armed = false;
-  bool alarmTriggered = false;
-  bool isConnectedBLE = false;
-
-  void disarmAlarm() {
-    setState(() {
-      alarmTriggered = false;
-      armed = false;
-    });
-  }
+  bool _armed = false;
+  bool _scanning = false;
+  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
+  BluetoothDevice? _foundHub;
 
   void handleArmToggle() {
-    if (armed) {
-      disarmAlarm();
-    } else {
-      setState(() => armed = true);
+    setState(() => _armed = !_armed);
+  }
+
+  void autoConnect() async {
+    await _flutterBlue.stopScan();
+    setState(() => _scanning = true);
+    print("bluetooth state is now POWERED_ON, starting peripheral scan");
+    await for (final r
+        in _flutterBlue.scan(withServices: [Guid(HUB_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
+      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
+      _flutterBlue.stopScan();
+      setState(() => _foundHub = r.device);
+      break;
     }
+    if (mounted) setState(() => _scanning = false);
+    if (_foundHub == null) {
+      print("no devices found and scan stopped");
+      return;
+    }
+
+    print(">>> connecting");
+    await _foundHub!.connect();
+    print(">>> connecting finished");
   }
 
   @override
   void initState() {
+    autoConnect();
     super.initState();
   }
 
   @override
   void dispose() {
+    _foundHub?.disconnect();
+    _flutterBlue.stopScan();
     super.dispose();
   }
 
@@ -79,9 +96,14 @@ class _FeedCardState extends State<FeedCard> {
       Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': widget.hubFrag['id']});
     }
 
-    MaterialColor colorVal = () {
-      if (!armed) return Colors.grey;
-      if (alarmTriggered) return Colors.red;
+    final bluetoothIconColor = () {
+      if (_scanning) return Colors.amber;
+      if (_foundHub != null) return Colors.green;
+      return Colors.grey;
+    }();
+
+    MaterialColor isArmedColor = () {
+      if (!_armed) return Colors.grey;
       return Colors.green;
     }();
     if (!widget.hubFrag.containsKey('serial')) {
@@ -100,7 +122,7 @@ class _FeedCardState extends State<FeedCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ListTile(
-              leading: Icon(Icons.bluetooth_connected, color: isConnectedBLE ? Colors.green : Colors.grey),
+              leading: Icon(Icons.bluetooth, color: bluetoothIconColor),
               title: Text("${widget.hubFrag['name']} (${widget.hubFrag['serial']})"),
               subtitle: Text("${widget.hubFrag['sensors'].length} Sensors | Outside BLE range"),
             ),
@@ -108,12 +130,13 @@ class _FeedCardState extends State<FeedCard> {
               onPressed: handleAddSensor,
               child: const Text("Add sensor"),
             ),
+            if (_foundHub != null) Updater(hub: _foundHub!),
             Center(
               child: Stack(clipBehavior: Clip.none, children: [
                 Icon(
                   Icons.directions_car,
                   size: 128,
-                  color: colorVal,
+                  color: isArmedColor,
                 ),
                 for (int idx = 0; idx < sensors.length; idx++)
                   Positioned(
