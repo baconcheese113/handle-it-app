@@ -9,7 +9,7 @@ import 'package:timeago/timeago.dart' as timeago;
 class FeedCard extends StatefulWidget {
   final Map<String, dynamic> hubFrag;
   final Function onDelete;
-  FeedCard({this.hubFrag, this.onDelete});
+  const FeedCard({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
 
   static final feedCardFragment = addFragments(gql(r'''
     fragment feedCard_hub on Hub {
@@ -39,7 +39,7 @@ class FeedCard extends StatefulWidget {
   '''), [FeedCardArm.feedCardArmFragment]);
 
   @override
-  _FeedCardState createState() => _FeedCardState();
+  State<FeedCard> createState() => _FeedCardState();
 }
 
 class _FeedCardState extends State<FeedCard> {
@@ -47,26 +47,6 @@ class _FeedCardState extends State<FeedCard> {
   bool armed = false;
   bool alarmTriggered = false;
   bool isConnectedBLE = false;
-
-  // TODO _bleManager.addListener(), then check if serial isConnected
-  // void monitorHub() async {
-  //   if (!await this.widget.hub.isConnected()) {
-  //     print("Device not connected");
-  //     return;
-  //   }
-  //   await this.widget.hub.discoverAllServicesAndCharacteristics();
-  //   await for (CharacteristicWithValue c in this
-  //       .widget
-  //       .hub
-  //       .monitorCharacteristic(HUB_SERVICE_UUID, SENSOR_VOLTS_CHARACTERISTIC_UUID, transactionId: 'monitor')) {
-  //     if (!this.mounted) return; // we want to stop monitoring if this card is being disposed
-  //     print("Characteristic ${c.uuid} has value ${c.value[0]}");
-  //     setState(() {
-  //       sensorValue = c.value[0];
-  //       if (armed && sensorValue < 25) alarmTriggered = true;
-  //     });
-  //   }
-  // }
 
   void disarmAlarm() {
     setState(() {
@@ -86,36 +66,28 @@ class _FeedCardState extends State<FeedCard> {
   @override
   void initState() {
     super.initState();
-    // monitorHub();
   }
 
   @override
   void dispose() {
     super.dispose();
-    // print("Disposing of FeedCard that has ${this.widget.bleManager.toString()}");
   }
 
   @override
   Widget build(BuildContext context) {
     void handleAddSensor() {
-      Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': this.widget.hubFrag['id']});
+      Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': widget.hubFrag['id']});
     }
 
-    // void _handleDisconnect() {
-    // this.widget.bleManager.cancelTransaction('monitor');
-    // this.widget.hub.disconnectOrCancelConnection();
-    // }
-
-    // int sensorValInt = sensorValue != null ? sensorValue : 0;
     MaterialColor colorVal = () {
       if (!armed) return Colors.grey;
       if (alarmTriggered) return Colors.red;
       return Colors.green;
     }();
-    if (!this.widget.hubFrag.containsKey('serial')) {
-      return CircularProgressIndicator();
+    if (!widget.hubFrag.containsKey('serial')) {
+      return const CircularProgressIndicator();
     }
-    List<dynamic> sensors = this.widget.hubFrag['sensors'];
+    List<dynamic> sensors = widget.hubFrag['sensors'];
     List<dynamic> events = sensors.fold([], (arr, sensor) {
       final events = sensor['events'];
       return events.isNotEmpty ? [...arr, ...sensor['events']] : arr;
@@ -123,18 +95,18 @@ class _FeedCardState extends State<FeedCard> {
     print("events $events");
 
     return Card(
-        color: this.widget.hubFrag['isArmed'] ? null : Color.fromRGBO(255, 220, 220, 1),
+        color: widget.hubFrag['isArmed'] ? null : const Color.fromRGBO(255, 220, 220, 1),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ListTile(
               leading: Icon(Icons.bluetooth_connected, color: isConnectedBLE ? Colors.green : Colors.grey),
-              title: Text("${this.widget.hubFrag['name']} (${this.widget.hubFrag['serial']})"),
-              subtitle: Text("${this.widget.hubFrag['sensors'].length} Sensors | Outside BLE range"),
+              title: Text("${widget.hubFrag['name']} (${widget.hubFrag['serial']})"),
+              subtitle: Text("${widget.hubFrag['sensors'].length} Sensors | Outside BLE range"),
             ),
             TextButton(
               onPressed: handleAddSensor,
-              child: Text("Add sensor"),
+              child: const Text("Add sensor"),
             ),
             Center(
               child: Stack(clipBehavior: Clip.none, children: [
@@ -160,7 +132,7 @@ class _FeedCardState extends State<FeedCard> {
               ]),
             ),
             DataTable(
-              columns: [
+              columns: const [
                 DataColumn(label: Text("Time")),
                 DataColumn(label: Text("Event")),
               ],
@@ -176,8 +148,8 @@ class _FeedCardState extends State<FeedCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                FeedCardArm(hub: this.widget.hubFrag),
-                FeedCardDelete(hub: this.widget.hubFrag, onDelete: this.widget.onDelete),
+                FeedCardArm(hub: widget.hubFrag),
+                FeedCardDelete(hub: widget.hubFrag, onDelete: widget.onDelete),
               ],
             )
           ],

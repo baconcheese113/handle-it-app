@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:handle_it/home.dart';
 import 'package:just_audio/just_audio.dart';
 
 class ShowAlert extends StatefulWidget {
   static const String routeName = '/showAlert';
+  const ShowAlert({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ShowAlert();
 }
 
 class _ShowAlert extends State<ShowAlert> {
-  AudioPlayer _audioPlayer;
+  AudioPlayer? _audioPlayer;
 
   void startPlayer() async {
     if (_audioPlayer != null) return;
@@ -48,7 +48,7 @@ class _ShowAlert extends State<ShowAlert> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Column(children: [
+        Column(children: const [
           Icon(
             Icons.warning,
             size: 200,
@@ -58,7 +58,7 @@ class _ShowAlert extends State<ShowAlert> {
         ]),
         TextButton(
             onPressed: handleDismiss,
-            child: Text(
+            child: const Text(
               "Dismiss Alert and View",
               textScaleFactor: 1.5,
             ))

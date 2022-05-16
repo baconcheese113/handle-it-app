@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "484054438706",
+    "project_id": "handleit-f352d",
+    "storage_bucket": "handleit-f352d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:484054438706:android:81a824b2ac621c913c7d2b",
+        "android_client_info": {
+          "package_name": "com.handle_it"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "484054438706-3chbio26mi02o3irmqko2a9h3874n836.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-cZCNtq8TIjGR-e6veLphzbx4Som_ohY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "484054438706-3chbio26mi02o3irmqko2a9h3874n836.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

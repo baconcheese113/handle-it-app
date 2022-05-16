@@ -38,9 +38,11 @@ Future<bool> tryPowerOnBLE() async {
   return true;
 }
 
+const APP_GREEN = Color.fromRGBO(125, 229, 120, 1);
 ThemeData buildTheme() {
-  final ThemeData base = ThemeData.light();
-  return base.copyWith(
-    primaryColor: Color.fromRGBO(125, 229, 120, 1),
-  );
+  final ThemeData base = ThemeData(useMaterial3: true, colorSchemeSeed: APP_GREEN, brightness: Brightness.dark);
+  return base;
+  // return base.copyWith(
+  //   primaryColor: APP_GREEN,
+  // );
 }

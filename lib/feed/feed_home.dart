@@ -5,50 +5,18 @@ import 'package:handle_it/feed/feed_card.dart';
 import 'package:handle_it/utils.dart';
 
 class FeedHome extends StatefulWidget {
-  const FeedHome({Key key}) : super(key: key);
+  const FeedHome({Key? key}) : super(key: key);
   @override
-  _FeedHomeState createState() => _FeedHomeState();
+  State<FeedHome> createState() => _FeedHomeState();
 }
 
 class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
-  // bool _showAddVehicleWizard = false;
-  // List<Peripheral> _hubs = [];
-  // String _hubCustomName = '';
-  // BleManager _bleManager;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  // void _handleExit([String hubCustomName, Peripheral hub]) {
-  //   setState(() {
-  //     // _showAddVehicleWizard = false;
-  //     // if (hubCustomName != null) _hubCustomName = hubCustomName;
-  //     // if (hub != null) _hubs.add(hub);
-  //   });
-  // }
-
   void _handleAddVehicle() {
-    // setState(() => _showAddVehicleWizard = true);
     Navigator.pushNamed(context, AddVehicleWizard.routeName);
   }
 
-  // void _handleDisconnect() {
-  //   // setState(() => _hubs.removeLast());
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // if (_showAddVehicleWizard == true) {
-    //   return AddVehicleWizard(onExit: _handleExit, bleManager: _bleManager);
-    // }
-
     return Query(
       options: QueryOptions(
         document: addFragments(gql(r"""
@@ -64,17 +32,17 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
           }
         """), [FeedCard.feedCardFragment]),
       ),
-      builder: (QueryResult result, {Refetch refetch, FetchMore fetchMore}) {
-        if (result.isLoading) return CircularProgressIndicator();
+      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
+        if (result.isLoading) return const CircularProgressIndicator();
 
-        final hubs = result.data.containsKey('viewer')
-            ? List<Object>.from(result.data['viewer']['user']['hubs'])
-            : List<Object>.from([]);
+        final hubs = result.data!.containsKey('viewer')
+            ? List<dynamic>.from(result.data!['viewer']['user']['hubs'])
+            : List<dynamic>.from([]);
         print("hubs is $hubs");
 
         return RefreshIndicator(
           onRefresh: () async {
-            return refetch();
+            await refetch!();
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -83,26 +51,23 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (result.hasException) Text(result.exception.toString()),
-                // if (result.data.containsKey('viewer')) Text(result.data['viewer'].toString()),
                 TextButton(
                   onPressed: _handleAddVehicle,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                    children: const [
                       Icon(Icons.add),
                       Text("Add New Vehicle"),
                     ],
                   ),
                 ),
-                if (hubs.length > 0)
+                if (hubs.isNotEmpty)
                   ...hubs
                       .map((hub) => FeedCard(
-                            // hub: hub,
                             hubFrag: hub,
-                            onDelete: refetch,
-                            // name: "HUB_NAME", // _hubCustomName,
-                            // bleManager: _bleManager,
-                            // onDisconnect: _handleDisconnect,
+                            onDelete: () async {
+                              await refetch!();
+                            },
                           ))
                       .toList(),
               ],

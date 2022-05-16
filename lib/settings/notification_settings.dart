@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class NotificationSettings extends StatefulWidget {
-  final user;
-  const NotificationSettings({Key key, this.user}) : super(key: key);
+  final Map<String, dynamic> user;
+  const NotificationSettings({Key? key, required this.user}) : super(key: key);
 
   static final notificationSettingsFragment = gql(r'''
     fragment notificationSettings_user on User {
@@ -12,7 +12,7 @@ class NotificationSettings extends StatefulWidget {
     }
   ''');
   @override
-  _NotificationSettingsState createState() => _NotificationSettingsState();
+  State<NotificationSettings> createState() => _NotificationSettingsState();
 }
 
 class _NotificationSettingsState extends State<NotificationSettings> {
@@ -30,10 +30,10 @@ class _NotificationSettingsState extends State<NotificationSettings> {
         ''')),
       builder: (
         RunMutation runMutation,
-        QueryResult result,
+        QueryResult? result,
       ) {
         void commitChange(bool defaultFullNotification) async {
-          if (_loading || defaultFullNotification == this.widget.user['defaultFullNotification']) return;
+          if (_loading || defaultFullNotification == widget.user['defaultFullNotification']) return;
           setState(() => _loading = true);
           await runMutation({
             'defaultFullNotification': defaultFullNotification,
@@ -47,13 +47,13 @@ class _NotificationSettingsState extends State<NotificationSettings> {
           children: [
             LayoutBuilder(
               builder: (context, constraints) => ToggleButtons(
-                children: <Widget>[
+                constraints: BoxConstraints.expand(width: constraints.maxWidth / 2 - 2, height: 50),
+                isSelected: widget.user['defaultFullNotification'] ? [false, true] : [true, false],
+                onPressed: _loading ? null : (idx) => commitChange(idx == 1),
+                children: const [
                   Text("Silent"),
                   Text("Full"),
                 ],
-                constraints: BoxConstraints.expand(width: constraints.maxWidth / 2 - 2, height: 50),
-                isSelected: this.widget.user['defaultFullNotification'] ? [false, true] : [true, false],
-                onPressed: _loading ? null : (idx) => commitChange(idx == 1),
               ),
             )
           ],

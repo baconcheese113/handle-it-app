@@ -10,9 +10,9 @@ import 'package:handle_it/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
-  final user;
+  final Map<String, dynamic> user;
   final Function reinitialize;
-  const Settings(this.user, this.reinitialize, {Key key}) : super(key: key);
+  const Settings(this.user, this.reinitialize, {Key? key}) : super(key: key);
 
   static final settingsFragment = addFragments(gql(r"""
     fragment settings_user on User {
@@ -25,7 +25,7 @@ class Settings extends StatefulWidget {
   """), [AddTestHub.addTestHubFragment, NotificationSettings.notificationSettingsFragment]);
 
   @override
-  _SettingsState createState() => _SettingsState();
+  State<Settings> createState() => _SettingsState();
 }
 
 class _SettingsState extends State<Settings> {
@@ -33,7 +33,7 @@ class _SettingsState extends State<Settings> {
 
   @override
   void initState() {
-    _firstName = this.widget.user['firstName'];
+    _firstName = widget.user['firstName'];
     super.initState();
   }
 
@@ -46,8 +46,9 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     void logout() async {
-      await FlutterSecureStorage().delete(key: 'token');
-      this.widget.reinitialize();
+      await const FlutterSecureStorage().delete(key: 'token');
+      widget.reinitialize();
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, Login.routeName);
     }
 
@@ -62,9 +63,9 @@ class _SettingsState extends State<Settings> {
         ''')),
       builder: (
         RunMutation runMutation,
-        QueryResult result,
+        QueryResult? result,
       ) {
-        print("building with ${this.widget.user}");
+        print("building with ${widget.user}");
         return SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Form(
@@ -74,20 +75,20 @@ class _SettingsState extends State<Settings> {
               children: [
                 TextFormField(
                   readOnly: true,
-                  initialValue: this.widget.user['email'],
+                  initialValue: widget.user['email'],
                   decoration: const InputDecoration(hintText: 'Enter your email'),
-                  validator: (String value) {
-                    if (EmailValidator.validate(value)) {
+                  validator: (String? value) {
+                    if (EmailValidator.validate(value ?? "")) {
                       return 'Please enter a valid email';
                     }
                     return null;
                   },
                 ),
                 TextFormField(
-                  initialValue: this.widget.user['firstName'],
+                  initialValue: widget.user['firstName'],
                   decoration: const InputDecoration(hintText: 'Enter your first name'),
                   onChanged: (newValue) => setState(() => _firstName = newValue),
-                  validator: (String value) {
+                  validator: (String? value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a valid name';
                     }
@@ -95,27 +96,26 @@ class _SettingsState extends State<Settings> {
                   },
                 ),
                 ElevatedButton(
-                    onPressed: _firstName == this.widget.user['firstName']
-                        ? null
-                        : () => runMutation({'firstName': _firstName}),
+                    onPressed:
+                        _firstName == widget.user['firstName'] ? null : () => runMutation({'firstName': _firstName}),
                     child: const Text("Update name")),
                 ElevatedButton(onPressed: logout, child: const Text("Logout")),
-                Padding(padding: EdgeInsets.only(top: 20)),
-                Padding(
+                const Padding(padding: EdgeInsets.only(top: 20)),
+                const Padding(
                   padding: EdgeInsets.only(top: 10, bottom: 10),
                   child: Text("Notification type", textScaleFactor: 1.4),
                 ),
-                NotificationSettings(user: this.widget.user),
-                Padding(padding: EdgeInsets.only(top: 40)),
-                Divider(),
-                Padding(
+                NotificationSettings(user: widget.user),
+                const Padding(padding: EdgeInsets.only(top: 40)),
+                const Divider(),
+                const Padding(
                   padding: EdgeInsets.only(top: 40, bottom: 20),
                   child: Text("Developer tools", textScaleFactor: 1.4),
                 ),
-                AddTestHub(user: this.widget.user),
+                AddTestHub(user: widget.user),
                 Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: ElevatedButton(onPressed: removeTutPrefs, child: Text("Remove Tut Prefs")))
+                    padding: const EdgeInsets.only(top: 20),
+                    child: ElevatedButton(onPressed: removeTutPrefs, child: const Text("Remove Tut Prefs")))
               ],
             ),
           ),

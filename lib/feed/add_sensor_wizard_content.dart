@@ -10,8 +10,8 @@ import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AddSensorWizardContent extends StatefulWidget {
-  final hub;
-  const AddSensorWizardContent({Key key, this.hub}) : super(key: key);
+  final Map<String, dynamic> hub;
+  const AddSensorWizardContent({Key? key, required this.hub}) : super(key: key);
 
   static final addSensorWizardContentFragment = gql(r'''
     fragment addSensorWizardContent_hub on Hub {
@@ -21,19 +21,19 @@ class AddSensorWizardContent extends StatefulWidget {
     ''');
 
   @override
-  _AddSensorWizardContentState createState() => _AddSensorWizardContentState();
+  State<AddSensorWizardContent> createState() => _AddSensorWizardContentState();
 }
 
 class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
-  PageController _formsPageViewController;
-  List _forms;
+  PageController? _formsPageViewController;
+  List? _forms;
   bool _scanning = false;
   List<bool> _leftRightToggle = [true, false];
   List<bool> _frontRearToggle = [true, false];
-  String _sensorSerial;
-  FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
-  BluetoothDevice _foundHub;
-  BluetoothCharacteristic _commandChar;
+  String? _sensorSerial;
+  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
+  BluetoothDevice? _foundHub;
+  BluetoothCharacteristic? _commandChar;
 
   Future<void> connectToHub() async {
     if (Platform.isAndroid) {
@@ -53,7 +53,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     }
 
     print("bluetooth state is now POWERED_ON, starting peripheral scan");
-    await for (final r in _flutterBlue.scan(timeout: Duration(seconds: 10))) {
+    await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
       if (r.device.name.isEmpty) continue;
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
       if (r.device.name == HUB_NAME) {
@@ -69,11 +69,11 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     }
 
     print(">>> connecting");
-    await _foundHub.connect();
+    await _foundHub!.connect();
     print(">>> connecting finished");
-    if (_formsPageViewController.page == 0) {
+    if (_formsPageViewController!.page == 0) {
       print(">>>changing page");
-      _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _formsPageViewController!.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
@@ -92,7 +92,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     setState(() => _scanning = true);
 
     print(">>> discoveringservices");
-    List<BluetoothService> services = await _foundHub.discoverServices();
+    List<BluetoothService> services = await _foundHub!.discoverServices();
 
     BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
     BluetoothCharacteristic commandChar =
@@ -107,17 +107,17 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
 
     String rawSensorId = "";
     while (rawSensorId.length < 12 || rawSensorId.substring(0, 11) != "SensorFound") {
-      List<int> bytes = await _commandChar.read();
+      List<int> bytes = await _commandChar!.read();
       print(">>readCharacteristic ${bytes.toString()}");
       rawSensorId = String.fromCharCodes(bytes);
       print(">>rawSensorId = $rawSensorId");
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 500));
     }
     setState(() {
       _scanning = false;
       _sensorSerial = rawSensorId.substring(12);
     });
-    _formsPageViewController.nextPage(duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+    _formsPageViewController!.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
   @override
@@ -131,12 +131,10 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     // TODO Fix flow in hub to not register when connecting to a previously connected phone
 
     Future<bool> cancelForm() async {
-      if (_foundHub != null) {
-        if (_commandChar != null) await _commandChar.write([]);
-        await _foundHub.disconnect();
-      }
+      await _commandChar?.write([]);
+      await _foundHub?.disconnect();
       await _flutterBlue.stopScan();
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
       return true;
     }
 
@@ -151,15 +149,15 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       List<int> bytes = utf8.encode(command);
       print(">>> writing characteristic with value $command");
       Uint8List sensorConnectCharValue = Uint8List.fromList(bytes);
-      await _commandChar.write(sensorConnectCharValue);
+      await _commandChar!.write(sensorConnectCharValue);
 
       String sensorAddedResponse = "";
       while (sensorAddedResponse.length < 12 || sensorAddedResponse.substring(0, 11) != "SensorAdded") {
-        List<int> bytes = await _commandChar.read();
+        List<int> bytes = await _commandChar!.read();
         print(">>readCharacteristic ${bytes.toString()}");
         sensorAddedResponse = String.fromCharCodes(bytes);
         print(">>sensorAddedResponse = $sensorAddedResponse");
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
       }
       int sensorAddedResult = int.parse(sensorAddedResponse.substring(12));
       print("Sensor added result: $sensorAddedResult");
@@ -174,89 +172,90 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
         _sensorSerial = null;
         _scanning = false;
       });
-      _formsPageViewController.animateToPage(1, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _formsPageViewController!.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
 
     _forms = [
       WillPopScope(
+          onWillPop: cancelForm,
           child: Column(children: [
             Expanded(
                 child: Padding(
-                    padding: EdgeInsets.all(40),
+                    padding: const EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
                       Text(
-                        "Scanning for ${this.widget.hub['name']}",
+                        "Scanning for ${widget.hub['name']}",
                         textScaleFactor: 1.3,
                       ),
-                      CircularProgressIndicator(),
+                      const CircularProgressIndicator(),
                     ])))),
-            Row(children: [
-              Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
-            ], mainAxisSize: MainAxisSize.max)
-          ]),
-          onWillPop: cancelForm),
+            Row(mainAxisSize: MainAxisSize.max, children: [
+              Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
+            ])
+          ])),
       WillPopScope(
+          onWillPop: cancelForm,
           child: Column(children: [
             Expanded(
                 child: Padding(
-                    padding: EdgeInsets.all(40),
+                    padding: const EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
                       Text(
-                        "Turn on your sensor, then press start to search for a new sensor for ${this.widget.hub['name']}",
+                        "Turn on your sensor, then press start to search for a new sensor for ${widget.hub['name']}",
                         textScaleFactor: 1.3,
                       ),
                       _scanning
-                          ? CircularProgressIndicator()
-                          : TextButton(onPressed: startSensorSearch, child: Text("Start")),
+                          ? const CircularProgressIndicator()
+                          : TextButton(onPressed: startSensorSearch, child: const Text("Start")),
                     ])))),
-            Row(children: [
-              Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
-            ], mainAxisSize: MainAxisSize.max)
-          ]),
-          onWillPop: cancelForm),
+            Row(mainAxisSize: MainAxisSize.max, children: [
+              Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
+            ])
+          ])),
       WillPopScope(
+          onWillPop: cancelForm,
           child: Column(children: [
             Expanded(
                 child: Padding(
-                    padding: EdgeInsets.all(40),
+                    padding: const EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                       Text("Found sensor $_sensorSerial!", textScaleFactor: 1.3),
-                      Padding(padding: EdgeInsets.only(top: 20)),
+                      const Padding(padding: EdgeInsets.only(top: 20)),
                       Text(_scanning ? "Saving, please wait..." : "Select which door this sensor is for"),
                       if (!_scanning)
                         ToggleButtons(
-                          children: <Widget>[
+                          isSelected: _leftRightToggle,
+                          onPressed: (idx) => setState(() => _leftRightToggle = [idx == 0, idx == 1]),
+                          children: const [
                             Text("Left"),
                             Text("Right"),
                           ],
-                          isSelected: _leftRightToggle,
-                          onPressed: (idx) => setState(() => _leftRightToggle = [idx == 0, idx == 1]),
                         ),
                       if (!_scanning)
                         ToggleButtons(
-                          children: <Widget>[
+                          isSelected: _frontRearToggle,
+                          onPressed: (idx) => setState(() => _frontRearToggle = [idx == 0, idx == 1]),
+                          children: const [
                             Text("Front"),
                             Text("Rear"),
                           ],
-                          isSelected: _frontRearToggle,
-                          onPressed: (idx) => setState(() => _frontRearToggle = [idx == 0, idx == 1]),
                         ),
                     ])))),
-            Row(children: [
-              Expanded(child: TextButton(onPressed: cancelForm, child: Text("Cancel"))),
+            Row(mainAxisSize: MainAxisSize.max, children: [
+              Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
               // Expanded(child: TextButton(onPressed: () => addSensor(false), child: Text("Add Another"))),
-              Expanded(child: TextButton(onPressed: _scanning ? null : () => addSensor(true), child: Text("Save"))),
-            ], mainAxisSize: MainAxisSize.max)
-          ]),
-          onWillPop: cancelForm),
+              Expanded(
+                  child: TextButton(onPressed: _scanning ? null : () => addSensor(true), child: const Text("Save"))),
+            ])
+          ])),
     ];
 
     return Scaffold(
       body: PageView.builder(
         controller: _formsPageViewController,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
-          return _forms[index];
+          return _forms![index];
         },
       ),
     );

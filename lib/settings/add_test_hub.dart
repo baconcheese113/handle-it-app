@@ -4,8 +4,8 @@ import 'package:handle_it/feed/feed_card.dart';
 import 'package:handle_it/utils.dart';
 
 class AddTestHub extends StatefulWidget {
-  final user;
-  const AddTestHub({Key key, this.user}) : super(key: key);
+  final Map<String, dynamic> user;
+  const AddTestHub({Key? key, required this.user}) : super(key: key);
 
   static final addTestHubFragment = gql(r"""
     fragment addTestHub_user on User {
@@ -14,7 +14,7 @@ class AddTestHub extends StatefulWidget {
   """);
 
   @override
-  _AddTestHubState createState() => _AddTestHubState();
+  State<AddTestHub> createState() => _AddTestHubState();
 }
 
 class _AddTestHubState extends State<AddTestHub> {
@@ -23,7 +23,7 @@ class _AddTestHubState extends State<AddTestHub> {
 
   @override
   Widget build(BuildContext context) {
-    if (this.widget.user['id'] == null) return null;
+    if (widget.user['id'] == null) return const SizedBox();
     return Mutation(
       options: MutationOptions(document: addFragments(gql(r'''
           mutation createOneHub($data: HubCreateInput!) {
@@ -35,7 +35,7 @@ class _AddTestHubState extends State<AddTestHub> {
         '''), [FeedCard.feedCardFragment])),
       builder: (
         RunMutation runMutation,
-        QueryResult result,
+        QueryResult? result,
       ) {
         void commitChange() async {
           final result = await runMutation({
@@ -43,11 +43,11 @@ class _AddTestHubState extends State<AddTestHub> {
               'name': _name,
               'serial': "testSerial",
               'owner': {
-                'connect': {'id': this.widget.user['id']}
+                'connect': {'id': widget.user['id']}
               }
             }
           }).networkResult;
-          if (!result.hasException && !result.isLoading) {
+          if (!result!.hasException && !result.isLoading) {
             setState(() => _name = "");
             _controller.clear();
           }
@@ -65,7 +65,7 @@ class _AddTestHubState extends State<AddTestHub> {
                   hintText: 'Enter Hub name',
                   suffixIcon: IconButton(
                     onPressed: () => _controller.clear(),
-                    icon: Icon(Icons.clear),
+                    icon: const Icon(Icons.clear),
                   ),
                 ),
               ),

@@ -12,9 +12,9 @@ import 'package:handle_it/utils.dart';
 import 'package:rxdart/subjects.dart';
 
 class AuthenticationState extends ChangeNotifier {
-  String token;
+  String? token;
   bool loading = true;
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
 
   Future<void> checkForExistingToken() async {
     loading = true;
@@ -28,7 +28,7 @@ class AuthenticationState extends ChangeNotifier {
   }
 
   ValueNotifier<GraphQLClient> getClient() {
-    final HttpLink httpLink = HttpLink(dotenv.env['API_URL']);
+    final HttpLink httpLink = HttpLink(dotenv.env['API_URL']!);
     final AuthLink authLink = AuthLink(getToken: () => token != null ? "Bearer $token" : null);
     final link = authLink.concat(httpLink);
     return ValueNotifier(
@@ -41,19 +41,19 @@ class AuthenticationState extends ChangeNotifier {
 }
 
 class App extends StatefulWidget {
-  final String initialRoute;
-  final BehaviorSubject<String> selectNotificationSubject;
-  App({Key key, this.initialRoute, this.selectNotificationSubject}) : super(key: key);
+  final String? initialRoute;
+  final BehaviorSubject<String>? selectNotificationSubject;
+  App({Key? key, this.initialRoute, this.selectNotificationSubject}) : super(key: key);
 
   final GlobalKey<NavigatorState> _navigator = GlobalKey<NavigatorState>();
 
   @override
-  _AppState createState() => _AppState();
+  State<App> createState() => _AppState();
 }
 
 class _AppState extends State<App> {
   bool isLoading = true;
-  AuthenticationState authenticationState;
+  AuthenticationState authenticationState = AuthenticationState();
 
   void listenForAuthStateChanges() {
     print(
@@ -64,14 +64,12 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-    authenticationState = AuthenticationState();
-    isLoading = true;
     authenticationState.addListener(listenForAuthStateChanges);
     authenticationState.checkForExistingToken();
     print("app: init state");
-    this.widget.selectNotificationSubject.stream.listen((String payload) async {
+    widget.selectNotificationSubject?.stream.listen((String payload) async {
       print("heard $payload from the stream");
-      await this.widget._navigator.currentState.pushNamed(ShowAlert.routeName);
+      await widget._navigator.currentState?.pushNamed(ShowAlert.routeName);
     });
   }
 
@@ -79,25 +77,25 @@ class _AppState extends State<App> {
   void dispose() {
     print("disposing");
     isLoading = true;
-    this.widget.selectNotificationSubject.close();
+    widget.selectNotificationSubject?.close();
     authenticationState.removeListener(listenForAuthStateChanges);
     super.dispose();
   }
 
-  void reinitialize([String newToken]) {
+  void reinitialize([String? newToken]) {
     authenticationState.token = newToken;
   }
 
   @override
   Widget build(BuildContext context) {
-    String initialRoute = this.widget.initialRoute;
+    String? initialRoute = widget.initialRoute;
 
     final client = authenticationState.getClient();
 
     print("Rendering authenticationState.loading ${authenticationState.loading} and isLoading $isLoading");
     print("Initialroute = $initialRoute");
     if (initialRoute != ShowAlert.routeName && (authenticationState.loading || isLoading)) {
-      return Directionality(textDirection: TextDirection.ltr, child: Text("Checking for token..."));
+      return const Directionality(textDirection: TextDirection.ltr, child: Text("Checking for token..."));
     }
     if (initialRoute != ShowAlert.routeName && authenticationState.token != null) {
       initialRoute = Home.routeName;
@@ -107,14 +105,14 @@ class _AppState extends State<App> {
       child: MaterialApp(
         title: 'HandleIt',
         initialRoute: initialRoute,
-        navigatorKey: this.widget._navigator,
+        navigatorKey: widget._navigator,
         routes: <String, WidgetBuilder>{
           Home.routeName: (_) => Home(reinitialize: reinitialize),
-          ShowAlert.routeName: (_) => ShowAlert(),
+          ShowAlert.routeName: (_) => const ShowAlert(),
           Register.routeName: (_) => Register(reinitialize: reinitialize),
           Login.routeName: (_) => Login(reinitialize: reinitialize),
-          AddVehicleWizard.routeName: (_) => AddVehicleWizard(),
-          AddSensorWizard.routeName: (_) => AddSensorWizard(),
+          AddVehicleWizard.routeName: (_) => const AddVehicleWizard(),
+          AddSensorWizard.routeName: (_) => const AddSensorWizard(),
         },
         theme: buildTheme(),
       ),

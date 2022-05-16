@@ -7,11 +7,11 @@ import 'package:handle_it/home.dart';
 
 class Login extends StatefulWidget {
   final Function reinitialize;
-  const Login({Key key, this.reinitialize}) : super(key: key);
+  const Login({Key? key, required this.reinitialize}) : super(key: key);
   static String routeName = '/login';
 
   @override
-  _LoginState createState() => _LoginState();
+  State<Login> createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
@@ -25,9 +25,9 @@ class _LoginState extends State<Login> {
 
   void switchToHome(String newToken) async {
     print("switchToHome called");
-    await FlutterSecureStorage().write(key: 'token', value: newToken);
-    this.widget.reinitialize(newToken);
-    Navigator.pushReplacementNamed(context, Home.routeName);
+    await const FlutterSecureStorage().write(key: 'token', value: newToken);
+    widget.reinitialize(newToken);
+    if (mounted) Navigator.pushReplacementNamed(context, Home.routeName);
   }
 
   @override
@@ -35,7 +35,7 @@ class _LoginState extends State<Login> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("HandleIt"),
+        title: const Text("HandleIt"),
       ),
       body: Mutation(
         options: MutationOptions(
@@ -47,13 +47,13 @@ class _LoginState extends State<Login> {
         ),
         builder: (
           RunMutation runMutation,
-          QueryResult result,
+          QueryResult? result,
         ) {
           print("Render of login called");
-          if (result.isLoading) return Text("Loading...");
-          if (result.data != null && result.data.containsKey("loginWithPassword")) {
-            switchToHome(result.data['loginWithPassword']);
-            return Text("Logging in...");
+          if (result == null || result.isLoading) return const Text("Loading...");
+          if (result.data != null && result.data!.containsKey("loginWithPassword")) {
+            switchToHome(result.data!['loginWithPassword']);
+            return const Text("Logging in...");
           }
           return Column(
             children: [
@@ -77,14 +77,14 @@ class _LoginState extends State<Login> {
                         final fcmToken = await FirebaseMessaging.instance.getToken();
                         runMutation({"email": _email, "password": _password, "fcmToken": fcmToken});
                       },
-                      child: Text("Login"),
+                      child: const Text("Login"),
                     )
                   ],
                 ),
               ),
               ElevatedButton(
                 onPressed: switchToRegister,
-                child: Text("Create an account"),
+                child: const Text("Create an account"),
               ),
               if (result.hasException) Text(result.exception.toString()),
             ],

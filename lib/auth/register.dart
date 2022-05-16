@@ -7,11 +7,11 @@ import 'package:handle_it/home.dart';
 
 class Register extends StatefulWidget {
   final Function reinitialize;
-  const Register({Key key, this.reinitialize}) : super(key: key);
+  const Register({Key? key, required this.reinitialize}) : super(key: key);
   static String routeName = '/register';
 
   @override
-  _RegisterState createState() => _RegisterState();
+  State<Register> createState() => _RegisterState();
 }
 
 class _RegisterState extends State<Register> {
@@ -26,9 +26,9 @@ class _RegisterState extends State<Register> {
   }
 
   Future<void> switchToHome(String newToken) async {
-    await FlutterSecureStorage().write(key: 'token', value: newToken);
-    await this.widget.reinitialize(newToken);
-    await Navigator.pushReplacementNamed(context, Home.routeName);
+    await const FlutterSecureStorage().write(key: 'token', value: newToken);
+    await widget.reinitialize(newToken);
+    if (mounted) await Navigator.pushReplacementNamed(context, Home.routeName);
   }
 
   @override
@@ -36,7 +36,7 @@ class _RegisterState extends State<Register> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text("HandleIt"),
+        title: const Text("HandleIt"),
       ),
       body: Mutation(
           options: MutationOptions(
@@ -48,12 +48,12 @@ class _RegisterState extends State<Register> {
           ),
           builder: (
             RunMutation runMutation,
-            QueryResult result,
+            QueryResult? result,
           ) {
-            if (result.isLoading) return Text("Loading...");
-            if (result.data != null && result.data.containsKey("registerWithPassword")) {
-              switchToHome(result.data['registerWithPassword']);
-              return Text("Logging in...");
+            if (result == null || result.isLoading) return const Text("Loading...");
+            if (result.data != null && result.data!.containsKey("registerWithPassword")) {
+              switchToHome(result.data!['registerWithPassword']);
+              return const Text("Logging in...");
             }
 
             return Column(
@@ -89,7 +89,7 @@ class _RegisterState extends State<Register> {
                             "lastName": _lastName,
                           });
                         },
-                        child: Text("Register"),
+                        child: const Text("Register"),
                       ),
                       if (result.hasException) Text(result.exception.toString()),
                     ],
@@ -97,7 +97,7 @@ class _RegisterState extends State<Register> {
                 ),
                 ElevatedButton(
                   onPressed: switchToLogin,
-                  child: Text("Already have an account?"),
+                  child: const Text("Already have an account?"),
                 ),
               ],
             );

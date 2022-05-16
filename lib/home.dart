@@ -9,12 +9,12 @@ import 'utils.dart';
 
 class Home extends StatefulWidget {
   final Function reinitialize;
-  Home({Key key, this.reinitialize}) : super(key: key);
+  const Home({Key? key, required this.reinitialize}) : super(key: key);
 
   static String routeName = "/home";
 
   @override
-  _HomeState createState() => _HomeState();
+  State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
@@ -25,7 +25,7 @@ class _HomeState extends State<Home> {
     final prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey(introTutPrefKey)) {
       print("prefs has already set $introTutPrefKey");
-      _introTutComplete = prefs.getBool(introTutPrefKey);
+      _introTutComplete = prefs.getBool(introTutPrefKey) ?? false;
     } else {
       print("prefs doesn't contain $introTutPrefKey");
     }
@@ -54,15 +54,15 @@ class _HomeState extends State<Home> {
         }
       """), [Settings.settingsFragment]),
       ),
-      builder: (QueryResult result, {Refetch refetch, FetchMore fetchMore}) {
+      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.hasException) {
           print("Exception ${result.exception.toString()}");
           return Text(result.exception.toString());
         }
-        if (result.isLoading) return Text("Loading...");
-        print(result.data['viewer']);
-        if (!result.data.containsKey('viewer') || result.data['viewer']['user'] == null) {
-          return null;
+        if (result.isLoading) return const Text("Loading...");
+        print(result.data!['viewer']);
+        if (!result.data!.containsKey('viewer') || result.data!['viewer']['user'] == null) {
+          return const SizedBox();
         }
 
         if (!_introTutComplete) {
@@ -74,11 +74,11 @@ class _HomeState extends State<Home> {
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: Text("HandleIt"),
+            title: const Text("HandleIt"),
           ),
           body: Padding(
-            padding: EdgeInsets.all(8),
-            child: [FeedHome(), Settings(result.data['viewer']['user'], this.widget.reinitialize)][_selectedIndex],
+            padding: const EdgeInsets.all(8),
+            child: [const FeedHome(), Settings(result.data!['viewer']['user'], widget.reinitialize)][_selectedIndex],
           ),
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[

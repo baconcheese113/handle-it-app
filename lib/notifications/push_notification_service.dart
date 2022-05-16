@@ -21,7 +21,7 @@ class PushNotificationService {
       print('User granted permission: ${settings.authorizationStatus}');
     }
 
-    String token = await _fcm.getToken();
+    String? token = await _fcm.getToken();
     print("FirebaseMessaging token: $token");
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {

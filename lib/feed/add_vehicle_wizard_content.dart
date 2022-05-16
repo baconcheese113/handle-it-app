@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/home.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -15,12 +14,18 @@ const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
 const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
 
 class AddVehicleWizardContent extends StatefulWidget {
-  final user;
-  final int pairedHubId;
-  final Function setPairedHubId;
+  final Map<String, dynamic> user;
+  final int? pairedHubId;
+  final Function(int) setPairedHubId;
   final Function refetch;
 
-  AddVehicleWizardContent({this.user, this.pairedHubId, this.setPairedHubId, this.refetch});
+  const AddVehicleWizardContent({
+    Key? key,
+    required this.user,
+    this.pairedHubId,
+    required this.setPairedHubId,
+    required this.refetch,
+  }) : super(key: key);
 
   static final addVehicleWizardContentFragment = gql(r"""
     fragment addVehicleWizardContent_user on User {
@@ -33,30 +38,30 @@ class AddVehicleWizardContent extends StatefulWidget {
   """);
 
   @override
-  _AddVehicleWizardContentState createState() => _AddVehicleWizardContentState();
+  State<AddVehicleWizardContent> createState() => _AddVehicleWizardContentState();
 }
 
 class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
-  PageController _formsPageViewController;
-  List _forms;
+  PageController? _formsPageViewController;
+  List? _forms;
   bool _scanning = false;
-  FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
-  BluetoothDevice _foundHub;
-  BluetoothDevice _curDevice;
-  BluetoothCharacteristic _commandChar;
+  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
+  BluetoothDevice? _foundHub;
+  BluetoothDevice? _curDevice;
+  BluetoothCharacteristic? _commandChar;
 
   String _hubCustomName = "";
 
   @override
   void initState() {
     super.initState();
-    if (this.widget.pairedHubId != null) {
-      _hubCustomName = this.widget.user['hubs'].firstWhere(
-            (hub) => hub["id"] == this.widget.pairedHubId,
-            orElse: () => {"name": ""},
-          )["name"];
+    if (widget.pairedHubId != null) {
+      _hubCustomName = widget.user['hubs'].firstWhere(
+        (hub) => hub["id"] == widget.pairedHubId,
+        orElse: () => {"name": ""},
+      )["name"];
     }
-    _formsPageViewController = PageController(initialPage: this.widget.pairedHubId != null ? 1 : 0);
+    _formsPageViewController = PageController(initialPage: widget.pairedHubId != null ? 1 : 0);
   }
 
   // TODO prevent hub from connecting to sensors before wizard
@@ -79,7 +84,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     }
 
     print("bluetooth state is now POWERED_ON, starting peripheral scan");
-    await for (final r in _flutterBlue.scan(timeout: Duration(seconds: 10))) {
+    await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
       if (r.device.name.isEmpty) continue;
       setState(() => _curDevice = r.device);
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
@@ -95,13 +100,19 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       return;
     }
 
+    late BluetoothDeviceState deviceState;
+    final stateStreamSub = _foundHub!.state.listen((state) {
+      deviceState = state;
+      print(">>> New state: $state");
+    });
+
     print(">>> connecting");
-    await _foundHub.connect();
+    await _foundHub!.connect();
     print(">>> Device fully connected");
     _flutterBlue.stopScan();
     print(">>> discoveringservices");
 
-    List<BluetoothService> services = await _foundHub.discoverServices();
+    List<BluetoothService> services = await _foundHub!.discoverServices();
     BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
     BluetoothCharacteristic commandChar =
         hubService.characteristics.firstWhere((c) => c.uuid == Guid(COMMAND_CHARACTERISTIC_UUID));
@@ -111,7 +122,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
 
     setState(() => _commandChar = commandChar);
 
-    String command = "UserId:${this.widget.user['id']}";
+    String command = "UserId:${widget.user['id']}";
     List<int> bytes = utf8.encode(command);
     print(">>> writing characteristic with value $command");
     Uint8List userIdCharValue = Uint8List.fromList(bytes);
@@ -126,25 +137,25 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       print(">>readCharacteristic ${bytes.toString()}");
       rawHubId = String.fromCharCodes(bytes);
       print(">>rawHubId = $rawHubId");
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     print(">>Ended rawHubId parse loop");
-    int hubId = int.tryParse(rawHubId.substring(6));
-    _foundHub.disconnect();
-    this.widget.setPairedHubId(hubId);
+    int hubId = int.parse(rawHubId.substring(6));
+    _foundHub!.disconnect();
+    stateStreamSub.cancel();
+    widget.setPairedHubId(hubId);
     print(">>Finished connection, just monitoring sensorValue now");
-    await this.widget.refetch();
+    await widget.refetch();
   }
 
   @override
   Widget build(BuildContext context) {
     Future<bool> cancelForm() async {
-      if (_foundHub != null) {
-        if (_commandChar != null) await _commandChar.write([]);
-        await _foundHub.disconnect();
-      }
+      await _foundHub?.disconnect();
+      await _commandChar?.write([]);
       _flutterBlue.stopScan();
+      if (!mounted) return true;
       Navigator.pop(context);
       return true;
     }
@@ -160,76 +171,76 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
         ''')),
       builder: (
         RunMutation runMutation,
-        QueryResult result,
+        QueryResult? result,
       ) {
         void handleSetName() async {
-          if (_formsPageViewController.page > 0) {
+          if (_formsPageViewController!.page! > 0) {
             await runMutation({
-              "id": this.widget.pairedHubId,
+              "id": widget.pairedHubId,
               "name": _hubCustomName,
             }).networkResult;
-            await Navigator.pushReplacementNamed(context, Home.routeName);
-            return;
+            if (!mounted) return;
+            Navigator.pop(context);
           }
         }
 
         _forms = [
           WillPopScope(
+              onWillPop: cancelForm,
               child: Column(children: [
                 Expanded(
                     child: Padding(
-                        padding: EdgeInsets.all(40),
+                        padding: const EdgeInsets.all(40),
                         child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
-                          Text(
+                          const Text(
                             "To get started, hold the pair button on the bottom of your HandleHub for 5 seconds",
                             textScaleFactor: 1.3,
                           ),
-                          if (_curDevice != null) Text("...found ${_curDevice.name}"),
+                          if (_curDevice != null) Text("...found ${_curDevice!.name}"),
                           _scanning == true
-                              ? CircularProgressIndicator()
-                              : TextButton(onPressed: findHub, child: Text("Start scanning")),
+                              ? const CircularProgressIndicator()
+                              : TextButton(onPressed: findHub, child: const Text("Start scanning")),
                         ])))),
-                Row(children: [
+                Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
                     child: TextButton(
                       onPressed: () => _foundHub == null ? {cancelForm()} : null,
-                      child: Text("Cancel"),
+                      child: const Text("Cancel"),
                     ),
                   ),
-                ], mainAxisSize: MainAxisSize.max)
-              ]),
-              onWillPop: cancelForm),
+                ])
+              ])),
           WillPopScope(
+              onWillPop: cancelForm,
               child: Column(children: [
                 Expanded(
                     child: Padding(
-                        padding: EdgeInsets.all(40),
+                        padding: const EdgeInsets.all(40),
                         child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                          Text("Lets name this HandleHub", textScaleFactor: 1.3),
+                          const Text("Lets name this HandleHub", textScaleFactor: 1.3),
                           TextFormField(
-                            decoration: InputDecoration(hintText: "Name (eg. Year/Make/Model)"),
+                            decoration: const InputDecoration(hintText: "Name (eg. Year/Make/Model)"),
                             onChanged: (String name) => {setState(() => _hubCustomName = name)},
                             initialValue: _hubCustomName,
                           )
                         ])))),
-                Row(children: [
+                Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
                     child: TextButton(
                       onPressed: _hubCustomName.isEmpty ? null : handleSetName,
-                      child: Text("Set Name"),
+                      child: const Text("Set Name"),
                     ),
                   ),
-                ], mainAxisSize: MainAxisSize.max)
-              ]),
-              onWillPop: cancelForm),
+                ])
+              ])),
         ];
 
         return Scaffold(
           body: PageView.builder(
             controller: _formsPageViewController,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             itemBuilder: (BuildContext context, int index) {
-              return _forms[index];
+              return _forms![index];
             },
           ),
         );

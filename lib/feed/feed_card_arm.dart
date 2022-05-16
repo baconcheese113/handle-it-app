@@ -4,8 +4,8 @@ import 'package:handle_it/feed/feed_card.dart';
 import 'package:handle_it/utils.dart';
 
 class FeedCardArm extends StatefulWidget {
-  final hub;
-  const FeedCardArm({Key key, this.hub}) : super(key: key);
+  final Map<String, dynamic> hub;
+  const FeedCardArm({Key? key, required this.hub}) : super(key: key);
 
   static final feedCardArmFragment = gql(r'''
     fragment feedCardArm_hub on Hub {
@@ -15,7 +15,7 @@ class FeedCardArm extends StatefulWidget {
     ''');
 
   @override
-  _FeedCardArmState createState() => _FeedCardArmState();
+  State<FeedCardArm> createState() => _FeedCardArmState();
 }
 
 class _FeedCardArmState extends State<FeedCardArm> {
@@ -32,12 +32,12 @@ class _FeedCardArmState extends State<FeedCardArm> {
       '''), [FeedCard.feedCardFragment])),
       builder: (
         RunMutation runMutation,
-        QueryResult result,
+        QueryResult? result,
       ) {
-        bool isArmed = this.widget.hub['isArmed'];
+        bool isArmed = widget.hub['isArmed'];
         return TextButton(
             onPressed: () async {
-              await runMutation({'id': this.widget.hub['id'], 'isArmed': !isArmed}).networkResult;
+              await runMutation({'id': widget.hub['id'], 'isArmed': !isArmed}).networkResult;
             },
             child: Text(isArmed ? "Disarm" : "Arm"));
       },

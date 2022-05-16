@@ -21,7 +21,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   bool hubIsNearby = false;
   if (await flutterBlue.isOn) {
-    await for (final r in flutterBlue.scan(timeout: Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
+    await for (final r
+        in flutterBlue.scan(timeout: const Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
       if (r.rssi.abs() < 75) hubIsNearby = true;
       flutterBlue.stopScan();
@@ -50,7 +51,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  final NotificationAppLaunchDetails launchDetails = await localNotifications.getNotificationAppLaunchDetails();
+  final NotificationAppLaunchDetails? launchDetails = await localNotifications.getNotificationAppLaunchDetails();
   String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
   print("didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute");
 
@@ -60,10 +61,10 @@ void main() async {
 
   // initialize the plugin. app_icon needs to be added as a drawable resource
   const AndroidInitializationSettings androidSettings = AndroidInitializationSettings("app_icon");
-  final InitializationSettings initializationSettings = InitializationSettings(android: androidSettings);
-  await localNotifications.initialize(initializationSettings, onSelectNotification: (String payload) async {
+  const InitializationSettings initializationSettings = InitializationSettings(android: androidSettings);
+  await localNotifications.initialize(initializationSettings, onSelectNotification: (String? payload) async {
     initialRoute = Login.routeName;
-    selectNotificationSubject.add(payload);
+    if (payload != null) selectNotificationSubject.add(payload);
     print("Notification payload: $payload, and initialRoute: $initialRoute");
   });
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

@@ -1,17 +1,15 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/feed_card.dart';
 import 'package:handle_it/utils.dart';
 
 class FeedCardDelete extends StatefulWidget {
-  final hub;
+  final Map<String, dynamic> hub;
   final Function onDelete;
-  const FeedCardDelete({Key key, this.hub, this.onDelete}) : super(key: key);
+  const FeedCardDelete({Key? key, required this.hub, required this.onDelete}) : super(key: key);
 
   @override
-  _FeedCardDeleteState createState() => _FeedCardDeleteState();
+  State<FeedCardDelete> createState() => _FeedCardDeleteState();
 }
 
 class _FeedCardDeleteState extends State<FeedCardDelete> {
@@ -28,14 +26,14 @@ class _FeedCardDeleteState extends State<FeedCardDelete> {
       '''), [FeedCard.feedCardFragment])),
       builder: (
         RunMutation runMutation,
-        QueryResult result,
+        QueryResult? result,
       ) {
         return TextButton(
             onPressed: () async {
-              await runMutation({'id': this.widget.hub['id']}).networkResult;
-              this.widget.onDelete();
+              await runMutation({'id': widget.hub['id']}).networkResult;
+              widget.onDelete();
             },
-            child: Text(
+            child: const Text(
               "Delete",
               style: TextStyle(color: Colors.red),
             ));
