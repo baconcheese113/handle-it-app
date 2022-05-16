@@ -5,14 +5,24 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:http/http.dart' as http;
 
 const String TRANSFER_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fe";
+const String FIRMWARE_CHARACTERISTIC_UUID = "00002A26-0000-1000-8000-00805f9b34fb";
 
 class Updater extends StatefulWidget {
-  final BluetoothDevice hub;
-  const Updater({Key? key, required this.hub}) : super(key: key);
+  final Map<String, dynamic> hub;
+  final BluetoothDevice foundHub;
+  const Updater({Key? key, required this.hub, required this.foundHub}) : super(key: key);
+
+  static final updaterFragment = gql(r'''
+    fragment updater_hub on Hub {
+      id
+      latestVersion
+    }
+    ''');
 
   @override
   State<Updater> createState() => _UpdaterState();
@@ -21,9 +31,31 @@ class Updater extends StatefulWidget {
 class _UpdaterState extends State<Updater> {
   bool _installed = false;
   double _progressPercent = -1;
-  int _hubVersion = 1;
+  int _hubVersion = -1;
   int? _startTime;
   final List<int> _firmwareBin = [];
+
+  void checkVersion() async {
+    print(">>> checking version");
+    List<BluetoothService> services = await widget.foundHub.discoverServices();
+
+    BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
+    BluetoothCharacteristic firmwareChar =
+        hubService.characteristics.firstWhere((c) => c.uuid == Guid(FIRMWARE_CHARACTERISTIC_UUID));
+
+    final bytes = await firmwareChar.read();
+    final arr = Int8List.fromList(bytes);
+    final num = ByteData.sublistView(arr);
+    final hubVersion = num.getInt32(0, Endian.little);
+    print(">>> found version: v$hubVersion");
+    setState(() => _hubVersion = hubVersion);
+  }
+
+  @override
+  void initState() {
+    checkVersion();
+    super.initState();
+  }
 
   void downloadUpdate() async {
     final req =
@@ -43,7 +75,7 @@ class _UpdaterState extends State<Updater> {
 
   void installUpdate() async {
     late BluetoothDeviceState deviceState;
-    final stateStreamSub = widget.hub.state.listen((state) {
+    final stateStreamSub = widget.foundHub.state.listen((state) {
       deviceState = state;
       print(">>> New connection state is: $state");
     });
@@ -53,7 +85,7 @@ class _UpdaterState extends State<Updater> {
       _startTime = DateTime.now().microsecondsSinceEpoch;
     });
     print(">>> discoveringservices");
-    List<BluetoothService> services = await widget.hub.discoverServices();
+    List<BluetoothService> services = await widget.foundHub.discoverServices();
 
     BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
     BluetoothCharacteristic commandChar =
@@ -115,7 +147,8 @@ class _UpdaterState extends State<Updater> {
 
   @override
   Widget build(BuildContext context) {
-    if (_installed) return Text("Current version: v$_hubVersion");
+    if (_hubVersion < 0) return const SizedBox();
+    if (_installed || _hubVersion >= widget.hub['latestVersion']) return Text("Current version: v$_hubVersion");
     if (_startTime != null && _progressPercent.isFinite && _progressPercent > 0.0) {
       final microsecondsElapsed = DateTime.now().microsecondsSinceEpoch - _startTime!;
       final totalEstMicroseconds = microsecondsElapsed / _progressPercent;

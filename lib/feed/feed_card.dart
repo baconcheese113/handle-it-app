@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -21,6 +23,7 @@ class FeedCard extends StatefulWidget {
       serial
       isArmed
       ...feedCardArm_hub
+      ...updater_hub
       sensors {
         id
         serial
@@ -39,7 +42,7 @@ class FeedCard extends StatefulWidget {
         }
       }
     }
-  '''), [FeedCardArm.feedCardArmFragment]);
+  '''), [FeedCardArm.feedCardArmFragment, Updater.updaterFragment]);
 
   @override
   State<FeedCard> createState() => _FeedCardState();
@@ -50,6 +53,8 @@ class _FeedCardState extends State<FeedCard> {
   bool _scanning = false;
   final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   BluetoothDevice? _foundHub;
+  BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
+  StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
 
   void handleArmToggle() {
     setState(() => _armed = !_armed);
@@ -72,6 +77,11 @@ class _FeedCardState extends State<FeedCard> {
       return;
     }
 
+    _stateStreamSub = _foundHub!.state.listen((state) {
+      setState(() => _deviceState = state);
+      print(">>> New connection state is: $state");
+    });
+
     print(">>> connecting");
     await _foundHub!.connect();
     print(">>> connecting finished");
@@ -87,6 +97,7 @@ class _FeedCardState extends State<FeedCard> {
   void dispose() {
     _foundHub?.disconnect();
     _flutterBlue.stopScan();
+    _stateStreamSub?.cancel();
     super.dispose();
   }
 
@@ -97,9 +108,9 @@ class _FeedCardState extends State<FeedCard> {
     }
 
     final bluetoothIconColor = () {
-      if (_scanning) return Colors.amber;
-      if (_foundHub != null) return Colors.green;
-      return Colors.grey;
+      if (!_scanning && _deviceState == BluetoothDeviceState.disconnected) return Colors.grey;
+      if (_deviceState == BluetoothDeviceState.connected) return Colors.green;
+      return Colors.amber;
     }();
 
     MaterialColor isArmedColor = () {
@@ -130,7 +141,8 @@ class _FeedCardState extends State<FeedCard> {
               onPressed: handleAddSensor,
               child: const Text("Add sensor"),
             ),
-            if (_foundHub != null) Updater(hub: _foundHub!),
+            if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
+              Updater(hub: widget.hubFrag, foundHub: _foundHub!),
             Center(
               child: Stack(clipBehavior: Clip.none, children: [
                 Icon(
