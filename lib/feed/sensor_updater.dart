@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:version/version.dart';
 
 const String SPOTA_SERVICE_UUID = "0000fef5-0000-1000-8000-00805f9b34fb";
+const String VOLTS_SERVICE_UUID = "1000181a-0000-1000-8000-00805f9b34fb";
 const String SPOTA_MEM_DEV_UUID = "8082caa8-41a6-4021-91c6-56f9b954cc34";
 const String SPOTA_GPIO_MAP_UUID = "724249f0-5eC3-4b5f-8804-42345af08651";
 // const String SPOTA_MEM_INFO_UUID = "6c53db25-47a1-45fe-a022-7c92fb334fd4";
@@ -23,12 +25,10 @@ const String ORG_BLUETOOTH_SERVICE_DEVICE_INFORMATION = "0000180a-0000-1000-8000
 // const String ORG_BLUETOOTH_CHARACTERISTIC_FIRMWARE_REVISION_STRING = "00002A26-0000-1000-8000-00805f9b34fb";
 const String ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING = "00002A28-0000-1000-8000-00805f9b34fb";
 
-// TODO get latest sensor version from server
-const latestVersion = 210;
-const latestVersionStr = '2.1.0';
-
 class SensorUpdater extends StatefulWidget {
-  const SensorUpdater({Key? key}) : super(key: key);
+  const SensorUpdater({Key? key, required this.latestVersion}) : super(key: key);
+
+  final Version latestVersion;
 
   @override
   State<SensorUpdater> createState() => _SensorUpdaterState();
@@ -41,8 +41,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
   BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
   StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
   double _progressPercent = -1;
-  String _sensorVersion = '';
-  int _buildNum = -1;
+  Version? _sensorVersion;
   final List<int> _firmwareBin = [];
   int? _rssi;
   bool _connectEnabled = false;
@@ -52,7 +51,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     setState(() => _scanning = true);
     print("bluetooth state is now POWERED_ON, starting sensor scan");
     await for (final r
-        in _flutterBlue.scan(withServices: [Guid(SPOTA_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
+        in _flutterBlue.scan(withServices: [Guid(VOLTS_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
       print("Scanned sensor ${r.device.name}, RSSI ${r.rssi}");
       _flutterBlue.stopScan();
       setState(() => _foundSensor = r.device);
@@ -78,11 +77,10 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     final softwareVerChar = deviceInfoService.characteristics
         .firstWhere((c) => c.uuid == Guid(ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING));
     List<int> softwareBytes = await softwareVerChar.read();
-    final sensorVersion = utf8.decode(softwareBytes);
-    print(">>> sensor software version: $sensorVersion");
-    final buildNum = int.tryParse(sensorVersion.replaceAll(RegExp(r'\.|\x00'), "")) ?? 0;
-    print(">>> buildNum: $buildNum");
-    setState(() => _buildNum = buildNum);
+    final sensorVersionStr = utf8.decode(softwareBytes).replaceAll(RegExp(r'\x00'), "");
+    print(">>> sensor software version string: $sensorVersionStr");
+    final sensorVersion = Version.parse(sensorVersionStr);
+    print(">>> parsed to $sensorVersion");
     final rssi = await _foundSensor!.readRssi();
     setState(() {
       _sensorVersion = sensorVersion;
@@ -100,8 +98,9 @@ class _SensorUpdaterState extends State<SensorUpdater> {
   }
 
   void downloadUpdate() async {
+    final verStr = "${widget.latestVersion.major}-${widget.latestVersion.minor}-${widget.latestVersion.patch}";
     final req = await http.Client()
-        .send(http.Request('GET', Uri.parse("${dotenv.env['FIRMWARE_SERVER_URL']}/sensor-v$latestVersion.img")));
+        .send(http.Request('GET', Uri.parse("${dotenv.env['FIRMWARE_SERVER_URL']}/sensor-$verStr.img")));
     int total = req.contentLength ?? 0;
     print(">>> ContentLength is $total");
     req.stream.listen((newBytes) {
@@ -137,7 +136,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
   // Write END_SIGNAL (0xfe000000) to SPOTA_MEM_DEV
   // (optional) Request decreased priority
   // Write REBOOT_SIGNAL (0xfd000000) to SPOTA_MEM_DEV
-  void installUpdate(VoidCallback onSuccess) async {
+  void installUpdate(void Function({String? errorMsg}) onEnd) async {
     if (_foundSensor == null || _firmwareBin.isEmpty) return;
 
     const blockSize = 244;
@@ -172,6 +171,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     }
     if (servStatus != 0x10) {
       servStatusStream.cancel();
+      onEnd(errorMsg: "Error: Received 0x${servStatus.toRadixString(16)} while starting");
       return;
     }
     servStatus = -1;
@@ -213,6 +213,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       setState(() => _progressPercent = -1);
       servStatusStream.cancel();
       print(">>> transfer timed out");
+      onEnd(errorMsg: "Error: Received 0x${servStatus.toRadixString(16)} while transferring");
       return;
     }
 
@@ -229,7 +230,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     }
     servStatus = -1;
 
-    onSuccess();
+    onEnd();
     print(">>> Update Successful!");
 
     print(">>> Writing RESET_SIGNAL (0xfd000000) to SPOTA_MEM_DEV");
@@ -257,8 +258,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     setState(() {
       _progressPercent = -1;
       _foundSensor = null;
-      _buildNum = -1;
-      _sensorVersion = '';
+      _sensorVersion = null;
       _deviceState = BluetoothDeviceState.disconnected;
       _scanning = false;
     });
@@ -293,24 +293,26 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       return "Sensor ${_foundSensor!.name}";
     }();
 
-    onInstallSuccess() {
+    onInstallEnd({String? errorMsg}) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Update successful!")));
+      final msg = errorMsg ?? "Update successful!";
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
 
     Widget getActionWidget() {
-      if (_buildNum == latestVersion) {
+      if (_sensorVersion == widget.latestVersion) {
         return const Padding(padding: EdgeInsets.only(bottom: 20), child: Text("No updates available"));
       }
-      if (_buildNum > -1 && _firmwareBin.isEmpty) {
-        return TextButton(onPressed: downloadUpdate, child: const Text("Download Firmware v$latestVersionStr"));
+      if (_sensorVersion != null && _sensorVersion! < widget.latestVersion && _firmwareBin.isEmpty) {
+        return TextButton(
+            onPressed: downloadUpdate, child: Text("Download Firmware v${widget.latestVersion.toString()}"));
       }
       if (_progressPercent > -1) {
         return LinearProgressIndicator(value: _progressPercent);
       }
       if (_firmwareBin.isNotEmpty && _progressPercent == -1) {
         return TextButton(
-            onPressed: () => installUpdate(onInstallSuccess), child: const Text("Install v$latestVersionStr"));
+            onPressed: () => installUpdate(onInstallEnd), child: Text("Install v${widget.latestVersion.toString()}"));
       }
       return const SizedBox();
     }
@@ -328,8 +330,9 @@ class _SensorUpdaterState extends State<SensorUpdater> {
                 ListTile(
                   leading: Icon(Icons.bluetooth, color: bluetoothIconColor),
                   title: Text(sensorTitle),
-                  subtitle:
-                      isConnected && _sensorVersion.isNotEmpty ? Text("RSSI $_rssi | Firmware v$_sensorVersion") : null,
+                  subtitle: isConnected && _sensorVersion != null
+                      ? Text("RSSI $_rssi | Firmware v${_sensorVersion.toString()}")
+                      : null,
                 ),
                 getActionWidget(),
               ],

@@ -4,6 +4,7 @@ import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/feed/feed_card.dart';
 import 'package:handle_it/feed/sensor_updater.dart';
 import 'package:handle_it/utils.dart';
+import 'package:version/version.dart';
 
 class FeedHome extends StatefulWidget {
   const FeedHome({Key? key}) : super(key: key);
@@ -23,6 +24,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
         document: addFragments(gql(r"""
           query feedHomeQuery {
             viewer {
+              latestSensorVersion
               user {
                 id
                 hubs {
@@ -62,7 +64,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
-                const SensorUpdater(),
+                SensorUpdater(latestVersion: Version.parse(result.data!['viewer']['latestSensorVersion'])),
                 if (hubs.isNotEmpty)
                   ...hubs
                       .map((hub) => FeedCard(
