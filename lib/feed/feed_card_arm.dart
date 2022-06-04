@@ -22,7 +22,7 @@ class _FeedCardArmState extends State<FeedCardArm> {
   @override
   Widget build(BuildContext context) {
     return Mutation(
-      options: MutationOptions(document: addFragments(gql(r'''
+        options: MutationOptions(document: addFragments(gql(r'''
         mutation feedCardArmMutation($id: ID!, $isArmed: Boolean!) {
           updateHub(id: $id, isArmed: $isArmed) {
             id
@@ -30,17 +30,28 @@ class _FeedCardArmState extends State<FeedCardArm> {
           }
         }
       '''), [FeedCard.feedCardFragment])),
-      builder: (
-        RunMutation runMutation,
-        QueryResult? result,
-      ) {
-        bool isArmed = widget.hub['isArmed'];
-        return TextButton(
-            onPressed: () async {
-              await runMutation({'id': widget.hub['id'], 'isArmed': !isArmed}).networkResult;
-            },
-            child: Text(isArmed ? "Disarm" : "Arm"));
-      },
-    );
+        builder: (
+          RunMutation runMutation,
+          QueryResult? result,
+        ) {
+          bool isArmed = widget.hub['isArmed'];
+          handleArmSwitch(newState) async {
+            await runMutation({'id': widget.hub['id'], 'isArmed': !isArmed}).networkResult;
+          }
+
+          return ClipRRect(
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(10)),
+            child: ColoredBox(
+              color: Colors.white10,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text(isArmed ? "Armed" : "Disarmed"),
+                  Switch(value: isArmed, onChanged: handleArmSwitch),
+                ]),
+              ),
+            ),
+          );
+        });
   }
 }

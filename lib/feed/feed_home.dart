@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/feed/feed_card.dart';
 import 'package:handle_it/feed/sensor_updater.dart';
 import 'package:handle_it/utils.dart';
@@ -13,10 +12,6 @@ class FeedHome extends StatefulWidget {
 }
 
 class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
-  void _handleAddVehicle() {
-    Navigator.pushNamed(context, AddVehicleWizard.routeName);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Query(
@@ -54,16 +49,6 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (result.hasException) Text(result.exception.toString()),
-                TextButton(
-                  onPressed: _handleAddVehicle,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add),
-                      Text("Add New Vehicle"),
-                    ],
-                  ),
-                ),
                 SensorUpdater(latestVersion: Version.parse(result.data!['viewer']['latestSensorVersion'])),
                 if (hubs.isNotEmpty)
                   ...hubs
@@ -74,6 +59,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
                             },
                           ))
                       .toList(),
+                if (hubs.isEmpty) const Text("Add a hub to begin")
               ],
             ),
           ),

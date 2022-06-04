@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/feed/feed_home.dart';
 import 'package:handle_it/settings/settings.dart';
 import 'package:handle_it/tutorial/intro_tutorial.dart';
@@ -70,15 +71,24 @@ class _HomeState extends State<Home> {
             setState(() => _introTutComplete = true);
           });
         }
+        void _handleAddVehicle() {
+          Navigator.pushNamed(context, AddVehicleWizard.routeName);
+        }
 
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text("HandleIt"),
+            title: const Text("HandleIt", style: TextStyle(fontFamily: 'Julius Sans One')),
           ),
           body: Padding(
             padding: const EdgeInsets.all(8),
             child: [const FeedHome(), Settings(result.data!['viewer']['user'], widget.reinitialize)][_selectedIndex],
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: _handleAddVehicle,
+            icon: const Icon(Icons.add, color: Colors.black),
+            label: const Text("Add Hub", style: TextStyle(color: Colors.black)),
+            backgroundColor: Colors.amberAccent,
           ),
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
