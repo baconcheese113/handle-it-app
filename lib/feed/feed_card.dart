@@ -7,7 +7,7 @@ import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/feed/feed_card_arm.dart';
 import 'package:handle_it/feed/feed_card_menu.dart';
 import 'package:handle_it/feed/feed_card_rssi.dart';
-import 'package:handle_it/feed/updater.dart';
+import 'package:handle_it/feed/hub_updater.dart';
 import 'package:handle_it/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -23,7 +23,7 @@ class FeedCard extends StatefulWidget {
       serial
       isArmed
       ...feedCardArm_hub
-      ...updater_hub
+      ...hubUpdater_hub
       sensors {
         id
         serial
@@ -42,7 +42,7 @@ class FeedCard extends StatefulWidget {
         }
       }
     }
-  '''), [FeedCardArm.feedCardArmFragment, Updater.updaterFragment]);
+  '''), [FeedCardArm.feedCardArmFragment, HubUpdater.updaterFragment]);
 
   @override
   State<FeedCard> createState() => _FeedCardState();
@@ -132,12 +132,12 @@ class _FeedCardState extends State<FeedCard> {
           title: Text("${widget.hubFrag['name']} (${widget.hubFrag['serial']})"),
           subtitle: Row(children: [
             Text("$sensorCount sensor${sensorCount == 1 ? '' : 's'} |"),
-            FeedCardRssi(foundHub: _foundHub),
+            FeedCardRssi(foundHub: _foundHub, deviceState: _deviceState),
           ]),
           trailing: FeedCardMenu(hub: widget.hubFrag, onDelete: widget.onDelete),
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
-          Updater(hub: widget.hubFrag, foundHub: _foundHub!),
+          Center(child: HubUpdater(hub: widget.hubFrag, foundHub: _foundHub!)),
         Center(
           child: Stack(clipBehavior: Clip.none, children: [
             Icon(

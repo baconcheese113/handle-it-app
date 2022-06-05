@@ -59,7 +59,13 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
                             },
                           ))
                       .toList(),
-                if (hubs.isEmpty) const Text("Add a hub to begin")
+                if (hubs.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 192),
+                      child: Text("Add a hub to begin"),
+                    ),
+                  )
               ],
             ),
           ),

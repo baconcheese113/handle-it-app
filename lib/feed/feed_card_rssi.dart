@@ -10,7 +10,8 @@ num calcDistance(int rssi) {
 
 class FeedCardRssi extends StatefulWidget {
   final BluetoothDevice? foundHub;
-  const FeedCardRssi({Key? key, required this.foundHub}) : super(key: key);
+  final BluetoothDeviceState deviceState;
+  const FeedCardRssi({Key? key, required this.foundHub, required this.deviceState}) : super(key: key);
 
   @override
   State<FeedCardRssi> createState() => _FeedCardRssiState();
@@ -21,6 +22,7 @@ class _FeedCardRssiState extends State<FeedCardRssi> {
   num _distance = -2;
 
   void subscribeToRssi() async {
+    print(">>> subscribed");
     if (widget.foundHub == null) return;
     setState(() => _distance = -1);
     final startRssi = await widget.foundHub!.readRssi();
@@ -41,7 +43,7 @@ class _FeedCardRssiState extends State<FeedCardRssi> {
   @override
   Widget build(BuildContext context) {
     // Kick off rssi subscription when foundHub is set, but only once
-    if (widget.foundHub != null && _distance == -2) {
+    if (widget.foundHub != null && widget.deviceState == BluetoothDeviceState.connected && _distance == -2) {
       subscribeToRssi();
     }
 

@@ -12,23 +12,23 @@ import 'package:http/http.dart' as http;
 const String TRANSFER_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fe";
 const String FIRMWARE_CHARACTERISTIC_UUID = "00002A26-0000-1000-8000-00805f9b34fb";
 
-class Updater extends StatefulWidget {
+class HubUpdater extends StatefulWidget {
   final Map<String, dynamic> hub;
   final BluetoothDevice foundHub;
-  const Updater({Key? key, required this.hub, required this.foundHub}) : super(key: key);
+  const HubUpdater({Key? key, required this.hub, required this.foundHub}) : super(key: key);
 
   static final updaterFragment = gql(r'''
-    fragment updater_hub on Hub {
+    fragment hubUpdater_hub on Hub {
       id
       latestVersion
     }
     ''');
 
   @override
-  State<Updater> createState() => _UpdaterState();
+  State<HubUpdater> createState() => _HubUpdaterState();
 }
 
-class _UpdaterState extends State<Updater> {
+class _HubUpdaterState extends State<HubUpdater> {
   bool _installed = false;
   double _progressPercent = -1;
   int _hubVersion = -1;
