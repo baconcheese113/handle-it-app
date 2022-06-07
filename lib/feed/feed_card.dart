@@ -5,6 +5,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/feed/feed_card_arm.dart';
+import 'package:handle_it/feed/feed_card_map.dart';
 import 'package:handle_it/feed/feed_card_menu.dart';
 import 'package:handle_it/feed/feed_card_rssi.dart';
 import 'package:handle_it/feed/hub_updater.dart';
@@ -23,6 +24,7 @@ class FeedCard extends StatefulWidget {
       serial
       isArmed
       ...feedCardArm_hub
+      ...feedCardMap_hub
       ...hubUpdater_hub
       sensors {
         id
@@ -42,7 +44,7 @@ class FeedCard extends StatefulWidget {
         }
       }
     }
-  '''), [FeedCardArm.feedCardArmFragment, HubUpdater.updaterFragment]);
+  '''), [FeedCardArm.feedCardArmFragment, FeedCardMap.feedCardMapFragment, HubUpdater.updaterFragment]);
 
   @override
   State<FeedCard> createState() => _FeedCardState();
@@ -138,6 +140,7 @@ class _FeedCardState extends State<FeedCard> {
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
           Center(child: HubUpdater(hub: widget.hubFrag, foundHub: _foundHub!)),
+        SizedBox(height: 200, width: 400, child: FeedCardMap(hub: widget.hubFrag)),
         Center(
           child: Stack(clipBehavior: Clip.none, children: [
             Icon(

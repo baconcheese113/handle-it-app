@@ -36,6 +36,9 @@
         android:label="handle_it"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"> <!-- Allows using http localhost -->
+
+       <meta-data android:name="com.google.android.geo.API_KEY"
+           android:value="@string/GOOGLE_MAPS_API_KEY"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
