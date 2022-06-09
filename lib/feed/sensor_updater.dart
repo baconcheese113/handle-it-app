@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -10,6 +11,9 @@ import 'package:version/version.dart';
 
 const String SPOTA_SERVICE_UUID = "0000fef5-0000-1000-8000-00805f9b34fb";
 const String VOLTS_SERVICE_UUID = "1000181a-0000-1000-8000-00805f9b34fb";
+const String BATTERY_SERVICE_UUID = "0000180f-0000-1000-8000-00805f9b34fb";
+const String BATTERY_LEVEL_UUID = "00002a19-0000-1000-8000-00805f9b34fb";
+const String BATTERY_VOLTS_UUID = "00002b18-0000-1000-8000-00805f9b34fb";
 const String SPOTA_MEM_DEV_UUID = "8082caa8-41a6-4021-91c6-56f9b954cc34";
 const String SPOTA_GPIO_MAP_UUID = "724249f0-5eC3-4b5f-8804-42345af08651";
 // const String SPOTA_MEM_INFO_UUID = "6c53db25-47a1-45fe-a022-7c92fb334fd4";
@@ -45,6 +49,8 @@ class _SensorUpdaterState extends State<SensorUpdater> {
   final List<int> _firmwareBin = [];
   int? _rssi;
   bool _connectEnabled = false;
+  int _batteryLevel = -1;
+  int _batteryVolts = -1;
 
   void autoConnect() async {
     await _flutterBlue.stopScan();
@@ -74,13 +80,30 @@ class _SensorUpdaterState extends State<SensorUpdater> {
 
     final services = await _foundSensor!.discoverServices();
     final deviceInfoService = services.firstWhere((s) => s.uuid == Guid(ORG_BLUETOOTH_SERVICE_DEVICE_INFORMATION));
-    final softwareVerChar = deviceInfoService.characteristics
+    final sensorVerChar = deviceInfoService.characteristics
         .firstWhere((c) => c.uuid == Guid(ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING));
-    List<int> softwareBytes = await softwareVerChar.read();
-    final sensorVersionStr = utf8.decode(softwareBytes).replaceAll(RegExp(r'\x00'), "");
+    List<int> sensorVerBytes = await sensorVerChar.read();
+    final sensorVersionStr = utf8.decode(sensorVerBytes).replaceAll(RegExp(r'\x00'), "");
     print(">>> sensor software version string: $sensorVersionStr");
     final sensorVersion = Version.parse(sensorVersionStr);
     print(">>> parsed to $sensorVersion");
+
+    if (sensorVersion >= '0.1.1') {
+      final battService = services.firstWhere((s) => s.uuid == Guid(BATTERY_SERVICE_UUID));
+      final battLevelChar = battService.characteristics.firstWhere((c) => c.uuid == Guid(BATTERY_LEVEL_UUID));
+      final battVoltsChar = battService.characteristics.firstWhere((c) => c.uuid == Guid(BATTERY_VOLTS_UUID));
+      List<int> battLevelBytes = await battLevelChar.read();
+      print(">>> battery level is ${battLevelBytes[0]}");
+      List<int> battVoltsBytes = await battVoltsChar.read();
+      final voltsByteData = ByteData.sublistView(Int8List.fromList(battVoltsBytes));
+      final battVolts = voltsByteData.getInt16(0, Endian.big);
+      print(">>> battery volts are $battVolts");
+      setState(() {
+        _batteryLevel = battLevelBytes[0];
+        _batteryVolts = battVolts;
+      });
+    }
+
     final rssi = await _foundSensor!.readRssi();
     setState(() {
       _sensorVersion = sensorVersion;
@@ -261,6 +284,8 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       _sensorVersion = null;
       _deviceState = BluetoothDeviceState.disconnected;
       _scanning = false;
+      _batteryVolts = -1;
+      _batteryLevel = -1;
     });
   }
 
@@ -332,6 +357,24 @@ class _SensorUpdaterState extends State<SensorUpdater> {
                   title: Text(sensorTitle),
                   subtitle: isConnected && _sensorVersion != null
                       ? Text("RSSI $_rssi | Firmware v${_sensorVersion.toString()}")
+                      : null,
+                  trailing: (_batteryLevel > -1 && _batteryVolts > -1)
+                      ? SizedBox(
+                          height: 50,
+                          width: 50,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              CircularProgressIndicator(backgroundColor: Colors.white10, value: _batteryLevel / 100),
+                              Center(
+                                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                                Text("$_batteryLevel%"),
+                                Text("${(_batteryVolts / 1000).toStringAsFixed(1)}v")
+                              ])),
+                              const Icon(Icons.battery_full_outlined,
+                                  color: Color.fromRGBO(255, 255, 255, .3), size: 48)
+                            ],
+                          ))
                       : null,
                 ),
                 getActionWidget(),

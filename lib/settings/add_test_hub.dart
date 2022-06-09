@@ -26,8 +26,8 @@ class _AddTestHubState extends State<AddTestHub> {
     if (widget.user['id'] == null) return const SizedBox();
     return Mutation(
       options: MutationOptions(document: addFragments(gql(r'''
-          mutation createOneHub($data: HubCreateInput!) {
-            createOneHub(data: $data) {
+          mutation CreateHub($name: String!, $serial: String!) {
+            createHub(name: $name, serial: $serial) {
               id
               ...feedCard_hub
             }
@@ -39,13 +39,8 @@ class _AddTestHubState extends State<AddTestHub> {
       ) {
         void commitChange() async {
           final result = await runMutation({
-            'data': {
-              'name': _name,
-              'serial': "testSerial",
-              'owner': {
-                'connect': {'id': widget.user['id']}
-              }
-            }
+            'name': _name,
+            'serial': 'testSerial',
           }).networkResult;
           if (!result!.hasException && !result.isLoading) {
             setState(() => _name = "");

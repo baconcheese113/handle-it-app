@@ -26,12 +26,6 @@ class FeedCardMap extends StatefulWidget {
 }
 
 class _FeedCardMapState extends State<FeedCardMap> {
-  late GoogleMapController _mapController;
-
-  void _onMapCreated(GoogleMapController controller) {
-    _mapController = controller;
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<dynamic> locations = widget.hub['locations'];
@@ -49,9 +43,8 @@ class _FeedCardMapState extends State<FeedCardMap> {
     }).toSet();
 
     return GoogleMap(
-      onMapCreated: _onMapCreated,
       initialCameraPosition: CameraPosition(target: firstLatLng, zoom: 16.0),
-      myLocationEnabled: true,
+      myLocationEnabled: false,
       buildingsEnabled: true,
       zoomGesturesEnabled: false,
       zoomControlsEnabled: false,
