@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
+import 'package:handle_it/feed/battery_status.dart';
 import 'package:handle_it/feed/feed_card_arm.dart';
 import 'package:handle_it/feed/feed_card_map.dart';
 import 'package:handle_it/feed/feed_card_menu.dart';
 import 'package:handle_it/feed/feed_card_rssi.dart';
 import 'package:handle_it/feed/hub_updater.dart';
+import 'package:handle_it/feed/sensor_updater.dart';
 import 'package:handle_it/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -57,6 +59,7 @@ class _FeedCardState extends State<FeedCard> {
   BluetoothDevice? _foundHub;
   BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
   StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
+  int _batteryLevel = -1;
 
   void handleArmToggle() {
     setState(() => _armed = !_armed);
@@ -87,6 +90,13 @@ class _FeedCardState extends State<FeedCard> {
     print(">>> connecting");
     await _foundHub!.connect();
     print(">>> connecting finished");
+
+    final services = await _foundHub!.discoverServices();
+    final battService = services.firstWhere((s) => s.uuid == Guid(BATTERY_SERVICE_UUID));
+    final battLevelChar = battService.characteristics.firstWhere((c) => c.uuid == Guid(BATTERY_LEVEL_UUID));
+    List<int> battLevelBytes = await battLevelChar.read();
+    print(">>> battery level is ${battLevelBytes[0]}");
+    setState(() => _batteryLevel = battLevelBytes[0]);
   }
 
   @override
@@ -136,7 +146,10 @@ class _FeedCardState extends State<FeedCard> {
             Text("$sensorCount sensor${sensorCount == 1 ? '' : 's'} |"),
             FeedCardRssi(foundHub: _foundHub, deviceState: _deviceState),
           ]),
-          trailing: FeedCardMenu(hub: widget.hubFrag, onDelete: widget.onDelete),
+          trailing: Column(children: [
+            FeedCardMenu(hub: widget.hubFrag, onDelete: widget.onDelete),
+            if (_batteryLevel > -1) BatteryStatus(batteryLevel: _batteryLevel, variant: Variant.small),
+          ]),
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
           Center(child: HubUpdater(hub: widget.hubFrag, foundHub: _foundHub!)),

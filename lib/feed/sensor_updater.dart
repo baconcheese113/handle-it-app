@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:handle_it/feed/battery_status.dart';
 import 'package:http/http.dart' as http;
 import 'package:version/version.dart';
 
@@ -359,22 +360,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
                       ? Text("RSSI $_rssi | Firmware v${_sensorVersion.toString()}")
                       : null,
                   trailing: (_batteryLevel > -1 && _batteryVolts > -1)
-                      ? SizedBox(
-                          height: 50,
-                          width: 50,
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              CircularProgressIndicator(backgroundColor: Colors.white10, value: _batteryLevel / 100),
-                              Center(
-                                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                                Text("$_batteryLevel%"),
-                                Text("${(_batteryVolts / 1000).toStringAsFixed(1)}v")
-                              ])),
-                              const Icon(Icons.battery_full_outlined,
-                                  color: Color.fromRGBO(255, 255, 255, .3), size: 48)
-                            ],
-                          ))
+                      ? BatteryStatus(batteryLevel: _batteryLevel, batteryVolts: _batteryVolts)
                       : null,
                 ),
                 getActionWidget(),
