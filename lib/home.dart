@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/feed/feed_home.dart';
+import 'package:handle_it/network/network_home.dart';
 import 'package:handle_it/settings/settings.dart';
 import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -75,6 +76,13 @@ class _HomeState extends State<Home> {
           Navigator.pushNamed(context, AddVehicleWizard.routeName);
         }
 
+        final addVehicleFab = FloatingActionButton.extended(
+          onPressed: _handleAddVehicle,
+          icon: const Icon(Icons.add, color: Colors.black),
+          label: const Text("Add Hub", style: TextStyle(color: Colors.black)),
+          backgroundColor: Colors.amberAccent,
+        );
+
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
@@ -82,18 +90,18 @@ class _HomeState extends State<Home> {
           ),
           body: Padding(
             padding: const EdgeInsets.all(8),
-            child: [const FeedHome(), Settings(result.data!['viewer']['user'], widget.reinitialize)][_selectedIndex],
+            child: [
+              const FeedHome(),
+              const NetworkHome(),
+              Settings(result.data!['viewer']['user'], widget.reinitialize)
+            ][_selectedIndex],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: _handleAddVehicle,
-            icon: const Icon(Icons.add, color: Colors.black),
-            label: const Text("Add Hub", style: TextStyle(color: Colors.black)),
-            backgroundColor: Colors.amberAccent,
-          ),
+          floatingActionButton: _selectedIndex == 0 ? addVehicleFab : null,
           bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(icon: Icon(Icons.home), label: "Feed"),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile')
+              BottomNavigationBarItem(icon: Icon(Icons.group), label: 'HandleUs'),
+              BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
             ],
             currentIndex: _selectedIndex,
             onTap: (newIndex) => setState(() => _selectedIndex = newIndex),
