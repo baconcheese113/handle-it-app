@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:handle_it/network/network_map_details.dart';
+
+class HubObject {
+  String hubName;
+  String networkName;
+  String memberEmail;
+  String fixedAt;
+  HubObject(this.hubName, this.networkName, this.memberEmail, this.fixedAt);
+}
 
 class NetworkMapTab extends StatefulWidget {
   final Map<String, dynamic> viewerFrag;
@@ -43,6 +51,13 @@ class NetworkMapTab extends StatefulWidget {
 }
 
 class _NetworkMapTabState extends State<NetworkMapTab> {
+  HubObject? _selectedHub;
+  late GoogleMapController _mapController;
+
+  void handleMapCreated(GoogleMapController mapController) {
+    setState(() => _mapController = mapController);
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<dynamic> networks = widget.viewerFrag['networks'];
@@ -80,10 +95,11 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               position: pos,
               alpha: .7,
               icon: BitmapDescriptor.defaultMarkerWithHue(hues[idx]),
-              infoWindow: InfoWindow(
-                title: hub['name'],
-                snippet: "As of ${timeago.format(DateTime.parse(location['fixedAt']))}",
-              ),
+              onTap: () {
+                final selectedHub = HubObject(hub['name'], network['name'], m['user']['email'], location['fixedAt']);
+                setState(() => _selectedHub = selectedHub);
+                _mapController.animateCamera(CameraUpdate.newLatLng(pos));
+              },
             );
             markers.add(marker);
           }
@@ -98,21 +114,27 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
       networkMarkers.addAll(getMarkerWidgets(id, i).toSet());
     }
 
-    return Column(
+    return Stack(
       children: [
-        SizedBox(
-            height: 100,
-            child: TextButton(
-                onPressed: () {
-                  widget.refetch();
-                },
-                child: const Text("Refresh"))),
-        Expanded(
-          child: GoogleMap(
-            initialCameraPosition: const CameraPosition(target: LatLng(39.7, -104.76), zoom: 10),
-            markers: networkMarkers,
-          ),
-        )
+        Column(
+          children: [
+            TextButton(
+              onPressed: () {
+                widget.refetch();
+              },
+              child: const Text("Refresh"),
+            ),
+            Expanded(
+              child: GoogleMap(
+                onMapCreated: handleMapCreated,
+                initialCameraPosition: const CameraPosition(target: LatLng(39.7, -104.76), zoom: 10),
+                markers: networkMarkers,
+                onTap: (pos) => setState(() => _selectedHub = null),
+              ),
+            )
+          ],
+        ),
+        if (_selectedHub != null) NetworkMapDetails(hubObject: _selectedHub!),
       ],
     );
   }
