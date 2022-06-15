@@ -56,13 +56,16 @@ class NetworkProvider extends ChangeNotifier {
     newHub.hue = networkColors[newHub.networkId]!;
     selectedHub = newHub;
     didAnimateToSelection = false;
+    notifyListeners();
   }
 
   clearSelectedHub() {
     selectedHub = null;
+    notifyListeners();
   }
 
   finishAnimate() {
     didAnimateToSelection = true;
+    notifyListeners();
   }
 }

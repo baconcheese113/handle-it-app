@@ -96,7 +96,6 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
                 final selectedHub = HubObject(
                     hub['name'], network['id'], network['name'], m['user']['email'], pos, location['fixedAt']);
                 netProvider.setSelectedHub(selectedHub);
-                _mapController?.animateCamera(CameraUpdate.newLatLng(pos));
               },
             );
             markers.add(marker);
