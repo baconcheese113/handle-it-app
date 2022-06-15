@@ -27,13 +27,20 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: ListTile(
-            title: Text(widget.hubObject.hubName),
+            title: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Text(widget.hubObject.hubName),
+                ),
+                Chip(
+                    label: Text(widget.hubObject.networkName, style: const TextStyle(fontSize: 12)),
+                    backgroundColor: widget.hubObject.hue),
+              ],
+            ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("${widget.hubObject.networkName} - ${widget.hubObject.memberEmail}"),
-                Text("As of $fixedAt")
-              ],
+              children: [Text(widget.hubObject.memberEmail), Text("As of $fixedAt")],
             ),
             trailing: IconButton(
                 onPressed: handleIconPress, icon: Icon(_isMuted ? Icons.notifications_off : Icons.notifications_on)),

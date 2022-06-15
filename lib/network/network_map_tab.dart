@@ -8,7 +8,8 @@ class HubObject {
   String networkName;
   String memberEmail;
   String fixedAt;
-  HubObject(this.hubName, this.networkName, this.memberEmail, this.fixedAt);
+  Color hue;
+  HubObject(this.hubName, this.networkName, this.memberEmail, this.fixedAt, this.hue);
 }
 
 class NetworkMapTab extends StatefulWidget {
@@ -54,6 +55,28 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
   HubObject? _selectedHub;
   late GoogleMapController _mapController;
 
+  static const networkHues = [
+    BitmapDescriptor.hueRed,
+    BitmapDescriptor.hueAzure,
+    BitmapDescriptor.hueOrange,
+    BitmapDescriptor.hueCyan,
+    BitmapDescriptor.hueGreen,
+    BitmapDescriptor.hueMagenta,
+    BitmapDescriptor.hueRose,
+    BitmapDescriptor.hueViolet,
+  ];
+
+  static const networkColors = [
+    Colors.red,
+    Colors.blueAccent,
+    Colors.orange,
+    Colors.cyan,
+    Colors.green,
+    Colors.purpleAccent,
+    Colors.pink,
+    Colors.deepPurple,
+  ];
+
   void handleMapCreated(GoogleMapController mapController) {
     setState(() => _mapController = mapController);
   }
@@ -63,17 +86,6 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
     final List<dynamic> networks = widget.viewerFrag['networks'];
     final int thisUserId = widget.viewerFrag['user']['id'];
     print(">>> thisUserId is $thisUserId and Networks are $networks");
-
-    const hues = [
-      BitmapDescriptor.hueRed,
-      BitmapDescriptor.hueAzure,
-      BitmapDescriptor.hueOrange,
-      BitmapDescriptor.hueCyan,
-      BitmapDescriptor.hueGreen,
-      BitmapDescriptor.hueMagenta,
-      BitmapDescriptor.hueRose,
-      BitmapDescriptor.hueViolet,
-    ];
 
     List<Marker> getMarkerWidgets(int networkId, int idx) {
       print(">>> getMarkerWidgets() for $networkId at idx $idx");
@@ -94,9 +106,10 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               markerId: MarkerId("${m['id']}-$hubId"),
               position: pos,
               alpha: .7,
-              icon: BitmapDescriptor.defaultMarkerWithHue(hues[idx]),
+              icon: BitmapDescriptor.defaultMarkerWithHue(networkHues[idx]),
               onTap: () {
-                final selectedHub = HubObject(hub['name'], network['name'], m['user']['email'], location['fixedAt']);
+                final selectedHub = HubObject(
+                    hub['name'], network['name'], m['user']['email'], location['fixedAt'], networkColors[idx]);
                 setState(() => _selectedHub = selectedHub);
                 _mapController.animateCamera(CameraUpdate.newLatLng(pos));
               },
