@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/network/network_members_create.dart';
 import 'package:handle_it/network/network_members_tile.dart';
+import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
+import 'package:provider/provider.dart';
 
 class NetworkMembersList extends StatefulWidget {
   final Map<String, dynamic> networkFrag;
@@ -39,25 +41,23 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
     final int userId = widget.viewerFrag['user']['id'];
     bool isOwner = false;
     final List<Widget> membersList = [];
-    members.forEach((m) {
+    for (final m in members) {
       if (m['userId'] == userId && m['role'] == 'owner') isOwner = true;
-      membersList.add(NetworkMembersTile(
-        memberFrag: m,
-        userId: userId,
-      ));
-    });
-
-    print(">>> isOwner is $isOwner");
+      membersList.add(NetworkMembersTile(memberFrag: m, userId: userId));
+    }
 
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 48),
-          child: Row(
-            children: [
-              Text(network['name'], style: const TextStyle(fontSize: 24)),
-              // TODO if (isOwner) IconButton(onPressed: handleAddMember, icon: const Icon(Icons.add))
-            ],
+          child: Consumer<NetworkProvider>(
+            builder: ((context, netProvider, child) => Row(
+                  children: [
+                    Text(network['name'],
+                        style: TextStyle(fontSize: 24, color: netProvider.getColorForId(network['id']))),
+                    // TODO if (isOwner) IconButton(onPressed: handleAddMember, icon: const Icon(Icons.add))
+                  ],
+                )),
           ),
         ),
         Column(children: membersList),

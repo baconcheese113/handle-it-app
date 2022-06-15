@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:handle_it/network/network_map_tab.dart';
+import 'package:handle_it/network/network_provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NetworkMapDetails extends StatefulWidget {

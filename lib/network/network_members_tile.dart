@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/network/network_provider.dart';
+import 'package:provider/provider.dart';
 
 class NetworkMembersTile extends StatefulWidget {
   final Map<String, dynamic> memberFrag;
@@ -10,6 +13,10 @@ class NetworkMembersTile extends StatefulWidget {
     fragment networkMembersTile_member on NetworkMember {
       status
       role
+      network {
+        id
+        name
+      }
       user {
         id
         email
@@ -20,6 +27,7 @@ class NetworkMembersTile extends StatefulWidget {
             id
             lat
             lng
+            fixedAt
           }
         }
       }
@@ -33,6 +41,7 @@ class NetworkMembersTile extends StatefulWidget {
 class _NetworkMembersTileState extends State<NetworkMembersTile> {
   @override
   Widget build(BuildContext context) {
+    final netProvider = Provider.of<NetworkProvider>(context, listen: false);
     final Map<String, dynamic> member = widget.memberFrag;
     bool isUser = member['user']['id'] == widget.userId;
     final List<dynamic> hubs = member['user']['hubs'];
@@ -41,20 +50,31 @@ class _NetworkMembersTileState extends State<NetworkMembersTile> {
     final List<Widget> hubNames = [];
     for (final hub in hubs) {
       final List<dynamic> locs = hub['locations'];
-      if (locs.isNotEmpty) hasHubWithLocation = true;
+      final canViewHub = locs.isNotEmpty;
+      if (canViewHub) hasHubWithLocation = true;
       hubNames.add(Text(hub['name']));
       hubListTiles.add(ListTile(
         tileColor: isUser ? Colors.amberAccent : null,
         textColor: isUser ? Colors.black : null,
         iconColor: isUser ? Colors.black : null,
         title: Text(hub['name']),
-        subtitle: const Text("Click to view on map"),
+        subtitle: canViewHub ? const Text("Click to view on map") : null,
         dense: true,
-        onTap: () {
-          DefaultTabController.of(context)!.animateTo(0);
-          // TODO Animate camera to look at specific pin for this hub
-          print("Tapped");
-        },
+        onTap: canViewHub
+            ? () {
+                DefaultTabController.of(context)!.animateTo(0);
+                final hubLoc = LatLng(locs[0]['lat'], locs[0]['lng']);
+                final selectedHub = HubObject(
+                  hub['name'],
+                  member['network']['id'],
+                  member['network']['name'],
+                  member['user']['email'],
+                  hubLoc,
+                  locs[0]['fixedAt'],
+                );
+                netProvider.setSelectedHub(selectedHub);
+              }
+            : null,
       ));
     }
     if (!hasHubWithLocation) {

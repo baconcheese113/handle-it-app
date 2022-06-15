@@ -25,14 +25,16 @@ class _AddTestHubState extends State<AddTestHub> {
   Widget build(BuildContext context) {
     if (widget.user['id'] == null) return const SizedBox();
     return Mutation(
-      options: MutationOptions(document: addFragments(gql(r'''
+      options: MutationOptions(
+        document: addFragments(gql(r'''
           mutation CreateHub($name: String!, $serial: String!) {
             createHub(name: $name, serial: $serial) {
               id
               ...feedCard_hub
             }
           }
-        '''), [FeedCard.feedCardFragment])),
+        '''), [FeedCard.feedCardFragment]),
+      ),
       builder: (
         RunMutation runMutation,
         QueryResult? result,
