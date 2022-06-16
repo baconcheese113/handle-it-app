@@ -28,7 +28,7 @@ class _AddVehicleWizardState extends State<AddVehicleWizard> {
             }
           }
         }
-      """), [AddVehicleWizardContent.addVehicleWizardContentFragment]),
+      """), [AddVehicleWizardContent.fragment]),
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.hasException) {

@@ -17,7 +17,7 @@ class HubUpdater extends StatefulWidget {
   final BluetoothDevice foundHub;
   const HubUpdater({Key? key, required this.hub, required this.foundHub}) : super(key: key);
 
-  static final updaterFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment hubUpdater_hub on Hub {
       id
       latestVersion

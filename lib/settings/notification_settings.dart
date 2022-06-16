@@ -5,7 +5,7 @@ class NotificationSettings extends StatefulWidget {
   final Map<String, dynamic> user;
   const NotificationSettings({Key? key, required this.user}) : super(key: key);
 
-  static final notificationSettingsFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment notificationSettings_user on User {
       id
       defaultFullNotification

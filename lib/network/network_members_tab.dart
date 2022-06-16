@@ -8,14 +8,14 @@ class NetworkMembersTab extends StatefulWidget {
   final Function refetch;
   const NetworkMembersTab({Key? key, required this.viewerFrag, required this.refetch}) : super(key: key);
 
-  static final networkMembersTabFragment = addFragments(gql(r'''
+  static final fragment = addFragments(gql(r'''
     fragment networkMembersTab_viewer on Viewer {
       ...networkMembersList_viewer
       networks {
         ...networkMembersList_network
       }
     }
-  '''), [NetworkMembersList.networkMembersListFragment]);
+  '''), [NetworkMembersList.fragment]);
   @override
   State<NetworkMembersTab> createState() => _NetworkMembersTabState();
 }

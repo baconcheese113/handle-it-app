@@ -28,7 +28,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
               }
             }
           }
-        """), [FeedCard.feedCardFragment]),
+        """), [FeedCard.fragment]),
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.isLoading) return const CircularProgressIndicator();

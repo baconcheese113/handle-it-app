@@ -30,7 +30,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
             ...feedCard_hub
           }
         }
-      '''), [FeedCard.feedCardFragment])),
+      '''), [FeedCard.fragment])),
       builder: (
         RunMutation runMutation,
         QueryResult? result,

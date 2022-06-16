@@ -11,7 +11,7 @@ class NetworkMembersList extends StatefulWidget {
   final Map<String, dynamic> viewerFrag;
   const NetworkMembersList({Key? key, required this.networkFrag, required this.viewerFrag}) : super(key: key);
 
-  static final networkMembersListFragment = addFragments(gql(r'''
+  static final fragment = addFragments(gql(r'''
     fragment networkMembersList_network on Network {
       id
       name
@@ -27,7 +27,7 @@ class NetworkMembersList extends StatefulWidget {
         id
       }
     }
-  '''), [NetworkMembersTile.networkMembersTileFragment]);
+  '''), [NetworkMembersTile.fragment]);
 
   @override
   State<NetworkMembersList> createState() => _NetworkMembersListState();

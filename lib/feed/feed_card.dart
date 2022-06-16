@@ -19,7 +19,7 @@ class FeedCard extends StatefulWidget {
   final Function onDelete;
   const FeedCard({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
 
-  static final feedCardFragment = addFragments(gql(r'''
+  static final fragment = addFragments(gql(r'''
     fragment feedCard_hub on Hub {
       id
       name
@@ -46,7 +46,7 @@ class FeedCard extends StatefulWidget {
         }
       }
     }
-  '''), [FeedCardArm.feedCardArmFragment, FeedCardMap.feedCardMapFragment, HubUpdater.updaterFragment]);
+  '''), [FeedCardArm.fragment, FeedCardMap.fragment, HubUpdater.fragment]);
 
   @override
   State<FeedCard> createState() => _FeedCardState();

@@ -7,7 +7,7 @@ class AddTestHub extends StatefulWidget {
   final Map<String, dynamic> user;
   const AddTestHub({Key? key, required this.user}) : super(key: key);
 
-  static final addTestHubFragment = gql(r"""
+  static final fragment = gql(r"""
     fragment addTestHub_user on User {
       id
     }
@@ -33,7 +33,7 @@ class _AddTestHubState extends State<AddTestHub> {
               ...feedCard_hub
             }
           }
-        '''), [FeedCard.feedCardFragment]),
+        '''), [FeedCard.fragment]),
       ),
       builder: (
         RunMutation runMutation,

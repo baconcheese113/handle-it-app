@@ -54,7 +54,7 @@ class _HomeState extends State<Home> {
             }
           }
         }
-      """), [Settings.settingsFragment]),
+      """), [Settings.fragment]),
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.hasException) {

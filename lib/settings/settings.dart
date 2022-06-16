@@ -14,7 +14,7 @@ class Settings extends StatefulWidget {
   final Function reinitialize;
   const Settings(this.user, this.reinitialize, {Key? key}) : super(key: key);
 
-  static final settingsFragment = addFragments(gql(r"""
+  static final fragment = addFragments(gql(r"""
     fragment settings_user on User {
       id
       email
@@ -22,7 +22,7 @@ class Settings extends StatefulWidget {
       ...addTestHub_user
       ...notificationSettings_user
     }
-  """), [AddTestHub.addTestHubFragment, NotificationSettings.notificationSettingsFragment]);
+  """), [AddTestHub.fragment, NotificationSettings.fragment]);
 
   @override
   State<Settings> createState() => _SettingsState();

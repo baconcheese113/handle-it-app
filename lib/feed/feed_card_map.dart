@@ -6,7 +6,7 @@ class FeedCardMap extends StatefulWidget {
   final Map<String, dynamic> hub;
   const FeedCardMap({Key? key, required this.hub}) : super(key: key);
 
-  static final feedCardMapFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment feedCardMap_hub on Hub {
       id
       locations(last: 2) {

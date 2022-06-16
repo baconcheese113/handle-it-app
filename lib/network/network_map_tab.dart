@@ -10,7 +10,7 @@ class NetworkMapTab extends StatefulWidget {
   final Function refetch;
   const NetworkMapTab({Key? key, required this.viewerFrag, required this.refetch}) : super(key: key);
 
-  static final networkMapTabFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment networkMapTab_viewer on Viewer {
       user {
         id
@@ -87,7 +87,7 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
             } else {
               bestCameraPos ??= pos;
             }
-            print(">>> added marker with networkId: $networkId}");
+            print(">>> added marker with networkId: $networkId");
             final marker = Marker(
               markerId: MarkerId("${m['id']}-$hubId"),
               position: pos,

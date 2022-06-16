@@ -53,7 +53,11 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
         final hub = result.data!['hub'];
         final List<dynamic> networks = hub['networks'];
         print(">>> looking for ${widget.hubObject.hubId} and networks are $networks");
-        final network = networks.firstWhere((n) => n['id'] == widget.hubObject.networkId);
+        final network = networks.firstWhere((n) => n['id'] == widget.hubObject.networkId, orElse: () => null);
+        if (network == null) {
+          print(">>> networks couldn't find network with id ${widget.hubObject.networkId}");
+          return const SizedBox();
+        }
         final fixedAt = timeago.format(DateTime.parse(hub['locations'][0]['fixedAt']));
         getChipFromNetwork(Map<String, dynamic> n) {
           return Chip(

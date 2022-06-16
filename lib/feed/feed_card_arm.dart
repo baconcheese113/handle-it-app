@@ -7,7 +7,7 @@ class FeedCardArm extends StatefulWidget {
   final Map<String, dynamic> hub;
   const FeedCardArm({Key? key, required this.hub}) : super(key: key);
 
-  static final feedCardArmFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment feedCardArm_hub on Hub {
       id
       isArmed
@@ -29,7 +29,7 @@ class _FeedCardArmState extends State<FeedCardArm> {
             ...feedCard_hub
           }
         }
-      '''), [FeedCard.feedCardFragment])),
+      '''), [FeedCard.fragment])),
         builder: (
           RunMutation runMutation,
           QueryResult? result,

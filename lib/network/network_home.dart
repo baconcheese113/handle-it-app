@@ -24,7 +24,7 @@ class _NetworkHomeState extends State<NetworkHome> {
               ...networkMembersTab_viewer
             }
           }
-        """), [NetworkMapTab.networkMapTabFragment, NetworkMembersTab.networkMembersTabFragment])),
+        """), [NetworkMapTab.fragment, NetworkMembersTab.fragment])),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.isLoading) return const CircularProgressIndicator();
         if (result.hasException) return const Center(child: Text("Failed to load"));

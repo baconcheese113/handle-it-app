@@ -31,7 +31,7 @@ class _AddSensorWizardState extends State<AddSensorWizard> {
             }
           }
         }
-      '''), [AddSensorWizardContent.addSensorWizardContentFragment]),
+      '''), [AddSensorWizardContent.fragment]),
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.hasException) {

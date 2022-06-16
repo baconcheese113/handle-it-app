@@ -27,7 +27,7 @@ class AddVehicleWizardContent extends StatefulWidget {
     required this.refetch,
   }) : super(key: key);
 
-  static final addVehicleWizardContentFragment = gql(r"""
+  static final fragment = gql(r"""
     fragment addVehicleWizardContent_user on User {
       id
       hubs {

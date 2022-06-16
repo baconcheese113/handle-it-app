@@ -13,7 +13,7 @@ class AddSensorWizardContent extends StatefulWidget {
   final Map<String, dynamic> hub;
   const AddSensorWizardContent({Key? key, required this.hub}) : super(key: key);
 
-  static final addSensorWizardContentFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment addSensorWizardContent_hub on Hub {
       id
       name

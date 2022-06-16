@@ -9,7 +9,7 @@ class NetworkMembersTile extends StatefulWidget {
   final int userId;
   const NetworkMembersTile({Key? key, required this.memberFrag, required this.userId}) : super(key: key);
 
-  static final networkMembersTileFragment = gql(r'''
+  static final fragment = gql(r'''
     fragment networkMembersTile_member on NetworkMember {
       status
       role
