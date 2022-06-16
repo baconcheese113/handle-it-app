@@ -53,9 +53,10 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
           child: Consumer<NetworkProvider>(
             builder: ((context, netProvider, child) => Row(
                   children: [
-                    Text(network['name'],
-                        style: TextStyle(fontSize: 24, color: netProvider.getColorForId(network['id']))),
-                    // TODO if (isOwner) IconButton(onPressed: handleAddMember, icon: const Icon(Icons.add))
+                    Text(
+                      network['name'],
+                      style: TextStyle(fontSize: 24, color: netProvider.getColorForId(network['id'])),
+                    ),
                   ],
                 )),
           ),

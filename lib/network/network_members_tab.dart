@@ -28,6 +28,10 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
     for (final n in networks) {
       networksList.add(NetworkMembersList(networkFrag: n, viewerFrag: widget.viewerFrag));
     }
+    onNetworkAdded(String msg) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+
     return RefreshIndicator(
       onRefresh: () async {
         await widget.refetch();
@@ -60,7 +64,10 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
                     TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
                     TextButton(
                         onPressed: () async {
-                          await runMutation({'name': name}).networkResult;
+                          final mutation = await runMutation({'name': name}).networkResult;
+                          if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
+                            onNetworkAdded("Network created successfully, refresh to view");
+                          }
                           if (mounted) Navigator.of(dialogContext).pop();
                         },
                         child: const Text("Create"))

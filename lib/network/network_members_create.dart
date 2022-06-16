@@ -24,9 +24,14 @@ class NetworkMembersCreate extends StatefulWidget {
 
 class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
   String _newEmail = "";
+  final TextEditingController _controller = TextEditingController(text: "");
 
   @override
   Widget build(BuildContext context) {
+    onSubmitEnd(String msg) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+
     return Mutation(
       options: MutationOptions(document: gql(r'''
           mutation CreateNetworkMember($networkId: Int!, $email: String!, $role: RoleType!) {
@@ -49,11 +54,17 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
         ''')),
       builder: (RunMutation runMutation, QueryResult? result) {
         void handleCreate() async {
-          await runMutation({
+          final mutation = await runMutation({
             'networkId': widget.networkFrag['id'],
             'email': _newEmail,
             'role': "member",
           }).networkResult;
+
+          if (mutation != null && !mutation.hasException && mutation.isNotLoading) {
+            _controller.clear();
+            // TODO avoid needing to refresh manually
+            onSubmitEnd("User added, refresh to view");
+          }
         }
 
         final canAdd = _newEmail.isNotEmpty && EmailValidator.validate(_newEmail);
@@ -62,6 +73,7 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
           children: [
             Expanded(
               child: TextFormField(
+                controller: _controller,
                 decoration: const InputDecoration(hintText: "Enter new member email"),
                 onChanged: (newText) => setState(() => _newEmail = newText),
               ),

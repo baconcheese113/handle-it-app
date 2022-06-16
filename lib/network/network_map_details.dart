@@ -88,8 +88,11 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
                     Text(hub['owner']['email']),
                     Text("As of $fixedAt"),
                     if (networkChips.isNotEmpty)
-                      Row(
-                        children: [const Text("Also in "), ...networkChips],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [const Text("Also in "), ...networkChips],
+                        ),
                       )
                   ],
                 ),
