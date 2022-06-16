@@ -87,14 +87,14 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
             } else {
               bestCameraPos ??= pos;
             }
+            print(">>> added marker with networkId: $networkId}");
             final marker = Marker(
               markerId: MarkerId("${m['id']}-$hubId"),
               position: pos,
               alpha: .7,
               icon: BitmapDescriptor.defaultMarkerWithHue(netProvider.getMarkerHue(networkId)),
               onTap: () {
-                final selectedHub = HubObject(
-                    hub['name'], network['id'], network['name'], m['user']['email'], pos, location['fixedAt']);
+                final selectedHub = HubObject(hubId, networkId, pos);
                 netProvider.setSelectedHub(selectedHub);
               },
             );
@@ -131,6 +131,18 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
                 onMapCreated: handleMapCreated,
                 initialCameraPosition: CameraPosition(target: bestCameraPos ?? const LatLng(0, 0), zoom: 12),
                 markers: networkMarkers,
+                myLocationButtonEnabled: false,
+                compassEnabled: false,
+                scrollGesturesEnabled: true,
+                rotateGesturesEnabled: true,
+                tiltGesturesEnabled: true,
+                zoomGesturesEnabled: true,
+                zoomControlsEnabled: false,
+                buildingsEnabled: false,
+                myLocationEnabled: false,
+                indoorViewEnabled: false,
+                mapToolbarEnabled: false,
+                trafficEnabled: false,
                 onTap: (pos) => netProvider.clearSelectedHub(),
               ),
             )

@@ -64,14 +64,7 @@ class _NetworkMembersTileState extends State<NetworkMembersTile> {
             ? () {
                 DefaultTabController.of(context)!.animateTo(0);
                 final hubLoc = LatLng(locs[0]['lat'], locs[0]['lng']);
-                final selectedHub = HubObject(
-                  hub['name'],
-                  member['network']['id'],
-                  member['network']['name'],
-                  member['user']['email'],
-                  hubLoc,
-                  locs[0]['fixedAt'],
-                );
+                final selectedHub = HubObject(hub['id'], member['network']['id'], hubLoc);
                 netProvider.setSelectedHub(selectedHub);
               }
             : null,

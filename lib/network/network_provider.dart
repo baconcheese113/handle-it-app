@@ -23,14 +23,11 @@ const markerHues = [
 ];
 
 class HubObject {
-  String hubName;
+  int hubId;
   int networkId;
-  String networkName;
-  String memberEmail;
   LatLng loc;
-  String fixedAt;
   Color hue = Colors.black;
-  HubObject(this.hubName, this.networkId, this.networkName, this.memberEmail, this.loc, this.fixedAt, {Color? hue});
+  HubObject(this.hubId, this.networkId, this.loc, {Color? hue});
 }
 
 class NetworkProvider extends ChangeNotifier {
@@ -66,6 +63,6 @@ class NetworkProvider extends ChangeNotifier {
 
   finishAnimate() {
     didAnimateToSelection = true;
-    notifyListeners();
+    // notifyListeners();
   }
 }
