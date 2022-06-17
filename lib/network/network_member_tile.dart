@@ -2,20 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/network/network_provider.dart';
+import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
 
-class NetworkMembersTile extends StatefulWidget {
-  final Map<String, dynamic> memberFrag;
-  const NetworkMembersTile({Key? key, required this.memberFrag}) : super(key: key);
+import 'network_member_delete.dart';
 
-  static final fragment = gql(r'''
-    fragment networkMembersTile_member on NetworkMember {
+class NetworkMemberTile extends StatefulWidget {
+  final Map<String, dynamic> memberFrag;
+  const NetworkMemberTile({Key? key, required this.memberFrag}) : super(key: key);
+
+  static final fragment = addFragments(gql(r'''
+    fragment networkMemberTile_member on NetworkMember {
+      ...networkMemberDelete_member
       status
       role
       network {
         id
         name
       }
+      canDelete
       user {
         id
         isMe
@@ -32,18 +37,21 @@ class NetworkMembersTile extends StatefulWidget {
         }
       }
     }
-  ''');
+  '''), [NetworkMemberDelete.fragment]);
 
   @override
-  State<NetworkMembersTile> createState() => _NetworkMembersTileState();
+  State<NetworkMemberTile> createState() => _NetworkMemberTileState();
 }
 
-class _NetworkMembersTileState extends State<NetworkMembersTile> {
+class _NetworkMemberTileState extends State<NetworkMemberTile> {
+  bool _isExpanded = false;
+
   @override
   Widget build(BuildContext context) {
     final netProvider = Provider.of<NetworkProvider>(context, listen: false);
     final Map<String, dynamic> member = widget.memberFrag;
-    bool isMe = member['user']['isMe'];
+    final bool isMe = member['user']['isMe'];
+    final bool canDelete = member['canDelete'];
     final List<dynamic> hubs = member['user']['hubs'];
     bool hasHubWithLocation = false;
     final List<Widget> hubListTiles = [];
@@ -78,6 +86,7 @@ class _NetworkMembersTileState extends State<NetworkMembersTile> {
         leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
         title: Text("${member['user']['email']} - ${member['status']} ${member['role']}"),
         subtitle: Column(children: hubNames),
+        trailing: canDelete ? NetworkMemberDelete(memberFrag: member) : null,
       );
     }
 
@@ -91,6 +100,8 @@ class _NetworkMembersTileState extends State<NetworkMembersTile> {
       leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
       title: Text("${member['user']['email']} - ${member['status']} ${member['role']}"),
       subtitle: Column(children: hubNames),
+      onExpansionChanged: (isExpanded) => setState(() => _isExpanded = isExpanded),
+      trailing: canDelete && _isExpanded ? NetworkMemberDelete(memberFrag: member) : null,
       children: hubListTiles,
     );
   }

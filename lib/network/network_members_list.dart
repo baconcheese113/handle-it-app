@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/network/network_home.dart';
+import 'package:handle_it/network/network_member_tile.dart';
 import 'package:handle_it/network/network_members_create.dart';
-import 'package:handle_it/network/network_members_tile.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +22,10 @@ class NetworkMembersList extends StatefulWidget {
         user {
           isMe
         }
-        ...networkMembersTile_member
+        ...networkMemberTile_member
       }
     }
-  '''), [NetworkMembersTile.fragment]);
+  '''), [NetworkMemberTile.fragment]);
 
   @override
   State<NetworkMembersList> createState() => _NetworkMembersListState();
@@ -36,11 +36,10 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
   Widget build(BuildContext context) {
     final Map<String, dynamic> network = widget.networkFrag;
     final List<dynamic> members = network['members'];
-    bool isOwner = false;
+    bool isOwner = members.any((m) => m['user']['isMe'] && m['role'] == 'owner');
     final List<Widget> membersList = [];
     for (final m in members) {
-      if (m['user']['isMe'] && m['role'] == 'owner') isOwner = true;
-      membersList.add(NetworkMembersTile(memberFrag: m));
+      membersList.add(NetworkMemberTile(memberFrag: m));
     }
     return Mutation(
       options: MutationOptions(
@@ -56,9 +55,9 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
           final map = cache.readQuery(request);
           final id = result!.data!['deleteNetwork']['id'];
           final Map<String, dynamic> viewer = map!['viewer'];
-          viewer['activeNetworks'].removeWhere((n) => n['id'] == id);
-          viewer['networks'].removeWhere((n) => n['id'] == id);
-          viewer['user']['networkMemberships'].removeWhere((m) => m['network']['id'] == id);
+          viewer['activeNetworks']?.removeWhere((n) => n['id'] == id);
+          viewer['networks']?.removeWhere((n) => n['id'] == id);
+          viewer['user']?['networkMemberships']?.removeWhere((m) => m['network']['id'] == id);
           cache.writeQuery(request, data: map, broadcast: true);
         },
       ),
