@@ -12,10 +12,7 @@ class NetworkMapTab extends StatefulWidget {
 
   static final fragment = gql(r'''
     fragment networkMapTab_viewer on Viewer {
-      user {
-        id
-      }
-      networks {
+      activeNetworks: networks (status: active) {
         id
         name
         createdById

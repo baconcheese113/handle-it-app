@@ -10,8 +10,7 @@ class NetworkMembersTab extends StatefulWidget {
 
   static final fragment = addFragments(gql(r'''
     fragment networkMembersTab_viewer on Viewer {
-      ...networkMembersList_viewer
-      networks {
+      networks (status: active) {
         ...networkMembersList_network
       }
     }
