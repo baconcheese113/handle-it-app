@@ -26,8 +26,8 @@ class _NetworkHomeState extends State<NetworkHome> {
           }
         """), [NetworkMapTab.fragment, NetworkMembersTab.fragment])),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.isLoading) return const CircularProgressIndicator();
-        if (result.hasException) return const Center(child: Text("Failed to load"));
+        if (result.data == null && result.isLoading) return const CircularProgressIndicator();
+        if (result.hasException) return Center(child: Text(result.exception.toString()));
 
         return ChangeNotifierProvider<NetworkProvider>(
           create: (BuildContext c) => NetworkProvider(),

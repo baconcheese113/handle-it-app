@@ -48,8 +48,8 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
         fetchPolicy: FetchPolicy.networkOnly,
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.isLoading) return const SizedBox();
-        if (result.hasException) return const Center(child: Text("Failed to load"));
+        if (result.data == null && result.isLoading) return const SizedBox();
+        if (result.hasException) return const Center(child: Text(result.exception.toString()));
         final hub = result.data!['hub'];
         final List<dynamic> networks = hub['networks'];
         print(">>> looking for ${widget.hubObject.hubId} and networks are $networks");

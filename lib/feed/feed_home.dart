@@ -31,7 +31,7 @@ class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
         """), [FeedCard.fragment]),
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.isLoading) return const CircularProgressIndicator();
+        if (result.data == null && result.isLoading) return const CircularProgressIndicator();
 
         final hubs = result.data!.containsKey('viewer')
             ? List<dynamic>.from(result.data!['viewer']['user']['hubs'])
