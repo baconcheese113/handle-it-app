@@ -24,6 +24,7 @@ class NetworkMapTab extends StatefulWidget {
           role
           user {
             id
+            isMe
             email
             hubs {
               id
@@ -61,7 +62,6 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
   Widget build(BuildContext context) {
     final netProvider = Provider.of<NetworkProvider>(context);
     final List<dynamic> networks = widget.viewerFrag['networks'];
-    final int thisUserId = widget.viewerFrag['user']['id'];
     final List<int> addedHubs = [];
     LatLng? bestCameraPos;
 
@@ -70,7 +70,6 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
       final List<dynamic> members = network['members'];
       final List<Marker> markers = [];
       for (final m in members) {
-        // if (m['status'] != 'active' || m['user']['id'] == thisUserId) continue;
         final List<dynamic> hubs = m['user']['hubs'];
         for (final hub in hubs) {
           final int hubId = hub['id'];
@@ -82,7 +81,7 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               continue;
             }
             addedHubs.add(hubId);
-            if (thisUserId == m['user']['id']) {
+            if (m['user']['isMe']) {
               bestCameraPos = pos;
             } else {
               bestCameraPos ??= pos;

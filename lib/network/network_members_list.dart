@@ -18,13 +18,10 @@ class NetworkMembersList extends StatefulWidget {
       members {
         id
         role
-        userId
+        user {
+          isMe
+        }
         ...networkMembersTile_member
-      }
-    }
-    fragment networkMembersList_viewer on Viewer {
-      user {
-        id
       }
     }
   '''), [NetworkMembersTile.fragment]);
@@ -38,12 +35,11 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
   Widget build(BuildContext context) {
     final Map<String, dynamic> network = widget.networkFrag;
     final List<dynamic> members = network['members'];
-    final int userId = widget.viewerFrag['user']['id'];
     bool isOwner = false;
     final List<Widget> membersList = [];
     for (final m in members) {
-      if (m['userId'] == userId && m['role'] == 'owner') isOwner = true;
-      membersList.add(NetworkMembersTile(memberFrag: m, userId: userId));
+      if (m['user']['isMe'] && m['role'] == 'owner') isOwner = true;
+      membersList.add(NetworkMembersTile(memberFrag: m));
     }
 
     return Column(
@@ -55,7 +51,7 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
                   children: [
                     Text(
                       network['name'],
-                      style: TextStyle(fontSize: 24, color: netProvider.getColorForId(network['id'])),
+                      style: TextStyle(fontSize: 24, color: netProvider.registerNetwork(network['id'])),
                     ),
                   ],
                 )),
