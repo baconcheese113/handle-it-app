@@ -7,6 +7,19 @@ import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
 
+final networkHomeQuery = addFragments(
+  gql(r"""
+  query networkHomeQuery {
+    viewer {
+      ...networkMapTab_viewer
+      ...networkMembersTab_viewer
+      ...networkInvitesTab_viewer
+    }
+  }
+  """),
+  [NetworkMapTab.fragment, NetworkMembersTab.fragment, NetworkInvitesTab.fragment],
+);
+
 class NetworkHome extends StatefulWidget {
   const NetworkHome({Key? key}) : super(key: key);
 
@@ -18,15 +31,7 @@ class _NetworkHomeState extends State<NetworkHome> {
   @override
   Widget build(BuildContext context) {
     return Query(
-      options: QueryOptions(document: addFragments(gql(r"""
-          query networkHomeQuery {
-            viewer {
-              ...networkMapTab_viewer
-              ...networkMembersTab_viewer
-              ...networkInvitesTab_viewer
-            }
-          }
-        """), [NetworkMapTab.fragment, NetworkMembersTab.fragment, NetworkInvitesTab.fragment])),
+      options: QueryOptions(document: networkHomeQuery),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
         if (result.data == null && result.isLoading) return const CircularProgressIndicator();
         if (result.hasException) return Center(child: Text(result.exception.toString()));

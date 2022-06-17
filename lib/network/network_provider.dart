@@ -41,12 +41,12 @@ class NetworkProvider extends ChangeNotifier {
     Color? foundNetwork = getColorForId(id);
     if (foundNetwork != null) return foundNetwork;
     int nextIdx = networkColors.keys.length;
-    return networkColors[id] = markerColors[nextIdx];
+    return networkColors[id] = markerColors[nextIdx % markerColors.length];
   }
 
   double getMarkerHue(int networkId) {
     final idx = networkColors.keys.toList().indexWhere((nId) => nId == networkId);
-    return markerHues[idx];
+    return markerHues[idx % markerHues.length];
   }
 
   setSelectedHub(HubObject newHub) {

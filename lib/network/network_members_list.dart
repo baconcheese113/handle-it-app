@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/network/network_home.dart';
 import 'package:handle_it/network/network_members_create.dart';
 import 'package:handle_it/network/network_members_tile.dart';
 import 'package:handle_it/network/network_provider.dart';
@@ -41,25 +42,58 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
       if (m['user']['isMe'] && m['role'] == 'owner') isOwner = true;
       membersList.add(NetworkMembersTile(memberFrag: m));
     }
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(top: 48),
-          child: Consumer<NetworkProvider>(
-            builder: ((context, netProvider, child) => Row(
-                  children: [
-                    Text(
-                      network['name'],
-                      style: TextStyle(fontSize: 24, color: netProvider.registerNetwork(network['id'])),
-                    ),
-                  ],
-                )),
+    return Mutation(
+      options: MutationOptions(
+        document: gql(r'''
+            mutation DeleteNetwork($networkId: Int!) {
+              deleteNetwork(networkId: $networkId) {
+                id
+              }
+            }
+          '''),
+        update: (cache, result) {
+          final request = QueryOptions(document: networkHomeQuery).asRequest;
+          final map = cache.readQuery(request);
+          final id = result!.data!['deleteNetwork']['id'];
+          final Map<String, dynamic> viewer = map!['viewer'];
+          viewer['activeNetworks'].removeWhere((n) => n['id'] == id);
+          viewer['networks'].removeWhere((n) => n['id'] == id);
+          viewer['user']['networkMemberships'].removeWhere((m) => m['network']['id'] == id);
+          cache.writeQuery(request, data: map, broadcast: true);
+        },
+      ),
+      builder: (RunMutation runMutation, QueryResult? result) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Column(
+                children: [
+                  Consumer<NetworkProvider>(
+                    builder: ((context, netProvider, child) => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              network['name'],
+                              style: TextStyle(fontSize: 24, color: netProvider.registerNetwork(network['id'])),
+                            ),
+                            if (isOwner) const Chip(label: Text("Owner")),
+                            if (isOwner)
+                              IconButton(
+                                  onPressed: () => runMutation({'networkId': network['id']}),
+                                  icon: const Icon(Icons.delete)),
+                          ],
+                        )),
+                  ),
+                  Column(children: membersList),
+                  NetworkMembersCreate(networkFrag: widget.networkFrag),
+                ],
+              ),
+            ),
           ),
-        ),
-        Column(children: membersList),
-        NetworkMembersCreate(networkFrag: widget.networkFrag),
-      ],
+        );
+      },
     );
   }
 }
