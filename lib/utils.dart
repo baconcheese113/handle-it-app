@@ -45,3 +45,8 @@ ThemeData buildTheme() {
   //   primaryColor: APP_GREEN,
   // );
 }
+
+String pluralize(String word, int count, [bool isEs = false]) {
+  final ending = isEs ? 'es' : 's';
+  return "$count $word${count == 1 ? '' : ending}";
+}

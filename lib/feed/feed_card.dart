@@ -143,7 +143,7 @@ class _FeedCardState extends State<FeedCard> {
           leading: Icon(Icons.bluetooth, color: bluetoothIconColor),
           title: Text("${widget.hubFrag['name']} (${widget.hubFrag['serial']})"),
           subtitle: Row(children: [
-            Text("$sensorCount sensor${sensorCount == 1 ? '' : 's'} |"),
+            Text("${pluralize('sensor', sensorCount)} |"),
             FeedCardRssi(foundHub: _foundHub, deviceState: _deviceState),
           ]),
           trailing: Column(children: [
