@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/add_sensor_wizard.dart';
-import 'package:handle_it/feed/feed_card.dart';
+import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
+import 'package:handle_it/feed/card/feed_card.dart';
 import 'package:handle_it/utils.dart';
 
 class FeedCardMenu extends StatefulWidget {

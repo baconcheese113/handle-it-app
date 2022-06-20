@@ -4,12 +4,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/auth/register.dart';
-import 'package:handle_it/feed/add_sensor_wizard.dart';
-import 'package:handle_it/feed/add_vehicle_wizard.dart';
+import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
 import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:handle_it/utils.dart';
 import 'package:rxdart/subjects.dart';
+
+import 'feed/add_wizards/add_vehicle_wizard.dart';
 
 class AuthenticationState extends ChangeNotifier {
   String? token;

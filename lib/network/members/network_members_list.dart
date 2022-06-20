@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/network/members/network_members_create.dart';
 import 'package:handle_it/network/network_home.dart';
-import 'package:handle_it/network/network_member_tile.dart';
-import 'package:handle_it/network/network_members_create.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
+
+import '../member/network_member_tile.dart';
 
 class NetworkMembersList extends StatefulWidget {
   final Map<String, dynamic> networkFrag;

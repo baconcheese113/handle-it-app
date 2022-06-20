@@ -5,9 +5,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import 'add_vehicle_wizard_content.dart';
 
 class AddSensorWizardContent extends StatefulWidget {
   final Map<String, dynamic> hub;

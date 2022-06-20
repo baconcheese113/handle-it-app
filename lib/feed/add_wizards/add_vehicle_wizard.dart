@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/utils.dart';
+
+import 'add_vehicle_wizard_content.dart';
 
 class AddVehicleWizard extends StatefulWidget {
   const AddVehicleWizard({Key? key}) : super(key: key);

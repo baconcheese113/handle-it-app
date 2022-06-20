@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/network/network_map_details.dart';
+import 'package:handle_it/network/map/network_map_details.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:provider/provider.dart';
 

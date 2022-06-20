@@ -3,16 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
-import 'package:handle_it/feed/battery_status.dart';
-import 'package:handle_it/feed/feed_card_arm.dart';
-import 'package:handle_it/feed/feed_card_map.dart';
-import 'package:handle_it/feed/feed_card_menu.dart';
-import 'package:handle_it/feed/feed_card_rssi.dart';
-import 'package:handle_it/feed/hub_updater.dart';
-import 'package:handle_it/feed/sensor_updater.dart';
+import 'package:handle_it/feed/updaters/battery_status.dart';
+import 'package:handle_it/feed/updaters/hub_updater.dart';
 import 'package:handle_it/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+import '../add_wizards/add_vehicle_wizard_content.dart';
+import '../updaters/sensor_updater.dart';
+import 'feed_card_arm.dart';
+import 'feed_card_map.dart';
+import 'feed_card_menu.dart';
+import 'feed_card_rssi.dart';
 
 class FeedCard extends StatefulWidget {
   final Map<String, dynamic> hubFrag;

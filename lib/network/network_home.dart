@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/network/network_invites_tab.dart';
-import 'package:handle_it/network/network_map_tab.dart';
-import 'package:handle_it/network/network_members_tab.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
+
+import 'invites/network_invites_tab.dart';
+import 'map/network_map_tab.dart';
+import 'members/network_members_tab.dart';
 
 final networkHomeQuery = addFragments(
   gql(r"""

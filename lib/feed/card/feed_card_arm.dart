@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/feed_card.dart';
+import 'package:handle_it/feed/card/feed_card.dart';
 import 'package:handle_it/utils.dart';
 
 class FeedCardArm extends StatefulWidget {

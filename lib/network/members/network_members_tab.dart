@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/network/network_members_list.dart';
 import 'package:handle_it/utils.dart';
+
+import 'network_members_list.dart';
 
 class NetworkMembersTab extends StatefulWidget {
   final Map<String, dynamic> viewerFrag;

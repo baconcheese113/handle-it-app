@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:handle_it/feed/battery_status.dart';
+import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:http/http.dart' as http;
 import 'package:version/version.dart';
 

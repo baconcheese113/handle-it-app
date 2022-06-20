@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/add_vehicle_wizard.dart';
 import 'package:handle_it/feed/feed_home.dart';
 import 'package:handle_it/network/network_home.dart';
 import 'package:handle_it/settings/settings.dart';
 import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'feed/add_wizards/add_vehicle_wizard.dart';
 import 'utils.dart';
 
 class Home extends StatefulWidget {

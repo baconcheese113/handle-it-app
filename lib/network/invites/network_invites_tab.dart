@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/network/network_invites_card.dart';
+import 'package:handle_it/network/invites/network_invites_card.dart';
 
-import '../utils.dart';
+import '../../utils.dart';
 
 class NetworkInvitesTab extends StatefulWidget {
   final Map<String, dynamic> viewerFrag;

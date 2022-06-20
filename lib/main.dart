@@ -7,9 +7,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/app.dart';
 import 'package:handle_it/auth/login.dart';
-import 'package:handle_it/feed/add_vehicle_wizard_content.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:rxdart/subjects.dart';
+
+import 'feed/add_wizards/add_vehicle_wizard_content.dart';
 
 final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
 
