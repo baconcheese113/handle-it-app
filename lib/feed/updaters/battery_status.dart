@@ -19,7 +19,7 @@ class BatteryStatus extends StatelessWidget {
         padding: const EdgeInsets.only(top: 4),
         child: SizedBox(
           height: 25,
-          width: 50,
+          width: 55,
           child: Column(
             children: [
               Row(children: [const Icon(Icons.bolt, size: 16, color: Colors.white30), Text("$batteryLevel%")]),

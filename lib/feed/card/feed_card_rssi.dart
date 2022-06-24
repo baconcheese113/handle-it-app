@@ -50,7 +50,7 @@ class _FeedCardRssiState extends State<FeedCardRssi> {
     final rangeStr = () {
       if (_distance == -2) return "Not connected";
       if (_distance == -1) return "Calculating...";
-      if (_distance < 2) return "Less than a meter";
+      if (_distance < 2) return "<1 meter";
       return "${_distance.round()} meters";
     }();
     return Text(" $rangeStr");
