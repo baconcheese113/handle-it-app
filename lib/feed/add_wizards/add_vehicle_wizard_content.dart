@@ -45,6 +45,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   PageController? _formsPageViewController;
   List? _forms;
   bool _scanning = false;
+  String _logText = "";
   final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   BluetoothDevice? _foundHub;
   BluetoothDevice? _curDevice;
@@ -64,9 +65,21 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     _formsPageViewController = PageController(initialPage: widget.pairedHubId != null ? 1 : 0);
   }
 
+  Future<void> _resetConn() async {
+    if (_foundHub != null) await _commandChar?.write([]);
+    await _foundHub?.disconnect();
+    if (_scanning) await _flutterBlue.stopScan();
+    setState(() {
+      _logText = "";
+      _scanning = false;
+      _foundHub = null;
+      _curDevice = null;
+    });
+  }
+
   // TODO prevent hub from connecting to sensors before wizard
   // TODO wizard for adding sensors to hub
-  Future<void> findHub() async {
+  Future<void> _findHub() async {
     if (Platform.isAndroid) {
       if (!await requestPermission(Permission.location) ||
           // !await requestPermission(Permission.bluetooth) ||
@@ -77,12 +90,12 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       }
     }
 
-    setState(() => _scanning = true);
     if (!await tryPowerOnBLE()) {
-      setState(() => _scanning = false);
+      _resetConn();
       return;
     }
 
+    setState(() => _scanning = true);
     print("bluetooth state is now POWERED_ON, starting peripheral scan");
     await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
       if (r.device.name.isEmpty) continue;
@@ -96,31 +109,33 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     }
     if (_foundHub == null) {
       print("no devices found and scan stopped");
-      setState(() => _scanning = false);
+      await _resetConn();
       return;
     }
-
-    late BluetoothDeviceState deviceState;
-    final stateStreamSub = _foundHub!.state.listen((state) {
-      deviceState = state;
-      print(">>> New state: $state");
-    });
 
     print(">>> connecting");
     await _foundHub!.connect();
     print(">>> Device fully connected");
     _flutterBlue.stopScan();
+    setState(() {
+      _logText += "Connected to ${_foundHub!.name}\nDiscovering services...\n";
+      _scanning = false;
+    });
     print(">>> discoveringservices");
 
     List<BluetoothService> services = await _foundHub!.discoverServices();
     BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
     BluetoothCharacteristic commandChar =
         hubService.characteristics.firstWhere((c) => c.uuid == Guid(COMMAND_CHARACTERISTIC_UUID));
+    setState(() => _logText += "Discovered all services\nClearing out transaction characteristic...\n");
     print(">>> clearing out commandChar");
     // clears out commandChar before starting, just in case we had to restart
     await commandChar.write([]);
 
-    setState(() => _commandChar = commandChar);
+    setState(() {
+      _logText += "Cleared out characteristic\nWriting characteristic with userId...\n";
+      _commandChar = commandChar;
+    });
 
     String command = "UserId:${widget.user['id']}";
     List<int> bytes = utf8.encode(command);
@@ -128,22 +143,31 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     Uint8List userIdCharValue = Uint8List.fromList(bytes);
     await commandChar.write(userIdCharValue);
 
+    setState(() => _logText += "Wrote characteristic\nListening for response...");
     print(">>Starting rawHubId parse loop");
 
     String rawHubId = "";
+    int startTime = DateTime.now().millisecondsSinceEpoch;
     while (rawHubId.length < 6 || rawHubId.substring(0, 5) != "HubId") {
-      print(">>attempting to read");
+      print(">>attempting to read: ${DateTime.now().millisecondsSinceEpoch - startTime}ms");
       List<int> bytes = await commandChar.read();
       print(">>readCharacteristic ${bytes.toString()}");
       rawHubId = String.fromCharCodes(bytes);
       print(">>rawHubId = $rawHubId");
       await Future.delayed(const Duration(milliseconds: 500));
+      setState(() => _logText += ".");
+      if (DateTime.now().millisecondsSinceEpoch > startTime + 20000 || _foundHub == null) {
+        setState(() => _logText += "\nNever received a response, likely a network error");
+        await Future.delayed(const Duration(seconds: 5));
+        print(">>> Read timed out, resetting...");
+        await _resetConn();
+        return;
+      }
     }
 
     print(">>Ended rawHubId parse loop");
     int hubId = int.parse(rawHubId.substring(6));
-    _foundHub!.disconnect();
-    stateStreamSub.cancel();
+    await _resetConn();
     widget.setPairedHubId(hubId);
     print(">>Finished connection, just monitoring sensorValue now");
     await widget.refetch();
@@ -152,9 +176,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   @override
   Widget build(BuildContext context) {
     Future<bool> cancelForm() async {
-      await _foundHub?.disconnect();
-      await _commandChar?.write([]);
-      _flutterBlue.stopScan();
+      _resetConn();
       if (!mounted) return true;
       Navigator.pop(context);
       return true;
@@ -162,7 +184,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
 
     return Mutation(
       options: MutationOptions(document: gql(r'''
-          mutation addVehicleWizardMutation($id: ID, $name: String) {
+          mutation addVehicleWizardMutation($id: ID!, $name: String) {
             updateHub(id: $id, name: $name) {
               id
               name
@@ -197,14 +219,15 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                             textScaleFactor: 1.3,
                           ),
                           if (_curDevice != null) Text("...found ${_curDevice!.name}"),
-                          _scanning == true
-                              ? const CircularProgressIndicator()
-                              : TextButton(onPressed: findHub, child: const Text("Start scanning")),
+                          if (_scanning && _logText.isEmpty) const CircularProgressIndicator(),
+                          if (!_scanning && _logText.isEmpty)
+                            TextButton(onPressed: _findHub, child: const Text("Start scanning")),
+                          if (_logText.isNotEmpty) Text(_logText),
                         ])))),
                 Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
                     child: TextButton(
-                      onPressed: () => _foundHub == null ? {cancelForm()} : null,
+                      onPressed: _foundHub == null ? cancelForm : null,
                       child: const Text("Cancel"),
                     ),
                   ),
