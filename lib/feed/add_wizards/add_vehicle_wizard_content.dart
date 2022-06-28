@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -14,28 +15,18 @@ const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
 const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
 
 class AddVehicleWizardContent extends StatefulWidget {
-  final Map<String, dynamic> user;
+  final AddVehicleWizardContentUserMixin userFrag;
   final int? pairedHubId;
   final Function(int) setPairedHubId;
   final Function refetch;
 
   const AddVehicleWizardContent({
     Key? key,
-    required this.user,
+    required this.userFrag,
     this.pairedHubId,
     required this.setPairedHubId,
     required this.refetch,
   }) : super(key: key);
-
-  static final fragment = gql(r"""
-    fragment addVehicleWizardContent_user on User {
-      id
-      hubs {
-        id
-        name
-      }
-    }
-  """);
 
   @override
   State<AddVehicleWizardContent> createState() => _AddVehicleWizardContentState();
@@ -57,11 +48,11 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   void initState() {
     super.initState();
     if (widget.pairedHubId != null) {
-      _hubCustomName = widget.user['hubs'].firstWhere(
-        (hub) => hub["id"] == widget.pairedHubId,
-        orElse: () => {"name": ""},
-      )["name"];
+      final hubs = widget.userFrag.hubs;
+      print(">>> Looking for ${widget.pairedHubId} and Hubs are $hubs");
+      _hubCustomName = hubs.firstWhere((hub) => hub.id == widget.pairedHubId).name;
     }
+    print("HubCustomName is $_hubCustomName");
     _formsPageViewController = PageController(initialPage: widget.pairedHubId != null ? 1 : 0);
   }
 
@@ -137,7 +128,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       _commandChar = commandChar;
     });
 
-    String command = "UserId:${widget.user['id']}";
+    String command = "UserId:${widget.userFrag.id}";
     List<int> bytes = utf8.encode(command);
     print(">>> writing characteristic with value $command");
     Uint8List userIdCharValue = Uint8List.fromList(bytes);
@@ -183,24 +174,19 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     }
 
     return Mutation(
-      options: MutationOptions(document: gql(r'''
-          mutation addVehicleWizardMutation($id: ID!, $name: String) {
-            updateHub(id: $id, name: $name) {
-              id
-              name
-            }
-          }
-        ''')),
-      builder: (
-        RunMutation runMutation,
-        QueryResult? result,
-      ) {
+      options: MutationOptions(
+        document: ADD_VEHICLE_WIZARD_MUTATION_DOCUMENT,
+        operationName: ADD_VEHICLE_WIZARD_MUTATION_DOCUMENT_OPERATION_NAME,
+      ),
+      builder: (runMutation, result) {
         void handleSetName() async {
           if (_formsPageViewController!.page! > 0) {
-            await runMutation({
-              "id": widget.pairedHubId,
-              "name": _hubCustomName,
-            }).networkResult;
+            await runMutation(
+              AddVehicleWizardArguments(
+                id: "${widget.pairedHubId}",
+                name: _hubCustomName,
+              ).toJson(),
+            ).networkResult;
             if (!mounted) return;
             Navigator.pop(context);
           }

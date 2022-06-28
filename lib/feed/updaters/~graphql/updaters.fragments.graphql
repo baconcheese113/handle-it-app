@@ -1,0 +1,5 @@
+fragment hubUpdater_hub on Hub {
+  __typename
+  id
+  latestVersion
+}

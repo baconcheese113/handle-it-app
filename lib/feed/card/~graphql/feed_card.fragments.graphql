@@ -1,0 +1,57 @@
+fragment feedCard_hub on Hub {
+  __typename
+  id
+  name
+  serial
+  isArmed
+  ...feedCardArm_hub
+  ...feedCardMap_hub
+  ...feedCardMenu_hub
+  ...hubUpdater_hub
+  sensors {
+    __typename
+    id
+    serial
+    isOpen
+    isConnected
+    doorRow
+    doorColumn
+    events(orderBy: [{ createdAt: desc }]) {
+      __typename
+      id
+      createdAt
+      sensor {
+        __typename
+        id
+        doorColumn
+        doorRow
+      }
+    }
+  }
+}
+
+fragment feedCardArm_hub on Hub {
+  __typename
+  id
+  isArmed
+}
+
+fragment feedCardMap_hub on Hub {
+  __typename
+  id
+  locations(last: 2) {
+    __typename
+    id
+    lat
+    lng
+    hdop
+    speed
+    age
+    course
+  }
+}
+
+fragment feedCardMenu_hub on Hub {
+  __typename
+  id
+}

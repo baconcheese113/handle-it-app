@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:http/http.dart' as http;
 
 import '../add_wizards/add_vehicle_wizard_content.dart';
@@ -14,16 +14,9 @@ const String TRANSFER_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34f
 const String FIRMWARE_CHARACTERISTIC_UUID = "00002A26-0000-1000-8000-00805f9b34fb";
 
 class HubUpdater extends StatefulWidget {
-  final Map<String, dynamic> hub;
+  final HubUpdaterHubMixin hubFrag;
   final BluetoothDevice foundHub;
-  const HubUpdater({Key? key, required this.hub, required this.foundHub}) : super(key: key);
-
-  static final fragment = gql(r'''
-    fragment hubUpdater_hub on Hub {
-      id
-      latestVersion
-    }
-    ''');
+  const HubUpdater({Key? key, required this.hubFrag, required this.foundHub}) : super(key: key);
 
   @override
   State<HubUpdater> createState() => _HubUpdaterState();
@@ -149,7 +142,7 @@ class _HubUpdaterState extends State<HubUpdater> {
   @override
   Widget build(BuildContext context) {
     if (_hubVersion < 0) return const SizedBox();
-    if (_installed || _hubVersion >= widget.hub['latestVersion']) return Text("Current version: v$_hubVersion");
+    if (_installed || _hubVersion >= widget.hubFrag.latestVersion) return Text("Current version: v$_hubVersion");
     if (_startTime != null && _progressPercent.isFinite && _progressPercent > 0.0) {
       final microsecondsElapsed = DateTime.now().microsecondsSinceEpoch - _startTime!;
       final totalEstMicroseconds = microsecondsElapsed / _progressPercent;

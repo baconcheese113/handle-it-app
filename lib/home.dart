@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/common/loading.dart';
 import 'package:handle_it/feed/feed_home.dart';
 import 'package:handle_it/network/network_home.dart';
 import 'package:handle_it/settings/settings.dart';
 import 'package:handle_it/tutorial/intro_tutorial.dart';
+import 'package:handle_it/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'feed/add_wizards/add_vehicle_wizard.dart';
-import 'utils.dart';
 
 class Home extends StatefulWidget {
   final Function reinitialize;
@@ -20,64 +22,48 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final _query = HomeQuery();
   int _selectedIndex = 0;
-  bool _introTutComplete = false;
+  bool? _introTutComplete;
 
-  void loadPrefs() async {
+  void _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.containsKey(introTutPrefKey)) {
-      print("prefs has already set $introTutPrefKey");
-      _introTutComplete = prefs.getBool(introTutPrefKey) ?? false;
-    } else {
-      print("prefs doesn't contain $introTutPrefKey");
-    }
+    var tutComplete = prefs.getBool(introTutPrefKey) ?? false;
+    print("Intro tutorial has ${tutComplete ? "" : "not "}been completed");
+    setState(() => _introTutComplete = tutComplete);
   }
 
   @override
   void initState() {
-    loadPrefs();
+    _loadPrefs();
     super.initState();
+  }
+
+  void _handleAddVehicle(BuildContext c) {
+    Navigator.pushNamed(c, AddVehicleWizard.routeName);
   }
 
   @override
   Widget build(BuildContext context) {
-    print("Rendering home");
+    if (_introTutComplete == null) return const Loading();
+    if (!_introTutComplete!) {
+      return IntroTutorial(tutorialComplete: () {
+        setState(() => _introTutComplete = true);
+      });
+    }
 
     return Query(
       options: QueryOptions(
-        document: addFragments(gql(r"""
-        query mainQuery {
-          viewer {
-            user {
-              id
-              ...settings_user
-            }
-          }
-        }
-      """), [Settings.fragment]),
+        document: _query.document,
+        operationName: _query.operationName,
       ),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.hasException) {
-          print("Exception ${result.exception.toString()}");
-          return Text(result.exception.toString());
-        }
-        if (result.isLoading) return const Text("Loading...");
-        print(result.data!['viewer']);
-        if (!result.data!.containsKey('viewer') || result.data!['viewer']['user'] == null) {
-          return const SizedBox();
-        }
+      builder: (result, {fetchMore, refetch}) {
+        final noDataWidget = validateResult(result);
+        if (noDataWidget != null) return noDataWidget;
 
-        if (!_introTutComplete) {
-          return IntroTutorial(tutorialComplete: () {
-            setState(() => _introTutComplete = true);
-          });
-        }
-        void _handleAddVehicle() {
-          Navigator.pushNamed(context, AddVehicleWizard.routeName);
-        }
-
+        final viewer = _query.parse(result.data!).viewer;
         final addVehicleFab = FloatingActionButton.extended(
-          onPressed: _handleAddVehicle,
+          onPressed: () => _handleAddVehicle(context),
           icon: const Icon(Icons.add, color: Colors.black),
           label: const Text("Add Hub", style: TextStyle(color: Colors.black)),
           backgroundColor: Colors.amberAccent,
@@ -93,7 +79,7 @@ class _HomeState extends State<Home> {
             child: [
               const FeedHome(),
               const NetworkHome(),
-              Settings(result.data!['viewer']['user'], widget.reinitialize)
+              Settings(viewer.user, widget.reinitialize),
             ][_selectedIndex],
           ),
           floatingActionButton: _selectedIndex == 0 ? addVehicleFab : null,

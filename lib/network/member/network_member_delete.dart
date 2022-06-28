@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 
 class NetworkMemberDelete extends StatefulWidget {
-  final Map<String, dynamic> memberFrag;
+  final NetworkMemberDeleteMemberMixin memberFrag;
   const NetworkMemberDelete({Key? key, required this.memberFrag}) : super(key: key);
-
-  static final fragment = gql(r'''
-    fragment networkMemberDelete_member on NetworkMember {
-      id
-      user {
-        isMe
-      }
-    }
-  ''');
 
   @override
   State<NetworkMemberDelete> createState() => _NetworkMemberDeleteState();
@@ -23,20 +15,18 @@ class _NetworkMemberDeleteState extends State<NetworkMemberDelete> {
   Widget build(BuildContext context) {
     return Mutation(
       options: MutationOptions(
-        document: gql(r'''
-        mutation DeleteNetworkMember($networkMemberId: Int!) {
-          deleteNetworkMember(networkMemberId: $networkMemberId) {
-            id
-            members {
-              id
-            }
-          }
-        }
-      '''),
+        document: DELETE_NETWORK_MEMBER_MUTATION_DOCUMENT,
+        operationName: DELETE_NETWORK_MEMBER_MUTATION_DOCUMENT_OPERATION_NAME,
       ),
-      builder: (RunMutation runMutation, QueryResult? result) {
+      builder: (runMutation, result) {
         return IconButton(
-          onPressed: () => runMutation({'networkMemberId': widget.memberFrag['id']}),
+          onPressed: () {
+            runMutation(
+              DeleteNetworkMemberArguments(
+                networkMemberId: widget.memberFrag.id,
+              ).toJson(),
+            );
+          },
           icon: const Icon(Icons.delete),
         );
       },

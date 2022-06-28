@@ -1,0 +1,20 @@
+mutation DeclineNetworkMembership($networkMemberId: Int!) {
+  declineNetworkMembership(networkMemberId: $networkMemberId) {
+    __typename
+    id
+    networkMemberships {
+      __typename
+      id
+      status
+    }
+  }
+}
+
+mutation AcceptNetworkMembership($networkMemberId: Int!) {
+  acceptNetworkMembership(networkMemberId: $networkMemberId) {
+    __typename
+    id
+    userId
+    status
+  }
+}

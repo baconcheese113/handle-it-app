@@ -1,0 +1,7 @@
+mutation AddTestHub($name: String!, $serial: String!) {
+  createHub(name: $name, serial: $serial) {
+    __typename
+    id
+    ...feedCard_hub
+  }
+}

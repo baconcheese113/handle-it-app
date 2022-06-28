@@ -1,0 +1,15 @@
+query FeedHome {
+  viewer {
+    __typename
+    latestSensorVersion
+    user {
+      __typename
+      id
+      hubs {
+        __typename
+        id
+        ...feedCard_hub
+      }
+    }
+  }
+}

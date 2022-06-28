@@ -1,5 +1,7 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
@@ -34,62 +36,37 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
     final netProvider = Provider.of<NetworkProvider>(context, listen: false);
     final hubId = widget.hubObject.hubId;
     final networkId = widget.hubObject.networkId;
+    final query = NetworkMapDetailsQuery(variables: NetworkMapDetailsArguments(hubId: hubId));
     return Query(
       options: QueryOptions(
-        document: addFragments(gql(r'''
-        query networkMapDetailsQuery($hubId: Int!) {
-          hub(id: $hubId) {
-            name
-            owner {
-              isMe
-              email
-            }
-            locations(last: 1) {
-              fixedAt
-            }
-            events {
-              id
-              createdAt
-            }
-            networks {
-              id
-              name
-            }
-            notificationOverride {
-              id
-              isMuted
-              createdAt
-            }
-            ...networkMapNotificationOverrides_hub
-          }
-        }
-      '''), [NetworkMapNotificationOverrides.fragment]),
-        variables: {"hubId": hubId},
+        document: query.document,
+        operationName: query.operationName,
+        variables: query.variables.toJson(),
         fetchPolicy: FetchPolicy.networkOnly,
       ),
       builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.data == null && result.isLoading) return const SizedBox();
-        if (result.hasException) return Center(child: Text(result.exception.toString()));
-        final hub = result.data!['hub'];
-        final List<dynamic> networks = hub['networks'];
-        print(">>> looking for $hubId and networks are $networks");
-        if (!networks.any((n) => n['id'] == networkId)) return const SizedBox();
-        final network = networks.firstWhere((n) => n['id'] == networkId);
-        final List<dynamic> events = hub['events'];
+        final noDataWidget = validateResult(result);
+        if (noDataWidget != null) return noDataWidget;
+
+        final hub = query.parse(result.data!).hub;
+        final networks = hub?.networks;
+        final network = networks?.firstWhereOrNull((n) => n.id == networkId);
+        if (network == null) return const SizedBox();
+        final events = hub!.events;
         final String notifStr = () {
-          final notifOverride = hub['notificationOverride'];
-          if (notifOverride == null || !notifOverride['isMuted']) return "Default";
+          final notifOverride = hub.notificationOverride;
+          if (notifOverride == null || !notifOverride.isMuted) return "Default";
           return "Muted";
         }();
-        final fixedAt = timeago.format(DateTime.parse(hub['locations'][0]['fixedAt']));
-        getChipFromNetwork(Map<String, dynamic> n) {
+        final fixedAt = timeago.format(hub.locations[0].fixedAt!);
+        Chip getChipFromNetwork(NetworkMapDetails$Query$Hub$Networks n) {
           return Chip(
-            label: Text(n['name'], style: const TextStyle(fontSize: 10)),
-            backgroundColor: netProvider.registerNetwork(n['id']),
+            label: Text(n.name, style: const TextStyle(fontSize: 10)),
+            backgroundColor: netProvider.registerNetwork(n.id),
           );
         }
 
-        networks.removeWhere((n) => n['id'] == networkId);
+        networks!.removeWhere((n) => n.id == networkId);
         final networkChips = networks.map((n) => getChipFromNetwork(n));
         const minSize = .2;
         const maxSize = .8;
@@ -125,7 +102,7 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
                                 children: [
                                   Padding(
                                     padding: const EdgeInsets.only(right: 16),
-                                    child: Text(hub['name']),
+                                    child: Text(hub.name),
                                   ),
                                   getChipFromNetwork(network),
                                 ],
@@ -133,7 +110,7 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(hub['owner']['email']),
+                                  Text(hub.owner.email),
                                   Text("As of $fixedAt"),
                                   if (networkChips.isNotEmpty)
                                     SingleChildScrollView(
@@ -163,7 +140,7 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
                                     ],
                                     rows: events.map((event) {
                                       return DataRow(cells: [
-                                        DataCell(Text(timeago.format(DateTime.parse(event['createdAt'])))),
+                                        DataCell(Text(timeago.format(event.createdAt))),
                                         const DataCell(Text("Handle pulled")),
                                       ]);
                                     }).toList(),

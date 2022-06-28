@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/feed/card/feed_card.dart';
-import 'package:handle_it/utils.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 
 class FeedCardArm extends StatefulWidget {
-  final Map<String, dynamic> hub;
-  const FeedCardArm({Key? key, required this.hub}) : super(key: key);
-
-  static final fragment = gql(r'''
-    fragment feedCardArm_hub on Hub {
-      id
-      isArmed
-    }
-    ''');
+  final FeedCardArmHubMixin hubFrag;
+  const FeedCardArm({Key? key, required this.hubFrag}) : super(key: key);
 
   @override
   State<FeedCardArm> createState() => _FeedCardArmState();
@@ -22,21 +14,19 @@ class _FeedCardArmState extends State<FeedCardArm> {
   @override
   Widget build(BuildContext context) {
     return Mutation(
-        options: MutationOptions(document: addFragments(gql(r'''
-        mutation feedCardArmMutation($id: ID!, $isArmed: Boolean!) {
-          updateHub(id: $id, isArmed: $isArmed) {
-            id
-            ...feedCard_hub
-          }
-        }
-      '''), [FeedCard.fragment])),
-        builder: (
-          RunMutation runMutation,
-          QueryResult? result,
-        ) {
-          bool isArmed = widget.hub['isArmed'];
+        options: MutationOptions(
+          document: FEED_CARD_ARM_MUTATION_DOCUMENT,
+          operationName: FEED_CARD_ARM_MUTATION_DOCUMENT_OPERATION_NAME,
+        ),
+        builder: (runMutation, result) {
+          bool isArmed = widget.hubFrag.isArmed;
           handleArmSwitch(newState) async {
-            await runMutation({'id': widget.hub['id'], 'isArmed': !isArmed}).networkResult;
+            await runMutation(
+              FeedCardArmArguments(
+                id: "${widget.hubFrag.id}",
+                isArmed: !isArmed,
+              ).toJson(),
+            ).networkResult;
           }
 
           return ClipRRect(

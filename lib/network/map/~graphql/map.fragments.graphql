@@ -1,0 +1,51 @@
+fragment networkMapNotificationOverrides_hub on Hub {
+  __typename
+  id
+  # FIXME artemis
+  hubOwner: owner {
+    __typename
+    id
+    isMe
+    email
+  }
+  # FIXME artemis
+  hubNotifications: notificationOverride {
+    __typename
+    id
+    isMuted
+    createdAt
+  }
+}
+
+fragment networkMapTab_viewer on Viewer {
+  activeNetworks: networks (status: active) {
+    __typename
+    id
+    name
+    createdById
+    members {
+      __typename
+      id
+      status
+      role
+      user {
+        __typename
+        id
+        isMe
+        email
+        hubs {
+          __typename
+          id
+          name
+          locations(last: 1) {
+            __typename
+            id
+            lat
+            lng
+            fixedAt
+          }
+        }
+      }
+    }
+  }
+}

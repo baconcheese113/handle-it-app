@@ -1,25 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 
 class FeedCardMap extends StatefulWidget {
-  final Map<String, dynamic> hub;
-  const FeedCardMap({Key? key, required this.hub}) : super(key: key);
-
-  static final fragment = gql(r'''
-    fragment feedCardMap_hub on Hub {
-      id
-      locations(last: 2) {
-        id
-        lat
-        lng
-        hdop
-        speed
-        age
-        course
-      }
-    }
-  ''');
+  final FeedCardMapHubMixin hubFrag;
+  const FeedCardMap({Key? key, required this.hubFrag}) : super(key: key);
 
   @override
   State<FeedCardMap> createState() => _FeedCardMapState();
@@ -28,18 +13,16 @@ class FeedCardMap extends StatefulWidget {
 class _FeedCardMapState extends State<FeedCardMap> {
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> locations = widget.hub['locations'];
+    final locations = widget.hubFrag.locations;
     if (locations.isEmpty) {
       return const Center(child: Text("Add GPS module to see location"));
     }
-    print(">>> locations: $locations");
-    final firstLatLng = LatLng(locations[0]['lat'], locations[0]['lng']);
-    print(">>> firstLatLng = $firstLatLng");
+    final firstLatLng = LatLng(locations[0].lat, locations[0].lng);
     double alpha = 1;
     final markers = locations.reversed.map((l) {
-      final pos = LatLng(l['lat'], l['lng']);
+      final pos = LatLng(l.lat, l.lng);
       alpha -= .3;
-      return Marker(markerId: MarkerId("${l['id']}"), position: pos, alpha: alpha);
+      return Marker(markerId: MarkerId("${l.id}"), position: pos, alpha: alpha);
     }).toSet();
 
     return GoogleMap(

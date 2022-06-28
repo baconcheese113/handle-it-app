@@ -1,0 +1,35 @@
+query networkMapDetails($hubId: Int!) {
+  hub(id: $hubId) {
+    __typename
+    id
+    name
+    owner {
+      __typename
+      id
+      isMe
+      email
+    }
+    locations(last: 1) {
+      __typename
+      id
+      fixedAt
+    }
+    events {
+      __typename
+      id
+      createdAt
+    }
+    networks {
+      __typename
+      id
+      name
+    }
+    notificationOverride {
+      __typename
+      id
+      isMuted
+      createdAt
+    }
+    ...networkMapNotificationOverrides_hub
+  }
+}

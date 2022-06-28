@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
@@ -7,19 +8,6 @@ import 'package:provider/provider.dart';
 import 'invites/network_invites_tab.dart';
 import 'map/network_map_tab.dart';
 import 'members/network_members_tab.dart';
-
-final networkHomeQuery = addFragments(
-  gql(r"""
-  query networkHomeQuery {
-    viewer {
-      ...networkMapTab_viewer
-      ...networkMembersTab_viewer
-      ...networkInvitesTab_viewer
-    }
-  }
-  """),
-  [NetworkMapTab.fragment, NetworkMembersTab.fragment, NetworkInvitesTab.fragment],
-);
 
 class NetworkHome extends StatefulWidget {
   const NetworkHome({Key? key}) : super(key: key);
@@ -29,13 +17,20 @@ class NetworkHome extends StatefulWidget {
 }
 
 class _NetworkHomeState extends State<NetworkHome> {
+  final _query = NetworkHomeQuery();
+
   @override
   Widget build(BuildContext context) {
     return Query(
-      options: QueryOptions(document: networkHomeQuery),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.data == null && result.isLoading) return const CircularProgressIndicator();
-        if (result.hasException) return Center(child: Text(result.exception.toString()));
+      options: QueryOptions(
+        document: _query.document,
+        operationName: _query.operationName,
+      ),
+      builder: (result, {refetch, fetchMore}) {
+        final noDataWidget = validateResult(result);
+        if (noDataWidget != null) return noDataWidget;
+
+        final viewer = _query.parse(result.data!).viewer;
 
         return ChangeNotifierProvider<NetworkProvider>(
           create: (BuildContext c) => NetworkProvider(),
@@ -50,9 +45,9 @@ class _NetworkHomeState extends State<NetworkHome> {
                 ]),
                 Expanded(
                   child: TabBarView(physics: const NeverScrollableScrollPhysics(), children: [
-                    NetworkMapTab(viewerFrag: result.data!['viewer'], refetch: refetch!),
-                    NetworkMembersTab(viewerFrag: result.data!['viewer'], refetch: refetch),
-                    NetworkInvitesTab(viewerFrag: result.data!['viewer'], refetch: refetch),
+                    NetworkMapTab(viewerFrag: viewer, refetch: refetch!),
+                    NetworkMembersTab(viewerFrag: viewer, refetch: refetch),
+                    NetworkInvitesTab(viewerFrag: viewer, refetch: refetch),
                   ]),
                 )
               ],

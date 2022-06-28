@@ -1,23 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 
 class NetworkMapNotificationOverrides extends StatefulWidget {
-  final Map<String, dynamic> hubFrag;
+  final NetworkMapNotificationOverridesHubMixin hubFrag;
   final Function refetch;
   const NetworkMapNotificationOverrides({Key? key, required this.hubFrag, required this.refetch}) : super(key: key);
 
-  static final fragment = gql(r'''
-    fragment networkMapNotificationOverrides_hub on Hub {
-      id
-      owner {
-        isMe
-      }
-      notificationOverride {
-        id
-        isMuted
-      }
-    }
-  ''');
   @override
   State<NetworkMapNotificationOverrides> createState() => _NetworkMapNotificationOverridesState();
 }
@@ -25,30 +14,25 @@ class NetworkMapNotificationOverrides extends StatefulWidget {
 class _NetworkMapNotificationOverridesState extends State<NetworkMapNotificationOverrides> {
   @override
   Widget build(BuildContext context) {
-    final bool isMuted = widget.hubFrag['notificationOverride']?['isMuted'] ?? false;
+    final bool isMuted = widget.hubFrag.hubNotifications?.isMuted ?? false;
     return Mutation(
-        options: MutationOptions(document: gql(r'''
-          mutation UpdateNotificationOverride($hubId: Int!, $shouldMute: Boolean!) {
-            updateNotificationOverride(hubId: $hubId, shouldMute: $shouldMute) {
-              id
-              userId
-              hubId
-              isMuted
-              createdAt
-            }
-          }
-        ''')),
-        builder: (RunMutation runMutation, QueryResult? result) {
+        options: MutationOptions(
+          document: UPDATE_NOTIFICATION_OVERRIDE_MUTATION_DOCUMENT,
+          operationName: UPDATE_NOTIFICATION_OVERRIDE_MUTATION_DOCUMENT_OPERATION_NAME,
+        ),
+        builder: (runMutation, result) {
           void handleIconPress() async {
-            await runMutation({
-              'hubId': widget.hubFrag['id'],
-              'shouldMute': !isMuted,
-            }).networkResult;
-            if (widget.hubFrag['notificationOverride'] == null) await widget.refetch();
+            await runMutation(
+              UpdateNotificationOverrideArguments(
+                hubId: widget.hubFrag.id,
+                shouldMute: !isMuted,
+              ).toJson(),
+            ).networkResult;
+            if (widget.hubFrag.hubNotifications == null) await widget.refetch();
           }
 
           return IconButton(
-            onPressed: widget.hubFrag['owner']['isMe'] ? null : handleIconPress,
+            onPressed: widget.hubFrag.hubOwner.isMe ? null : handleIconPress,
             icon: Icon(isMuted ? Icons.notifications_off : Icons.notifications_on),
           );
         });

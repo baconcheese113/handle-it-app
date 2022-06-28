@@ -4,22 +4,15 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'add_vehicle_wizard_content.dart';
 
 class AddSensorWizardContent extends StatefulWidget {
-  final Map<String, dynamic> hub;
-  const AddSensorWizardContent({Key? key, required this.hub}) : super(key: key);
-
-  static final fragment = gql(r'''
-    fragment addSensorWizardContent_hub on Hub {
-      id
-      name
-    }
-    ''');
+  final AddSensorWizardContentHubMixin hubFrag;
+  const AddSensorWizardContent({Key? key, required this.hubFrag}) : super(key: key);
 
   @override
   State<AddSensorWizardContent> createState() => _AddSensorWizardContentState();
@@ -185,7 +178,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                     padding: const EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
                       Text(
-                        "Scanning for ${widget.hub['name']}",
+                        "Scanning for ${widget.hubFrag.name}",
                         textScaleFactor: 1.3,
                       ),
                       const CircularProgressIndicator(),
@@ -202,7 +195,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                     padding: const EdgeInsets.all(40),
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
                       Text(
-                        "Turn on your sensor, then press start to search for a new sensor for ${widget.hub['name']}",
+                        "Turn on your sensor, then press start to search for a new sensor for ${widget.hubFrag.name}",
                         textScaleFactor: 1.3,
                       ),
                       _scanning

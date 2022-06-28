@@ -1,0 +1,10 @@
+mutation DeleteNetworkMember($networkMemberId: Int!) {
+  deleteNetworkMember(networkMemberId: $networkMemberId) {
+    __typename
+    id
+    members {
+      __typename
+      id
+    }
+  }
+}

@@ -1,21 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/utils.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 
 import 'network_members_list.dart';
 
 class NetworkMembersTab extends StatefulWidget {
-  final Map<String, dynamic> viewerFrag;
+  final NetworkMembersTabViewerMixin viewerFrag;
   final Function refetch;
   const NetworkMembersTab({Key? key, required this.viewerFrag, required this.refetch}) : super(key: key);
 
-  static final fragment = addFragments(gql(r'''
-    fragment networkMembersTab_viewer on Viewer {
-      networks (status: active) {
-        ...networkMembersList_network
-      }
-    }
-  '''), [NetworkMembersList.fragment]);
   @override
   State<NetworkMembersTab> createState() => _NetworkMembersTabState();
 }
@@ -23,10 +16,10 @@ class NetworkMembersTab extends StatefulWidget {
 class _NetworkMembersTabState extends State<NetworkMembersTab> {
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> networks = widget.viewerFrag['networks'];
-    final List<Widget> networksList = [];
+    final networks = widget.viewerFrag.networks;
+    final networksList = [];
     for (final n in networks) {
-      networksList.add(NetworkMembersList(networkFrag: n, viewerFrag: widget.viewerFrag));
+      networksList.add(NetworkMembersList(networkFrag: n));
     }
     onNetworkAdded(String msg) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -37,21 +30,11 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
         await widget.refetch();
       },
       child: Mutation(
-        options: MutationOptions(document: gql(r'''
-          mutation CreateNetwork($name: String!) {
-            createNetwork(name: $name) {
-              id
-              name
-              members {
-                userId
-                role
-              }
-              createdById
-              createdAt
-            }
-          }
-        ''')),
-        builder: (RunMutation runMutation, QueryResult? result) {
+        options: MutationOptions(
+          document: CREATE_NETWORK_MUTATION_DOCUMENT,
+          operationName: CREATE_NETWORK_MUTATION_DOCUMENT_OPERATION_NAME,
+        ),
+        builder: (runMutation, result) {
           void handleCreateNetwork() {
             String name = "";
             showDialog(
@@ -64,7 +47,11 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
                     TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
                     TextButton(
                         onPressed: () async {
-                          final mutation = await runMutation({'name': name}).networkResult;
+                          final mutation = await runMutation(
+                            CreateNetworkArguments(
+                              name: name,
+                            ).toJson(),
+                          ).networkResult;
                           if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
                             onNetworkAdded("Network created successfully, refresh to view");
                           }

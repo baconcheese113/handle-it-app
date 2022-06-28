@@ -1,0 +1,7 @@
+query NetworkHome {
+  viewer {
+    ...networkMapTab_viewer
+    ...networkMembersTab_viewer
+    ...networkInvitesTab_viewer
+  }
+}

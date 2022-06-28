@@ -1,0 +1,8 @@
+query Home {
+  viewer {
+    user {
+      id
+      ...settings_user
+    }
+  }
+}

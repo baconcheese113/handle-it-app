@@ -1,0 +1,19 @@
+fragment settings_user on User {
+  __typename
+  id
+  email
+  firstName
+  ...addTestHub_user
+  ...notificationSettings_user
+}
+
+fragment addTestHub_user on User {
+  __typename
+  id
+}
+
+fragment notificationSettings_user on User {
+  __typename
+  id
+  defaultFullNotification
+}

@@ -2,7 +2,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/auth/login.dart';
+import 'package:handle_it/common/loading.dart';
 import 'package:handle_it/home.dart';
 
 class Register extends StatefulWidget {
@@ -21,11 +23,11 @@ class _RegisterState extends State<Register> {
   String _firstName = "";
   String _lastName = "";
 
-  void switchToLogin() async {
+  void _switchToLogin() async {
     await Navigator.pushReplacementNamed(context, Login.routeName);
   }
 
-  Future<void> switchToHome(String newToken) async {
+  Future<void> _switchToHome(String newToken) async {
     await const FlutterSecureStorage().write(key: 'token', value: newToken);
     await widget.reinitialize(newToken);
     if (mounted) await Navigator.pushReplacementNamed(context, Home.routeName);
@@ -40,20 +42,14 @@ class _RegisterState extends State<Register> {
       ),
       body: Mutation(
           options: MutationOptions(
-            document: gql(r'''
-            mutation registerMutation($email: String!, $password: String!, $fcmToken: String!, $firstName: String, $lastName: String) {
-              registerWithPassword(email: $email, password: $password, fcmToken: $fcmToken, firstName: $firstName, lastName: $lastName)
-            }
-        '''),
+            document: REGISTER_MUTATION_DOCUMENT,
+            operationName: REGISTER_MUTATION_DOCUMENT_OPERATION_NAME,
           ),
-          builder: (
-            RunMutation runMutation,
-            QueryResult? result,
-          ) {
-            if (result == null || result.isLoading) return const Text("Loading...");
+          builder: (runMutation, result) {
+            if (result == null || result.isLoading) return const Loading();
             if (result.data != null && result.data!.containsKey("registerWithPassword")) {
-              switchToHome(result.data!['registerWithPassword']);
-              return const Text("Logging in...");
+              _switchToHome(result.data!['registerWithPassword']);
+              return const Loading();
             }
 
             return Column(
@@ -81,13 +77,15 @@ class _RegisterState extends State<Register> {
                         onPressed: () async {
                           if (_email.length < 3 || _password.length < 3) return; // TODO validate
                           final fcmToken = await FirebaseMessaging.instance.getToken();
-                          runMutation({
-                            "email": _email,
-                            "fcmToken": fcmToken,
-                            "password": _password,
-                            "firstName": _firstName,
-                            "lastName": _lastName,
-                          });
+                          await runMutation(
+                            RegisterArguments(
+                              email: _email,
+                              password: _password,
+                              fcmToken: fcmToken!,
+                              firstName: _firstName,
+                              lastName: _lastName,
+                            ).toJson(),
+                          ).networkResult;
                         },
                         child: const Text("Register"),
                       ),
@@ -96,7 +94,7 @@ class _RegisterState extends State<Register> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: switchToLogin,
+                  onPressed: _switchToLogin,
                   child: const Text("Already have an account?"),
                 ),
               ],

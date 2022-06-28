@@ -1,34 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/invites/network_invites_card.dart';
 
-import '../../utils.dart';
-
 class NetworkInvitesTab extends StatefulWidget {
-  final Map<String, dynamic> viewerFrag;
+  final NetworkInvitesTabViewerMixin viewerFrag;
   final Function refetch;
   const NetworkInvitesTab({Key? key, required this.viewerFrag, required this.refetch}) : super(key: key);
 
-  static final fragment = addFragments(gql(r'''
-    fragment networkInvitesTab_viewer on Viewer {
-      user {
-        id
-        networkMemberships {
-          ...networkInvitesCard_member
-          status
-          inviterAcceptedAt
-          network {
-            id
-            name
-            members {
-              id
-              status
-            }
-          }
-        }
-      }
-    }
-  '''), [NetworkInvitesCard.fragment]);
   @override
   State<NetworkInvitesTab> createState() => _NetworkInvitesTabState();
 }
@@ -36,9 +14,10 @@ class NetworkInvitesTab extends StatefulWidget {
 class _NetworkInvitesTabState extends State<NetworkInvitesTab> {
   @override
   Widget build(BuildContext context) {
-    final List<dynamic> allMemberships = widget.viewerFrag['user']['networkMemberships'];
-    final invitedMemberships = allMemberships.where((mem) => mem['status'] == 'invited');
-    final requestedMemberships = allMemberships.where((mem) => mem['status'] == 'requested');
+    final allMemberships = widget.viewerFrag.user.networkMemberships;
+    final invitedMemberships = allMemberships.where((mem) => mem.status == NetworkMemberStatus.invited);
+    final requestedMemberships = allMemberships.where((mem) => mem.status == NetworkMemberStatus.requested);
+    print('requested $requestedMemberships');
 
     return RefreshIndicator(
         onRefresh: () async {
@@ -57,7 +36,7 @@ class _NetworkInvitesTabState extends State<NetworkInvitesTab> {
               const Text("Requests to join", style: TextStyle(fontSize: 24)),
               ...requestedMemberships.map((mem) {
                 return ListTile(
-                  title: mem['network']['name'],
+                  title: Text(mem.memNetwork.name),
                 );
               }).toList(),
               if (requestedMemberships.isEmpty)

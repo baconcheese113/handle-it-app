@@ -1,0 +1,13 @@
+query addSensorWizard {
+  viewer {
+    __typename
+    user {
+      __typename
+      id
+      hubs {
+        __typename
+        ...addSensorWizardContent_hub
+      }
+    }
+  }
+}

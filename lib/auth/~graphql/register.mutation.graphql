@@ -1,0 +1,3 @@
+mutation register($email: String!, $password: String!, $fcmToken: String!, $firstName: String, $lastName: String) {
+  registerWithPassword(email: $email, password: $password, fcmToken: $fcmToken, firstName: $firstName, lastName: $lastName)
+}

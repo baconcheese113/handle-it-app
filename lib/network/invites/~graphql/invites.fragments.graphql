@@ -1,0 +1,43 @@
+fragment networkInvitesCard_member on NetworkMember {
+  __typename
+  id
+  status
+  inviterAcceptedAt
+  # FIXME artemis
+  memberNetwork: network {
+    __typename
+    id
+    name
+    members {
+      __typename
+      id
+      status
+    }
+  }
+}
+
+fragment networkInvitesTab_viewer on Viewer {
+  __typename
+  user {
+    __typename
+    id
+    networkMemberships {
+      ...networkInvitesCard_member
+      __typename
+      id
+      status
+      inviterAcceptedAt
+      # FIXME artemis
+      memNetwork: network {
+        __typename
+        id
+        name
+        members {
+          __typename
+          id
+          status
+        }
+      }
+    }
+  }
+}

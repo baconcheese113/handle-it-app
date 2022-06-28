@@ -1,22 +1,11 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 
 class NetworkMembersCreate extends StatefulWidget {
-  final Map<String, dynamic> networkFrag;
+  final NetworkMembersCreateNetworkMixin networkFrag;
   const NetworkMembersCreate({Key? key, required this.networkFrag}) : super(key: key);
-
-  static final networkMembersCreateFragment = gql(r'''
-    fragment networkMembersCreate_network on Network {
-      id
-      members {
-        id
-        user {
-          email
-        }
-      }
-    }
-  ''');
 
   @override
   State<NetworkMembersCreate> createState() => _NetworkMembersCreateState();
@@ -33,32 +22,19 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
     }
 
     return Mutation(
-      options: MutationOptions(document: gql(r'''
-          mutation CreateNetworkMember($networkId: Int!, $email: String!, $role: RoleType!) {
-            createNetworkMember(networkId: $networkId, email: $email, role: $role) {
-              id
-              role
-              userId
-              user {
-                email
-              }
-              networkId
-              network {
-                name
-                members {
-                  id
-                }
-              }
-            }
-          }
-        ''')),
-      builder: (RunMutation runMutation, QueryResult? result) {
+      options: MutationOptions(
+        document: CREATE_NETWORK_MEMBER_MUTATION_DOCUMENT,
+        operationName: CREATE_NETWORK_MEMBER_MUTATION_DOCUMENT_OPERATION_NAME,
+      ),
+      builder: (runMutation, result) {
         void handleCreate() async {
-          final mutation = await runMutation({
-            'networkId': widget.networkFrag['id'],
-            'email': _newEmail,
-            'role': "member",
-          }).networkResult;
+          final mutation = await runMutation(
+            CreateNetworkMemberArguments(
+              networkId: widget.networkFrag.id,
+              email: _newEmail,
+              role: RoleType.member,
+            ).toJson(),
+          ).networkResult;
 
           if (mutation != null && !mutation.hasException && mutation.isNotLoading) {
             _controller.clear();

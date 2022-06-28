@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
-import 'package:handle_it/feed/card/feed_card.dart';
-import 'package:handle_it/utils.dart';
 
 class FeedCardMenu extends StatefulWidget {
-  final Map<String, dynamic> hub;
+  final FeedCardMenuHubMixin hubFrag;
   final Function onDelete;
-  const FeedCardMenu({Key? key, required this.hub, required this.onDelete}) : super(key: key);
+  const FeedCardMenu({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
 
   @override
   State<FeedCardMenu> createState() => _FeedCardMenuState();
@@ -18,23 +17,16 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
   Mutation build(BuildContext context) {
     void handleAddSensor() {
       if (mounted) {
-        Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': widget.hub['id']});
+        Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': widget.hubFrag.id});
       }
     }
 
     return Mutation(
-      options: MutationOptions(document: addFragments(gql(r'''
-        mutation feedCardDeleteMutation($id: ID!) {
-          deleteHub(id: $id) {
-            id
-            ...feedCard_hub
-          }
-        }
-      '''), [FeedCard.fragment])),
-      builder: (
-        RunMutation runMutation,
-        QueryResult? result,
-      ) {
+      options: MutationOptions(
+        document: FEED_CARD_DELETE_MUTATION_DOCUMENT,
+        operationName: FEED_CARD_DELETE_MUTATION_DOCUMENT_OPERATION_NAME,
+      ),
+      builder: (runMutation, result) {
         void handleDelete() {
           showDialog(
             context: context,
@@ -45,7 +37,11 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
                 TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
                 TextButton(
                   onPressed: () async {
-                    await runMutation({'id': widget.hub['id']}).networkResult;
+                    await runMutation(
+                      FeedCardDeleteArguments(
+                        id: "${widget.hubFrag.id}",
+                      ).toJson(),
+                    ).networkResult;
                     widget.onDelete();
                     if (mounted) Navigator.pop(context);
                   },

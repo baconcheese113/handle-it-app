@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/utils.dart';
 
 import 'add_vehicle_wizard_content.dart';
@@ -14,36 +15,24 @@ class AddVehicleWizard extends StatefulWidget {
 }
 
 class _AddVehicleWizardState extends State<AddVehicleWizard> {
+  final _query = AddVehicleWizardQuery();
   int? _pairedHubId;
 
   @override
   Widget build(BuildContext context) {
     return Query(
       options: QueryOptions(
-        document: addFragments(gql(r"""
-        query addVehicleWizardQuery {
-          viewer {
-            user {
-              id
-              ...addVehicleWizardContent_user
-            }
-          }
-        }
-      """), [AddVehicleWizardContent.fragment]),
+        document: _query.document,
+        operationName: _query.operationName,
+        fetchPolicy: FetchPolicy.networkOnly,
       ),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.hasException) {
-          print("Exception ${result.exception.toString()}");
-          return Text(result.exception.toString());
-        }
-        if (result.isLoading) return const Text("Loading...");
-        print(result.data!['viewer']);
-        if (!result.data!.containsKey('viewer') || result.data!['viewer']['user'] == null) {
-          return const SizedBox();
-        }
+      builder: (result, {refetch, fetchMore}) {
+        final noDataWidget = validateResult(result, allowCache: false);
+        if (noDataWidget != null) return noDataWidget;
 
+        final viewer = _query.parse(result.data!).viewer;
         return AddVehicleWizardContent(
-          user: result.data!['viewer']['user'],
+          userFrag: viewer.user,
           pairedHubId: _pairedHubId,
           setPairedHubId: (newHubId) => setState(() => _pairedHubId = newHubId),
           refetch: refetch!,

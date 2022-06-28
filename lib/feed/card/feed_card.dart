@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:handle_it/feed/updaters/hub_updater.dart';
 import 'package:handle_it/utils.dart';
@@ -16,38 +16,9 @@ import 'feed_card_menu.dart';
 import 'feed_card_rssi.dart';
 
 class FeedCard extends StatefulWidget {
-  final Map<String, dynamic> hubFrag;
+  final FeedCardHubMixin hubFrag;
   final Function onDelete;
   const FeedCard({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
-
-  static final fragment = addFragments(gql(r'''
-    fragment feedCard_hub on Hub {
-      id
-      name
-      serial
-      isArmed
-      ...feedCardArm_hub
-      ...feedCardMap_hub
-      ...hubUpdater_hub
-      sensors {
-        id
-        serial
-        isOpen
-        isConnected
-        doorRow
-        doorColumn
-        events(orderBy: [{ createdAt: desc }]) {
-          id
-          createdAt
-          sensor {
-            id
-            doorColumn
-            doorRow
-          }
-        }
-      }
-    }
-  '''), [FeedCardArm.fragment, FeedCardMap.fragment, HubUpdater.fragment]);
 
   @override
   State<FeedCard> createState() => _FeedCardState();
@@ -126,15 +97,12 @@ class _FeedCardState extends State<FeedCard> {
       if (!_armed) return Colors.grey;
       return Colors.green;
     }();
-    if (!widget.hubFrag.containsKey('serial')) {
-      return const CircularProgressIndicator();
-    }
-    List<dynamic> sensors = widget.hubFrag['sensors'];
-    List<dynamic> events = sensors.fold([], (arr, sensor) {
-      final events = sensor['events'];
-      return events.isNotEmpty ? [...arr, ...sensor['events']] : arr;
+    final hubFrag = widget.hubFrag;
+    final sensors = hubFrag.sensors;
+    final events = sensors.fold<List<FeedCardHubMixin$Sensors$Events>>([], (arr, sensor) {
+      return sensor.events.isNotEmpty ? [...arr, ...sensor.events] : arr;
     });
-    final int sensorCount = widget.hubFrag['sensors'].length;
+    final int sensorCount = sensors.length;
 
     return Card(
         child: Column(
@@ -142,19 +110,19 @@ class _FeedCardState extends State<FeedCard> {
       children: [
         ListTile(
           leading: Icon(Icons.bluetooth, color: bluetoothIconColor),
-          title: Text("${widget.hubFrag['name']} (${widget.hubFrag['serial']})"),
+          title: Text("${hubFrag.name} (${hubFrag.serial})"),
           subtitle: Row(children: [
             Text("${pluralize('sensor', sensorCount)} |"),
             FeedCardRssi(foundHub: _foundHub, deviceState: _deviceState),
           ]),
           trailing: Column(children: [
-            FeedCardMenu(hub: widget.hubFrag, onDelete: widget.onDelete),
+            FeedCardMenu(hubFrag: hubFrag as FeedCardMenuHubMixin, onDelete: widget.onDelete),
             if (_batteryLevel > -1) BatteryStatus(batteryLevel: _batteryLevel, variant: Variant.small),
           ]),
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
-          Center(child: HubUpdater(hub: widget.hubFrag, foundHub: _foundHub!)),
-        SizedBox(height: 200, width: 400, child: FeedCardMap(hub: widget.hubFrag)),
+          Center(child: HubUpdater(hubFrag: hubFrag as HubUpdaterHubMixin, foundHub: _foundHub!)),
+        SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag as FeedCardMapHubMixin)),
         Center(
           child: Stack(clipBehavior: Clip.none, children: [
             Icon(
@@ -170,9 +138,9 @@ class _FeedCardState extends State<FeedCard> {
                 child: Column(
                   crossAxisAlignment: idx == 0 ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   children: [
-                    Icon(sensors[idx]['isOpen'] == true ? Icons.error : Icons.shield,
-                        size: 32, color: sensors[idx]['isOpen'] ? Colors.red : Colors.green),
-                    Text(sensors[idx]['isOpen'] ? "Opened" : "Secure", textScaleFactor: 1.1)
+                    Icon(sensors[idx].isOpen == true ? Icons.error : Icons.shield,
+                        size: 32, color: sensors[idx].isOpen ? Colors.red : Colors.green),
+                    Text(sensors[idx].isOpen ? "Opened" : "Secure", textScaleFactor: 1.1)
                   ],
                 ),
               ),
@@ -184,15 +152,15 @@ class _FeedCardState extends State<FeedCard> {
             DataColumn(label: Text("Event")),
           ],
           rows: events.map((event) {
-            final column = event['sensor']['doorColumn'] == 0 ? 'Front' : 'Back';
-            final row = event['sensor']['doorRow'] == 0 ? 'left' : 'right';
+            final column = event.sensor.doorColumn == 0 ? 'Front' : 'Back';
+            final row = event.sensor.doorRow == 0 ? 'left' : 'right';
             return DataRow(cells: [
-              DataCell(Text(timeago.format(DateTime.parse(event['createdAt'])))),
+              DataCell(Text(timeago.format(event.createdAt))),
               DataCell(Text("$column $row handle pulled")),
             ]);
           }).toList(),
         ),
-        FeedCardArm(hub: widget.hubFrag),
+        FeedCardArm(hubFrag: hubFrag as FeedCardArmHubMixin),
       ],
     ));
   }

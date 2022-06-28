@@ -1,0 +1,41 @@
+fragment networkMemberDelete_member on NetworkMember {
+  __typename
+  id
+  # FIXME artemis
+  mUser: user {
+    __typename
+    id
+    isMe
+  }
+}
+
+fragment networkMemberTile_member on NetworkMember {
+  __typename
+  id
+  status
+  role
+  network {
+    __typename
+    id
+    name
+  }
+  canDelete
+  user {
+    __typename
+    id
+    isMe
+    email
+    hubs {
+      __typename
+      id
+      name
+      locations(last: 1) {
+        __typename
+        id
+        lat
+        lng
+        fixedAt
+      }
+    }
+  }
+}

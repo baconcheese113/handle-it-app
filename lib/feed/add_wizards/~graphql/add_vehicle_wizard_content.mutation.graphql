@@ -1,0 +1,7 @@
+mutation addVehicleWizard($id: ID!, $name: String) {
+  updateHub(id: $id, name: $name) {
+    __typename
+    id
+    name
+  }
+}

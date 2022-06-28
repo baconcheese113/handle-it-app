@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/feed/card/feed_card.dart';
 import 'package:handle_it/feed/updaters/sensor_updater.dart';
 import 'package:handle_it/utils.dart';
@@ -11,32 +12,22 @@ class FeedHome extends StatefulWidget {
   State<FeedHome> createState() => _FeedHomeState();
 }
 
-class _FeedHomeState extends State<FeedHome> with WidgetsBindingObserver {
+class _FeedHomeState extends State<FeedHome> {
+  final _query = FeedHomeQuery();
+
   @override
   Widget build(BuildContext context) {
     return Query(
       options: QueryOptions(
-        document: addFragments(gql(r"""
-          query feedHomeQuery {
-            viewer {
-              latestSensorVersion
-              user {
-                id
-                hubs {
-                  ...feedCard_hub
-                }
-              }
-            }
-          }
-        """), [FeedCard.fragment]),
+        document: _query.document,
+        operationName: _query.operationName,
       ),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.data == null && result.isLoading) return const CircularProgressIndicator();
+      builder: (result, {refetch, fetchMore}) {
+        final noDataWidget = validateResult(result);
+        if (noDataWidget != null) return noDataWidget;
 
-        final hubs = result.data!.containsKey('viewer')
-            ? List<dynamic>.from(result.data!['viewer']['user']['hubs'])
-            : List<dynamic>.from([]);
-        print("hubs is $hubs");
+        final viewer = _query.parse(result.data!).viewer;
+        final hubs = viewer.user.hubs;
 
         return RefreshIndicator(
           onRefresh: () async {

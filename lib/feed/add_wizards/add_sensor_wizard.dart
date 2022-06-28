@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/utils.dart';
 
 import 'add_sensor_wizard_content.dart';
@@ -14,6 +15,7 @@ class AddSensorWizard extends StatefulWidget {
 }
 
 class _AddSensorWizardState extends State<AddSensorWizard> {
+  final _query = AddSensorWizardQuery();
   @override
   Widget build(BuildContext context) {
     final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
@@ -21,38 +23,20 @@ class _AddSensorWizardState extends State<AddSensorWizard> {
 
     return Query(
       options: QueryOptions(
-        document: addFragments(gql(r'''
-        query addSensorWizardQuery {
-          viewer {
-            user {
-              id
-              hubs {
-                ...addSensorWizardContent_hub
-              }
-            }
-          }
-        }
-      '''), [AddSensorWizardContent.fragment]),
+        document: _query.document,
+        operationName: _query.operationName,
+        fetchPolicy: FetchPolicy.noCache,
       ),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-        if (result.hasException) {
-          print("Exception ${result.exception.toString()}");
-          return Text(result.exception.toString());
-        }
-        if (result.isLoading) return const Text("Loading...");
-        print(result.data!['viewer']);
-        if (!result.data!.containsKey('viewer') || result.data!['viewer']['user'] == null) {
-          return const SizedBox();
-        }
-        final Map<String, dynamic>? hub = result.data!['viewer']['user']['hubs'].firstWhere(
-          (hub) => hub['id'] == arguments?['hubId'],
-          orElse: () => null,
-        );
-        if (hub == null) return const SizedBox();
+      builder: (result, {refetch, fetchMore}) {
+        final noDataWidget = validateResult(result, allowCache: false);
+        if (noDataWidget != null) return noDataWidget;
 
-        return AddSensorWizardContent(
-          hub: hub,
+        final viewer = _query.parse(result.data!).viewer;
+        final hub = viewer.user.hubs.firstWhere(
+          (hub) => hub.id == arguments?['hubId'],
         );
+
+        return AddSensorWizardContent(hubFrag: hub);
       },
     );
   }

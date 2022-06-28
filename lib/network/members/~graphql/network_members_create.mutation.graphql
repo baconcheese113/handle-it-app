@@ -1,0 +1,23 @@
+mutation CreateNetworkMember($networkId: Int!, $email: String!, $role: RoleType!) {
+  createNetworkMember(networkId: $networkId, email: $email, role: $role) {
+    __typename
+    id
+    role
+    userId
+    user {
+      __typename
+      id
+      email
+    }
+    networkId
+    network {
+      __typename
+      id
+      name
+      members {
+        __typename
+        id
+      }
+    }
+  }
+}

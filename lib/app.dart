@@ -85,6 +85,8 @@ class _AppState extends State<App> {
 
   void reinitialize([String? newToken]) {
     authenticationState.token = newToken;
+    final client = authenticationState.getClient().value;
+    client.resetStore(refetchQueries: false);
   }
 
   @override
@@ -110,6 +112,7 @@ class _AppState extends State<App> {
         routes: <String, WidgetBuilder>{
           Home.routeName: (_) => Home(reinitialize: reinitialize),
           ShowAlert.routeName: (_) => const ShowAlert(),
+          // TODO refactor reinitialize to a provider
           Register.routeName: (_) => Register(reinitialize: reinitialize),
           Login.routeName: (_) => Login(reinitialize: reinitialize),
           AddVehicleWizard.routeName: (_) => const AddVehicleWizard(),

@@ -1,0 +1,198 @@
+# This file was generated based on ".graphqlconfig". Do not edit manually.
+
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Event {
+    createdAt: DateTime!
+    id: Int!
+    sensor: Sensor!
+}
+
+type Hub {
+    batteryLevel: Int
+    createdAt: DateTime!
+    events: [Event!]!
+    id: Int!
+    isArmed: Boolean!
+    isCharging: Boolean
+    latestVersion: Int!
+    locations(after: LocationWhereUniqueInput, before: LocationWhereUniqueInput, first: Int, last: Int): [Location!]!
+    name: String!
+    networks: [Network!]!
+    notificationOverride: NotificationOverride
+    owner: User!
+    ownerId: Int!
+    sensors(after: SensorWhereUniqueInput, before: SensorWhereUniqueInput, first: Int, last: Int): [Sensor!]!
+    serial: String!
+}
+
+type Location {
+    "Age of this location (in ms)"
+    age: Int!
+    "Ground course (in degrees)"
+    course: Float!
+    createdAt: DateTime!
+    fixedAt: DateTime
+    "Horizontal diminution of precision (in meters)"
+    hdop: Float!
+    hub: Hub!
+    id: Int!
+    "Latitude (in degrees)"
+    lat: Float!
+    "Longitude (in degrees)"
+    lng: Float!
+    "Speed in KMPH (always slight movement)"
+    speed: Float!
+}
+
+type Mutation {
+    acceptNetworkMembership(networkMemberId: Int!): NetworkMember
+    createEvent(serial: String!): Event
+    createHub(name: String!, serial: String!): Hub
+    createLocation(age: Int!, course: Float!, hdop: Float!, lat: Float!, lng: Float!, speed: Float!): Location
+    createNetwork(name: String!): Network
+    createNetworkMember(email: String!, networkId: Int!, role: RoleType!): NetworkMember
+    createSensor(batteryLevel: Int, doorColumn: Int!, doorRow: Int!, isConnected: Boolean, isOpen: Boolean, serial: ID!): Sensor
+    declineNetworkMembership(networkMemberId: Int!): User
+    deleteHub(id: ID!): Hub
+    deleteNetwork(networkId: Int!): Network
+    deleteNetworkMember(networkMemberId: Int!): Network
+    loginAsHub(serial: String!, userId: ID!): String
+    loginWithPassword(email: String!, fcmToken: String!, password: String!): String
+    registerWithPassword(email: String!, fcmToken: String!, firstName: String, lastName: String, password: String!): String
+    seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User
+    updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub
+    updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride
+    updateSensor(id: ID!, isOpen: Boolean): Sensor
+    updateUser(defaultFullNotification: Boolean, firstName: String, lastName: String): User
+}
+
+type Network {
+    createdAt: DateTime!
+    createdById: Int!
+    hubs: [Hub!]!
+    id: Int!
+    members(after: NetworkMemberWhereUniqueInput, before: NetworkMemberWhereUniqueInput, first: Int, last: Int): [NetworkMember!]!
+    name: String!
+}
+
+type NetworkMember {
+    canDelete: Boolean!
+    id: Int!
+    inviteeAcceptedAt: DateTime
+    inviterAcceptedAt: DateTime
+    network: Network!
+    networkId: Int!
+    role: RoleType!
+    """
+    
+    Invited: network invited them.
+    
+Requested: they requested to join network.
+    
+Active: accepted on both sides into network
+    """
+    status: NetworkMemberStatus
+    user: User!
+    userId: Int!
+}
+
+type NotificationOverride {
+    createdAt: DateTime!
+    hub: Hub!
+    hubId: Int!
+    id: Int!
+    isMuted: Boolean!
+    user: User!
+    userId: Int!
+}
+
+type Query {
+    hub(id: Int!): Hub
+    hubViewer: Hub!
+    viewer: Viewer!
+}
+
+type Sensor {
+    batteryLevel: Int
+    doorColumn: Int!
+    doorRow: Int!
+    events(after: EventWhereUniqueInput, before: EventWhereUniqueInput, first: Int, last: Int, orderBy: [SensorEventsOrderByInput!]): [Event!]!
+    hub: Hub!
+    id: Int!
+    isConnected: Boolean!
+    isOpen: Boolean!
+    serial: String!
+}
+
+type User {
+    activatedAt: DateTime
+    defaultFullNotification: Boolean!
+    displayName: String!
+    email: String!
+    firstName: String
+    hubs(after: HubWhereUniqueInput, before: HubWhereUniqueInput, first: Int, last: Int): [Hub!]!
+    id: Int!
+    isMe: Boolean!
+    lastName: String
+    networkMemberships(after: NetworkMemberWhereUniqueInput, before: NetworkMemberWhereUniqueInput, first: Int, last: Int): [NetworkMember!]!
+    notificationOverrides(after: NotificationOverrideWhereUniqueInput, before: NotificationOverrideWhereUniqueInput, first: Int, last: Int): [NotificationOverride!]!
+}
+
+type Viewer {
+    hubs: [Hub!]!
+    latestSensorVersion: String!
+    networks(status: NetworkMemberStatus): [Network!]!
+    user: User!
+}
+
+enum NetworkMemberStatus {
+    active
+    invited
+    requested
+}
+
+enum RoleType {
+    member
+    owner
+}
+
+enum SortOrder {
+    asc
+    desc
+}
+
+scalar DateTime
+
+input EventWhereUniqueInput {
+    id: Int
+}
+
+input HubWhereUniqueInput {
+    id: Int
+    serial: String
+}
+
+input LocationWhereUniqueInput {
+    id: Int
+}
+
+input NetworkMemberWhereUniqueInput {
+    id: Int
+}
+
+input NotificationOverrideWhereUniqueInput {
+    id: Int
+}
+
+input SensorEventsOrderByInput {
+    createdAt: SortOrder
+}
+
+input SensorWhereUniqueInput {
+    id: Int
+    serial: String
+}

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:gql/ast.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:handle_it/common/loading.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 DocumentNode addFragments(DocumentNode doc, List<DocumentNode> fragments) {
@@ -49,4 +51,22 @@ ThemeData buildTheme() {
 String pluralize(String word, int count, [bool isEs = false]) {
   final ending = isEs ? 'es' : 's';
   return "$count $word${count == 1 ? '' : ending}";
+}
+
+/// Call this first after a network request to handle
+/// loading or exceptions. Returns a widget if the request
+/// is not ready to be handled. Returns null when ready
+///
+/// @param result The network request result
+Widget? validateResult(QueryResult? result, {bool allowCache = true}) {
+  if (result == null) return const Loading();
+  if (result.hasException) {
+    final exceptionStr = result.exception.toString();
+    print(">>> EXCEPTION: $exceptionStr");
+    return Text(exceptionStr);
+  }
+  if (result.isLoading && (!allowCache || result.data == null)) {
+    return const Loading();
+  }
+  return null;
 }
