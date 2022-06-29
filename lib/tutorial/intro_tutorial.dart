@@ -121,8 +121,16 @@ class _IntroTutorialState extends State<IntroTutorial> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    if (_slideNum < 1) ElevatedButton(onPressed: finishTutorial, child: const Text("Skip")),
-                    ElevatedButton(onPressed: advanceSlide, child: Text(_slideNum > 0 ? "Finish" : "Next")),
+                    if (_slideNum < 1)
+                      ElevatedButton(
+                        key: const ValueKey('button.skip'),
+                        onPressed: finishTutorial,
+                        child: const Text("Skip"),
+                      ),
+                    ElevatedButton(
+                      onPressed: advanceSlide,
+                      child: Text(_slideNum > 0 ? "Finish" : "Next"),
+                    ),
                   ],
                 )
               ],

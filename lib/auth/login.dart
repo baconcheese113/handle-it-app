@@ -68,6 +68,7 @@ class _LoginState extends State<Login> {
                       obscureText: true,
                     ),
                     ElevatedButton(
+                      key: const ValueKey('button.login'),
                       onPressed: () async {
                         if (_email.length < 3 || _password.length < 3) return; // TODO validate
                         final fcmToken = await FirebaseMessaging.instance.getToken();

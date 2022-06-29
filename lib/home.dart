@@ -63,6 +63,7 @@ class _HomeState extends State<Home> {
 
         final viewer = _query.parse(result.data!).viewer;
         final addVehicleFab = FloatingActionButton.extended(
+          key: const ValueKey('fab'),
           onPressed: () => _handleAddVehicle(context),
           icon: const Icon(Icons.add, color: Colors.black),
           label: const Text("Add Hub", style: TextStyle(color: Colors.black)),
