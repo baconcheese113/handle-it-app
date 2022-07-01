@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/members/network_members_join.dart';
 
 import 'network_members_list.dart';
 
@@ -75,6 +76,7 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
               onPressed: handleCreateNetwork,
               child: const Text("Create Network"),
             ),
+            const NetworkMembersJoin(),
             ...networksList.reversed.toList(),
           ]);
         },

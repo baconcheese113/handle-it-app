@@ -1,0 +1,28 @@
+mutation RequestNetworkMembership($networkName: String!) {
+  requestNetworkMembership(networkName: $networkName) {
+    id
+    role
+    user {
+      __typename
+      id
+      networkMemberships {
+        ...networkInvitesCard_member
+        __typename
+        id
+        status
+        inviterAcceptedAt
+        # FIXME artemis
+        memNetwork: network {
+          __typename
+          id
+          name
+          members {
+            __typename
+            id
+            status
+          }
+        }
+      }
+    }
+  }
+}

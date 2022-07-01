@@ -63,6 +63,7 @@ type Mutation {
     loginAsHub(serial: String!, userId: ID!): String
     loginWithPassword(email: String!, fcmToken: String!, password: String!): String
     registerWithPassword(email: String!, fcmToken: String!, firstName: String, lastName: String, password: String!): String
+    requestNetworkMembership(networkName: String!): NetworkMember
     seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User
     updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub
     updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride

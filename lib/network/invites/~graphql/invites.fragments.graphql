@@ -1,3 +1,14 @@
+fragment networkRequestsCard_member on NetworkMember {
+  __typename
+  id
+  status
+  inviteeAcceptedAt
+  network {
+    id
+    name
+  }
+}
+
 fragment networkInvitesCard_member on NetworkMember {
   __typename
   id
@@ -23,6 +34,7 @@ fragment networkInvitesTab_viewer on Viewer {
     id
     networkMemberships {
       ...networkInvitesCard_member
+      ...networkRequestsCard_member
       __typename
       id
       status

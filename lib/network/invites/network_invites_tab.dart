@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/invites/network_invites_card.dart';
+import 'package:handle_it/network/invites/network_requests_card.dart';
 
 class NetworkInvitesTab extends StatefulWidget {
   final NetworkInvitesTabViewerMixin viewerFrag;
@@ -33,11 +34,7 @@ class _NetworkInvitesTabState extends State<NetworkInvitesTab> {
             ]),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text("Requests to join", style: TextStyle(fontSize: 24)),
-              ...requestedMemberships.map((mem) {
-                return ListTile(
-                  title: Text(mem.memNetwork.name),
-                );
-              }).toList(),
+              ...requestedMemberships.map((mem) => NetworkRequestsCard(memberFrag: mem)).toList(),
               if (requestedMemberships.isEmpty)
                 const Padding(padding: EdgeInsets.all(16), child: Text("No requests you've sent are pending")),
             ]),

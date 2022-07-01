@@ -42,11 +42,19 @@ class _NetworkInvitesCardState extends State<NetworkInvitesCard> {
                 ]),
                 trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                   IconButton(
-                    onPressed: () => runAcceptMutation({'networkMemberId': widget.memberFrag.id}),
+                    onPressed: () => runAcceptMutation(
+                      AcceptNetworkMembershipArguments(
+                        networkMemberId: widget.memberFrag.id,
+                      ).toJson(),
+                    ),
                     icon: const Icon(Icons.check_circle),
                   ),
                   IconButton(
-                    onPressed: () => runDeclineMutation({'networkMemberId': widget.memberFrag.id}),
+                    onPressed: () => runDeclineMutation(
+                      DeclineNetworkMembershipArguments(
+                        networkMemberId: widget.memberFrag.id,
+                      ).toJson(),
+                    ),
                     icon: const Icon(Icons.clear_outlined),
                   ),
                 ]),
