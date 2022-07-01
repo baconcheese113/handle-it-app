@@ -1,3 +1,15 @@
+fragment networkMemberUpdate_member on NetworkMember {
+  __typename
+  id
+  role
+  # FIXME artemis
+  membUser: user {
+    __typename
+    id
+    isMe
+  }
+}
+
 fragment networkMemberDelete_member on NetworkMember {
   __typename
   id

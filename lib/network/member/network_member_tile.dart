@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/member/network_member_delete.dart';
+import 'package:handle_it/network/member/network_member_update.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -56,7 +57,12 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
         title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
         subtitle: Column(children: hubNames),
-        trailing: canDelete ? NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin) : null,
+        trailing: canDelete
+            ? Row(mainAxisSize: MainAxisSize.min, children: [
+                NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
+                NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
+              ])
+            : null,
       );
     }
 
@@ -71,8 +77,12 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
       title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
       subtitle: Column(children: hubNames),
       onExpansionChanged: (isExpanded) => setState(() => _isExpanded = isExpanded),
-      trailing:
-          canDelete && _isExpanded ? NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin) : null,
+      trailing: canDelete && _isExpanded
+          ? Row(mainAxisSize: MainAxisSize.min, children: [
+              NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
+              NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
+            ])
+          : null,
       children: hubListTiles,
     );
   }

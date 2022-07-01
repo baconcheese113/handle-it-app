@@ -1,0 +1,7 @@
+mutation UpdateNetworkMember($networkMemberId: Int!, $role: RoleType) {
+  updateNetworkMember(networkMemberId: $networkMemberId, role: $role) {
+    id
+    role
+    userId
+  }
+}

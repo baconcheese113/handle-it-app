@@ -66,6 +66,7 @@ type Mutation {
     requestNetworkMembership(networkName: String!): NetworkMember
     seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User
     updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub
+    updateNetworkMember(networkMemberId: Int!, role: RoleType): NetworkMember
     updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride
     updateSensor(id: ID!, isOpen: Boolean): Sensor
     updateUser(defaultFullNotification: Boolean, firstName: String, lastName: String): User

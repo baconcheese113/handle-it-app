@@ -16,6 +16,7 @@ fragment networkMembersList_network on Network {
     ...networkMemberTile_member
     # FIXME artemis this should be on networkMemberTile_member
     ...networkMemberDelete_member
+    ...networkMemberUpdate_member
   }
 }
 
