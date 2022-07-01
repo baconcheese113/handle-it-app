@@ -33,7 +33,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
    <application
-        android:label="handle_it"
+        android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"> <!-- Allows using http localhost -->
 

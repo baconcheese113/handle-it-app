@@ -8,3 +8,11 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
 to generate the Artemis types
+
+## Testing
+
+Run integration tests with
+```shell
+flutter test integration_test --flavor devtest
+
+```
