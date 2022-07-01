@@ -23,9 +23,8 @@ class _NetworkInvitesTabState extends State<NetworkInvitesTab> {
         onRefresh: () async {
           widget.refetch();
         },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        child: ListView(
+          children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text("Invitations", style: TextStyle(fontSize: 24)),
               ...invitedMemberships.map((mem) => NetworkInvitesCard(memberFrag: mem)).toList(),
@@ -42,7 +41,7 @@ class _NetworkInvitesTabState extends State<NetworkInvitesTab> {
               if (requestedMemberships.isEmpty)
                 const Padding(padding: EdgeInsets.all(16), child: Text("No requests you've sent are pending")),
             ]),
-          ]),
+          ],
         ));
   }
 }

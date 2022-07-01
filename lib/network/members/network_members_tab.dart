@@ -42,34 +42,41 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
               builder: (dialogContext) {
                 return AlertDialog(
                   title: const Text("Enter Network Name"),
-                  content: TextFormField(onChanged: (String n) => name = n),
+                  content: TextFormField(
+                    key: const ValueKey('input.networkName'),
+                    onChanged: (String n) => name = n,
+                  ),
                   actions: [
                     TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
                     TextButton(
-                        onPressed: () async {
-                          final mutation = await runMutation(
-                            CreateNetworkArguments(
-                              name: name,
-                            ).toJson(),
-                          ).networkResult;
-                          if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
-                            onNetworkAdded("Network created successfully, refresh to view");
-                          }
-                          if (mounted) Navigator.of(dialogContext).pop();
-                        },
-                        child: const Text("Create"))
+                      key: const ValueKey('button.create'),
+                      onPressed: () async {
+                        final mutation = await runMutation(
+                          CreateNetworkArguments(
+                            name: name,
+                          ).toJson(),
+                        ).networkResult;
+                        if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
+                          onNetworkAdded("Network created successfully, refresh to view");
+                        }
+                        if (mounted) Navigator.of(dialogContext).pop();
+                      },
+                      child: const Text("Create"),
+                    )
                   ],
                 );
               },
             );
           }
 
-          return SingleChildScrollView(
-            child: Column(children: [
-              TextButton(onPressed: handleCreateNetwork, child: const Text("Create Network")),
-              ...networksList.reversed.toList(),
-            ]),
-          );
+          return ListView(key: const ValueKey('list.networks'), children: [
+            TextButton(
+              key: const ValueKey('button.createNetwork'),
+              onPressed: handleCreateNetwork,
+              child: const Text("Create Network"),
+            ),
+            ...networksList.reversed.toList(),
+          ]);
         },
       ),
     );

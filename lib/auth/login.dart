@@ -86,6 +86,7 @@ class _LoginState extends State<Login> {
                 ),
               ),
               ElevatedButton(
+                key: const ValueKey('button.switchToRegister'),
                 onPressed: _switchToRegister,
                 child: const Text("Create an account"),
               ),

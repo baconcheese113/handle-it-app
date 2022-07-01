@@ -49,12 +49,17 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
           children: [
             Expanded(
               child: TextFormField(
+                key: const ValueKey('input.newMember'),
                 controller: _controller,
                 decoration: const InputDecoration(hintText: "Enter new member email"),
                 onChanged: (newText) => setState(() => _newEmail = newText),
               ),
             ),
-            IconButton(onPressed: canAdd ? handleCreate : null, icon: const Icon(Icons.add)),
+            IconButton(
+              key: const ValueKey('button.newMember'),
+              onPressed: canAdd ? handleCreate : null,
+              icon: const Icon(Icons.add),
+            ),
           ],
         );
       },

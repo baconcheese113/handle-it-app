@@ -56,62 +56,59 @@ class _SettingsState extends State<Settings> {
           ).networkResult;
         }
 
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Form(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                TextFormField(
-                  readOnly: true,
-                  initialValue: widget.userFrag.email,
-                  decoration: const InputDecoration(hintText: 'Enter your email'),
-                  validator: (String? value) {
-                    if (EmailValidator.validate(value ?? "")) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  initialValue: widget.userFrag.firstName,
-                  decoration: const InputDecoration(hintText: 'Enter your first name'),
-                  onChanged: (newValue) => setState(() => _firstName = newValue),
-                  validator: (String? value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a valid name';
-                    }
-                    return null;
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: canUpdateName ? handleUpdateName : null,
-                  child: const Text("Update name"),
-                ),
-                ElevatedButton(onPressed: logout, child: const Text("Logout")),
-                const Padding(padding: EdgeInsets.only(top: 20)),
-                const Padding(
-                  padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child: Text("Notification type", textScaleFactor: 1.4),
-                ),
-                NotificationSettings(user: widget.userFrag as NotificationSettingsUserMixin),
-                const Padding(padding: EdgeInsets.only(top: 40)),
-                const Divider(),
-                const Padding(
-                  padding: EdgeInsets.only(top: 40, bottom: 20),
-                  child: Text("Developer tools", textScaleFactor: 1.4),
-                ),
-                AddTestHub(user: widget.userFrag as AddTestHubUserMixin),
-                Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: ElevatedButton(
-                      onPressed: _removeTutPrefs,
-                      child: const Text("Remove Tut Prefs"),
-                    ))
-              ],
+        return ListView(
+          children: [
+            TextFormField(
+              readOnly: true,
+              initialValue: widget.userFrag.email,
+              decoration: const InputDecoration(hintText: 'Enter your email'),
+              validator: (String? value) {
+                if (EmailValidator.validate(value ?? "")) {
+                  return 'Please enter a valid email';
+                }
+                return null;
+              },
             ),
-          ),
+            TextFormField(
+              initialValue: widget.userFrag.firstName,
+              decoration: const InputDecoration(hintText: 'Enter your first name'),
+              onChanged: (newValue) => setState(() => _firstName = newValue),
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a valid name';
+                }
+                return null;
+              },
+            ),
+            ElevatedButton(
+              onPressed: canUpdateName ? handleUpdateName : null,
+              child: const Text("Update name"),
+            ),
+            ElevatedButton(
+              key: const ValueKey('button.logout'),
+              onPressed: logout,
+              child: const Text("Logout"),
+            ),
+            const Padding(padding: EdgeInsets.only(top: 20)),
+            const Padding(
+              padding: EdgeInsets.only(top: 10, bottom: 10),
+              child: Text("Notification type", textScaleFactor: 1.4),
+            ),
+            NotificationSettings(user: widget.userFrag as NotificationSettingsUserMixin),
+            const Padding(padding: EdgeInsets.only(top: 40)),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.only(top: 40, bottom: 20),
+              child: Text("Developer tools", textScaleFactor: 1.4),
+            ),
+            AddTestHub(user: widget.userFrag as AddTestHubUserMixin),
+            Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: ElevatedButton(
+                  onPressed: _removeTutPrefs,
+                  child: const Text("Remove Tut Prefs"),
+                )),
+          ],
         );
       },
     );

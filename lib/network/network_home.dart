@@ -39,9 +39,9 @@ class _NetworkHomeState extends State<NetworkHome> {
             child: Column(
               children: [
                 const TabBar(tabs: [
-                  Tab(key: Key("1"), text: "Map"),
-                  Tab(key: Key("2"), text: "Members"),
-                  Tab(key: Key("3"), text: "Invites"),
+                  Tab(key: ValueKey('tab.map'), text: "Map"),
+                  Tab(key: ValueKey("tab.members"), text: "Members"),
+                  Tab(key: ValueKey("tab.invites"), text: "Invites"),
                 ]),
                 Expanded(
                   child: TabBarView(physics: const NeverScrollableScrollPhysics(), children: [

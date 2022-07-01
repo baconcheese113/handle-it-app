@@ -85,10 +85,20 @@ class _HomeState extends State<Home> {
           ),
           floatingActionButton: _selectedIndex == 0 ? addVehicleFab : null,
           bottomNavigationBar: BottomNavigationBar(
+            key: const ValueKey('bottomNavBar'),
             items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(icon: Icon(Icons.home), label: "Feed"),
-              BottomNavigationBarItem(icon: Icon(Icons.group), label: 'HandleUs'),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Profile'),
+              BottomNavigationBarItem(
+                icon: Icon(key: ValueKey('navIcon.feed'), Icons.home),
+                label: "Feed",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(key: ValueKey('navIcon.network'), Icons.group),
+                label: 'HandleUs',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(key: ValueKey('navIcon.profile'), Icons.settings),
+                label: 'Profile',
+              ),
             ],
             currentIndex: _selectedIndex,
             onTap: (newIndex) => setState(() => _selectedIndex = newIndex),

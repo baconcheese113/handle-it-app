@@ -74,6 +74,7 @@ class _RegisterState extends State<Register> {
                           decoration: const InputDecoration(hintText: "Enter your last name (optional)"),
                           onChanged: (newVal) => setState(() => _lastName = newVal)),
                       ElevatedButton(
+                        key: const ValueKey('button.register'),
                         onPressed: () async {
                           if (_email.length < 3 || _password.length < 3) return; // TODO validate
                           final fcmToken = await FirebaseMessaging.instance.getToken();

@@ -18,7 +18,7 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
   GoogleMapController? _mapController;
 
   void handleMapCreated(GoogleMapController mapController) {
-    setState(() => _mapController = mapController);
+    if (mounted) setState(() => _mapController = mapController);
   }
 
   @override

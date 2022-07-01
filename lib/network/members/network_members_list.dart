@@ -18,7 +18,6 @@ class NetworkMembersList extends StatefulWidget {
 class _NetworkMembersListState extends State<NetworkMembersList> {
   @override
   Widget build(BuildContext context) {
-    print(">>> runtimeType is ${widget.networkFrag.runtimeType}");
     final networkFrag = widget.networkFrag;
     final members = networkFrag.networkMembers;
     var isOwner = members.any((m) => m.user.isMe && m.role.name == 'owner');
@@ -36,7 +35,9 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
           final id = data['deleteNetwork']['id'];
           final query = NetworkHomeQuery();
           final request = QueryOptions(document: query.document).asRequest;
-          final map = query.parse(cache.readQuery(request)!);
+          final readQuery = cache.readQuery(request);
+          if (readQuery == null) return;
+          final map = query.parse(readQuery);
           final viewer = map.viewer;
           viewer.activeNetworks.removeWhere((n) => n.id == id);
           viewer.networks.removeWhere((n) => n.id == id);
@@ -63,6 +64,7 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
                             if (isOwner) const Chip(label: Text("Owner")),
                             if (isOwner)
                               IconButton(
+                                  key: const ValueKey('button.deleteNetwork'),
                                   onPressed: () => runMutation(
                                         DeleteNetworkArguments(
                                           networkId: networkFrag.id,
