@@ -16,8 +16,6 @@ final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificat
 
 final BehaviorSubject<String> selectNotificationSubject = BehaviorSubject<String>();
 
-const String TAPPED_NOTIFICATION = "tapped_notification";
-
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   bool hubIsNearby = false;
@@ -42,8 +40,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       fullScreenIntent: true,
       showWhen: true);
   const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics);
-  await localNotifications.show(DateTime.now().second, message.data['title'], message.data['body'], platformSpecifics,
-      payload: TAPPED_NOTIFICATION);
+  await localNotifications.show(1, message.data['title'], message.data['body'], platformSpecifics,
+      payload: message.data['eventId']);
   print("showed notification");
 }
 
@@ -54,7 +52,8 @@ void main() async {
 
   final NotificationAppLaunchDetails? launchDetails = await localNotifications.getNotificationAppLaunchDetails();
   String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
-  print("didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute");
+  print(
+      "didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute, payload: ${launchDetails?.payload}");
 
   // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   // final pushNotificationService = PushNotificationService(_firebaseMessaging);
@@ -68,6 +67,7 @@ void main() async {
     if (payload != null) selectNotificationSubject.add(payload);
     print("Notification payload: $payload, and initialRoute: $initialRoute");
   });
+  await localNotifications.cancelAll();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   // Using HiveStore for persistence
@@ -75,5 +75,9 @@ void main() async {
 
   // try to log in with existing token
   // if still not logged in, login route
-  runApp(App(initialRoute: initialRoute, selectNotificationSubject: selectNotificationSubject));
+  runApp(App(
+    initialRoute: initialRoute,
+    selectNotificationSubject: selectNotificationSubject,
+    eventId: launchDetails?.payload,
+  ));
 }

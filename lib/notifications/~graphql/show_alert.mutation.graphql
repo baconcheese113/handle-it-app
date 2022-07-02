@@ -1,0 +1,5 @@
+mutation PropagateEventToNetworks($eventId: Int!) {
+  propagateEventToNetworks(eventId: $eventId) {
+    id
+  }
+}

@@ -33,30 +33,33 @@ class _FeedHomeState extends State<FeedHome> {
           onRefresh: () async {
             await refetch!();
           },
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 96),
-            child: ListView(
-              children: [
-                if (result.hasException) Text(result.exception.toString()),
-                SensorUpdater(latestVersion: Version.parse(result.data!['viewer']['latestSensorVersion'])),
-                if (hubs.isNotEmpty)
-                  ...hubs
-                      .map((hub) => FeedCard(
-                            hubFrag: hub,
-                            onDelete: () async {
-                              await refetch!();
-                            },
-                          ))
-                      .toList(),
-                if (hubs.isEmpty)
-                  const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 192),
-                      child: Text("Add a hub to begin"),
-                    ),
-                  )
-              ],
-            ),
+          child: ListView(
+            children: [
+              if (result.hasException) Text(result.exception.toString()),
+              SensorUpdater(latestVersion: Version.parse(viewer.latestSensorVersion)),
+              if (hubs.isNotEmpty)
+                Padding(
+                  // Prevents covering Arm toggle with fab
+                  padding: const EdgeInsets.only(bottom: 96),
+                  child: Column(
+                    children: hubs
+                        .map((hub) => FeedCard(
+                              hubFrag: hub,
+                              onDelete: () async {
+                                await refetch!();
+                              },
+                            ))
+                        .toList(),
+                  ),
+                ),
+              if (hubs.isEmpty)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 192),
+                    child: Text("Add a hub to begin"),
+                  ),
+                )
+            ],
           ),
         );
       },

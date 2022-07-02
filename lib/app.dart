@@ -44,7 +44,8 @@ class AuthenticationState extends ChangeNotifier {
 class App extends StatefulWidget {
   final String? initialRoute;
   final BehaviorSubject<String>? selectNotificationSubject;
-  App({Key? key, this.initialRoute, this.selectNotificationSubject}) : super(key: key);
+  final String? eventId;
+  App({Key? key, this.initialRoute, this.selectNotificationSubject, this.eventId}) : super(key: key);
 
   final GlobalKey<NavigatorState> _navigator = GlobalKey<NavigatorState>();
 
@@ -111,7 +112,7 @@ class _AppState extends State<App> {
         navigatorKey: widget._navigator,
         routes: <String, WidgetBuilder>{
           Home.routeName: (_) => Home(reinitialize: reinitialize),
-          ShowAlert.routeName: (_) => const ShowAlert(),
+          ShowAlert.routeName: (_) => ShowAlert(eventId: widget.eventId),
           // TODO refactor reinitialize to a provider
           Register.routeName: (_) => Register(reinitialize: reinitialize),
           Login.routeName: (_) => Login(reinitialize: reinitialize),
