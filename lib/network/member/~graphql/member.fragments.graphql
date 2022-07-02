@@ -26,6 +26,8 @@ fragment networkMemberTile_member on NetworkMember {
   id
   status
   role
+  inviteeAcceptedAt
+  inviterAcceptedAt
   network {
     __typename
     id

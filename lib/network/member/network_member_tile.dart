@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/member/network_member_accept.dart';
+import 'package:handle_it/network/member/network_member_decline.dart';
 import 'package:handle_it/network/member/network_member_delete.dart';
 import 'package:handle_it/network/member/network_member_update.dart';
 import 'package:handle_it/network/network_provider.dart';
@@ -49,6 +51,19 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
             : null,
       ));
     }
+    Widget getTrailing() {
+      if (member.inviterAcceptedAt == null || member.inviteeAcceptedAt == null) {
+        return Row(mainAxisSize: MainAxisSize.min, children: [
+          if (member.inviterAcceptedAt == null) NetworkMemberAccept(memberId: member.id),
+          NetworkMemberDecline(memberId: member.id),
+        ]);
+      }
+      return Row(mainAxisSize: MainAxisSize.min, children: [
+        if (!member.user.isMe) NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
+        NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
+      ]);
+    }
+
     if (!hasHubWithLocation) {
       return ListTile(
         tileColor: isMe ? Colors.amberAccent : null,
@@ -57,12 +72,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
         title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
         subtitle: Column(children: hubNames),
-        trailing: canDelete
-            ? Row(mainAxisSize: MainAxisSize.min, children: [
-                NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
-                NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
-              ])
-            : null,
+        trailing: canDelete ? getTrailing() : null,
       );
     }
 
@@ -77,12 +87,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
       title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
       subtitle: Column(children: hubNames),
       onExpansionChanged: (isExpanded) => setState(() => _isExpanded = isExpanded),
-      trailing: canDelete && _isExpanded
-          ? Row(mainAxisSize: MainAxisSize.min, children: [
-              NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
-              NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
-            ])
-          : null,
+      trailing: canDelete && _isExpanded ? getTrailing() : null,
       children: hubListTiles,
     );
   }
