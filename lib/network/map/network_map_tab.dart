@@ -8,15 +8,17 @@ import 'package:handle_it/network/map/network_map_details.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:provider/provider.dart';
 
-Future<Uint8List> getCustomMarker(Color color, String name, bool isAlert) async {
+Future<Uint8List> getCustomMarker(Color color, String name, bool isAlert, bool isSelected) async {
   final PictureRecorder pictureRecorder = PictureRecorder();
   final Canvas canvas = Canvas(pictureRecorder);
-  const length = 120.0;
-  const width = length ~/ 1;
-  const height = length ~/ 1;
-  final icon = isAlert ? Icons.priority_high : Icons.directions_car;
+  final length = isSelected ? 200.0 : 120.0;
+  final width = length ~/ 1;
+  final height = length ~/ 1;
+
   final circlePaint = Paint()..color = Colors.white.withOpacity(.6);
-  canvas.drawCircle(const Offset(length / 2, length / 2), length * .40, circlePaint);
+  canvas.drawCircle(Offset(length / 2, length / 2), length * .40, circlePaint);
+
+  final icon = isAlert ? Icons.priority_high : Icons.directions_car;
   TextPainter(textDirection: TextDirection.ltr)
     ..text = TextSpan(
       text: String.fromCharCode(icon.codePoint),
@@ -27,27 +29,27 @@ Future<Uint8List> getCustomMarker(Color color, String name, bool isAlert) async 
       ),
     )
     ..layout()
-    ..paint(canvas, const Offset(length * .25 / 2, 0));
+    ..paint(canvas, Offset(length * .25 / 2, 20));
   if (isAlert) {
-    TextPainter(textDirection: TextDirection.ltr)
+    final alertPainter = TextPainter(textDirection: TextDirection.ltr)
       ..text = TextSpan(
         text: "ALERT",
-        style: TextStyle(color: color, fontSize: 30),
+        style: TextStyle(color: color, fontSize: length * .2, fontWeight: FontWeight.bold),
       )
-      ..layout()
-      ..paint(canvas, const Offset(20, 0));
+      ..layout();
+    alertPainter.paint(canvas, Offset((length - alertPainter.width) / 2, 0));
   }
   final paint = Paint()
     ..strokeWidth = 8.0
     ..color = color;
   canvas.drawLine(
-    const Offset(length * .25 / 2, length * .75),
-    const Offset(length / 2, length),
+    Offset(length * .25, length * .75),
+    Offset(length / 2, length),
     paint,
   );
   canvas.drawLine(
-    const Offset(length / 2, length),
-    const Offset(length * (.75 + (.25 / 2)), length * .75),
+    Offset(length / 2, length),
+    Offset(length * .75, length * .75),
     paint,
   );
   final img = await pictureRecorder.endRecording().toImage(width, height);
@@ -114,7 +116,12 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
                   )
                 : false;
             print(">>> added marker with networkId: $networkId");
-            final iconBytes = await getCustomMarker(netProvider.getColorForId(networkId)!, hub.name, hasRecentEvent);
+            final iconBytes = await getCustomMarker(
+              netProvider.getColorForId(networkId)!,
+              hub.name,
+              hasRecentEvent,
+              netProvider.selectedHub?.hubId == hubId,
+            );
             final id = "${m.id}-$hubId";
             final marker = Marker(
               markerId: MarkerId(id),
