@@ -33,6 +33,7 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
     final networks = widget.viewerFrag.activeNetworks;
     final List<int> addedHubs = [];
     LatLng? bestCameraPos;
+    Set<Circle> circles = {};
 
     List<Marker> getMarkerWidgets(int networkId, int idx) {
       final network = networks.firstWhere((n) => n.id == networkId);
@@ -56,8 +57,9 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               bestCameraPos ??= pos;
             }
             print(">>> added marker with networkId: $networkId");
+            final id = "${m.id}-$hubId";
             final marker = Marker(
-              markerId: MarkerId("${m.id}-$hubId"),
+              markerId: MarkerId(id),
               position: pos,
               alpha: .7,
               icon: BitmapDescriptor.defaultMarkerWithHue(netProvider.getMarkerHue(networkId)),
@@ -67,6 +69,14 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               },
             );
             markers.add(marker);
+            final fillColor = netProvider.getColorForId(networkId)!.withOpacity(0.2);
+            circles.add(Circle(
+              circleId: CircleId(id),
+              center: pos,
+              radius: location.hdop * 2,
+              fillColor: fillColor,
+              strokeWidth: 0,
+            ));
           }
         }
       }
@@ -98,6 +108,7 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               child: GoogleMap(
                 onMapCreated: handleMapCreated,
                 initialCameraPosition: CameraPosition(target: bestCameraPos ?? const LatLng(0, 0), zoom: 12),
+                circles: circles,
                 markers: networkMarkers,
                 myLocationButtonEnabled: false,
                 compassEnabled: false,

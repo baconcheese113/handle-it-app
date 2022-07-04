@@ -42,6 +42,7 @@ fragment networkMapTab_viewer on Viewer {
             id
             lat
             lng
+            hdop
             fixedAt
           }
         }
