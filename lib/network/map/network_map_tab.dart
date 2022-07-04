@@ -1,9 +1,59 @@
+import 'dart:typed_data';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/map/network_map_details.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:provider/provider.dart';
+
+Future<Uint8List> getCustomMarker(Color color, String name, bool isAlert) async {
+  final PictureRecorder pictureRecorder = PictureRecorder();
+  final Canvas canvas = Canvas(pictureRecorder);
+  const length = 120.0;
+  const width = length ~/ 1;
+  const height = length ~/ 1;
+  final icon = isAlert ? Icons.priority_high : Icons.directions_car;
+  final circlePaint = Paint()..color = Colors.white.withOpacity(.6);
+  canvas.drawCircle(const Offset(length / 2, length / 2), length * .40, circlePaint);
+  TextPainter(textDirection: TextDirection.ltr)
+    ..text = TextSpan(
+      text: String.fromCharCode(icon.codePoint),
+      style: TextStyle(
+        color: color,
+        fontSize: length * .75,
+        fontFamily: icon.fontFamily,
+      ),
+    )
+    ..layout()
+    ..paint(canvas, const Offset(length * .25 / 2, 0));
+  if (isAlert) {
+    TextPainter(textDirection: TextDirection.ltr)
+      ..text = TextSpan(
+        text: "ALERT",
+        style: TextStyle(color: color, fontSize: 30),
+      )
+      ..layout()
+      ..paint(canvas, const Offset(20, 0));
+  }
+  final paint = Paint()
+    ..strokeWidth = 8.0
+    ..color = color;
+  canvas.drawLine(
+    const Offset(length * .25 / 2, length * .75),
+    const Offset(length / 2, length),
+    paint,
+  );
+  canvas.drawLine(
+    const Offset(length / 2, length),
+    const Offset(length * (.75 + (.25 / 2)), length * .75),
+    paint,
+  );
+  final img = await pictureRecorder.endRecording().toImage(width, height);
+  final data = await img.toByteData(format: ImageByteFormat.png);
+  return data!.buffer.asUint8List();
+}
 
 class NetworkMapTab extends StatefulWidget {
   final NetworkMapTabViewerMixin viewerFrag;
@@ -35,7 +85,7 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
     LatLng? bestCameraPos;
     Set<Circle> circles = {};
 
-    List<Marker> getMarkerWidgets(int networkId, int idx) {
+    Future<List<Marker>> getMarkerWidgets(int networkId, int idx) async {
       final network = networks.firstWhere((n) => n.id == networkId);
       final members = network.members;
       final List<Marker> markers = [];
@@ -56,13 +106,21 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
             } else {
               bestCameraPos ??= pos;
             }
+            final hasRecentEvent = hub.events.isNotEmpty
+                ? hub.events[0].createdAt.isAfter(
+                    DateTime.fromMillisecondsSinceEpoch(
+                      DateTime.now().millisecondsSinceEpoch - (1000 * 3600 * 24 * 7),
+                    ),
+                  )
+                : false;
             print(">>> added marker with networkId: $networkId");
+            final iconBytes = await getCustomMarker(netProvider.getColorForId(networkId)!, hub.name, hasRecentEvent);
             final id = "${m.id}-$hubId";
             final marker = Marker(
               markerId: MarkerId(id),
               position: pos,
               alpha: .7,
-              icon: BitmapDescriptor.defaultMarkerWithHue(netProvider.getMarkerHue(networkId)),
+              icon: BitmapDescriptor.fromBytes(iconBytes),
               onTap: () {
                 final selectedHub = HubObject(hubId, networkId, pos);
                 netProvider.setSelectedHub(selectedHub);
@@ -84,9 +142,13 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
     }
 
     final Set<Marker> networkMarkers = {};
-    for (var i = 0; i < networks.length; i++) {
-      int id = networks[i].id;
-      networkMarkers.addAll(getMarkerWidgets(id, i).toSet());
+    Future<bool> loadAllMarkers() async {
+      for (var i = 0; i < networks.length; i++) {
+        final id = networks[i].id;
+        final markers = await getMarkerWidgets(id, i);
+        networkMarkers.addAll(markers.toSet());
+      }
+      return true;
     }
 
     if (!netProvider.didAnimateToSelection && _mapController != null) {
@@ -105,24 +167,31 @@ class _NetworkMapTabState extends State<NetworkMapTab> {
               child: const Text("Refresh"),
             ),
             Expanded(
-              child: GoogleMap(
-                onMapCreated: handleMapCreated,
-                initialCameraPosition: CameraPosition(target: bestCameraPos ?? const LatLng(0, 0), zoom: 12),
-                circles: circles,
-                markers: networkMarkers,
-                myLocationButtonEnabled: false,
-                compassEnabled: false,
-                scrollGesturesEnabled: true,
-                rotateGesturesEnabled: true,
-                tiltGesturesEnabled: true,
-                zoomGesturesEnabled: true,
-                zoomControlsEnabled: false,
-                buildingsEnabled: false,
-                myLocationEnabled: false,
-                indoorViewEnabled: false,
-                mapToolbarEnabled: false,
-                trafficEnabled: false,
-                onTap: (pos) => netProvider.clearSelectedHub(),
+              child: FutureBuilder(
+                future: loadAllMarkers(),
+                builder: (_, AsyncSnapshot<bool> snapshot) {
+                  if (!snapshot.hasData) return const SizedBox();
+
+                  return GoogleMap(
+                    onMapCreated: handleMapCreated,
+                    initialCameraPosition: CameraPosition(target: bestCameraPos ?? const LatLng(0, 0), zoom: 12),
+                    circles: circles,
+                    markers: networkMarkers,
+                    myLocationButtonEnabled: false,
+                    compassEnabled: false,
+                    scrollGesturesEnabled: true,
+                    rotateGesturesEnabled: true,
+                    tiltGesturesEnabled: true,
+                    zoomGesturesEnabled: true,
+                    zoomControlsEnabled: false,
+                    buildingsEnabled: false,
+                    myLocationEnabled: false,
+                    indoorViewEnabled: false,
+                    mapToolbarEnabled: false,
+                    trafficEnabled: false,
+                    onTap: (pos) => netProvider.clearSelectedHub(),
+                  );
+                },
               ),
             )
           ],
