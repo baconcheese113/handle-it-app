@@ -46,6 +46,7 @@ dependencies:
   json_annotation: ^4.5.0 # In dependencies because the generated types need it
   equatable: ^2.0.3 # In dependencies because the generated types need it
   intl: ^0.17.0
+  collection: ^1.16.0
 
 dev_dependencies:
   integration_test:
