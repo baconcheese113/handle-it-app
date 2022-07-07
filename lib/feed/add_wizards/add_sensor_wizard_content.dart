@@ -46,25 +46,30 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       return;
     }
 
-    print("bluetooth state is now POWERED_ON, starting peripheral scan");
-    await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
-      if (r.device.name.isEmpty) continue;
-      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
-      if (r.device.name == HUB_NAME) {
-        _flutterBlue.stopScan();
-        setState(() => _foundHub = r.device);
-        break;
+    final existingDevice = (await _flutterBlue.connectedDevices).firstWhereOrNull((d) => d.name == HUB_NAME);
+    if (existingDevice != null) {
+      setState(() => _foundHub = existingDevice);
+    } else {
+      print("bluetooth state is now POWERED_ON, starting peripheral scan");
+      await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
+        if (r.device.name.isEmpty) continue;
+        print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
+        if (r.device.name == HUB_NAME) {
+          _flutterBlue.stopScan();
+          setState(() => _foundHub = r.device);
+          break;
+        }
       }
-    }
-    if (_foundHub == null) {
-      print("no devices found and scan stopped");
-      setState(() => _scanning = false);
-      return;
-    }
+      if (_foundHub == null) {
+        print("no devices found and scan stopped");
+        setState(() => _scanning = false);
+        return;
+      }
 
-    print(">>> connecting");
-    await _foundHub!.connect();
-    print(">>> connecting finished");
+      print(">>> connecting");
+      await _foundHub!.connect();
+      print(">>> connecting finished");
+    }
     if (_formsPageViewController!.page == 0) {
       print(">>>changing page");
       _formsPageViewController!.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
