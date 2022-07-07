@@ -8,7 +8,7 @@ targets:
         options:
           generate_helpers: true
           scalar_mapping:
-            - custom_parser_import: 'coercers.dart'
+            - custom_parser_import: 'package:handle_it/~graphql/coercers.dart'
               graphql_type: DateTime
               dart_type: DateTime
           schema_mapping:
