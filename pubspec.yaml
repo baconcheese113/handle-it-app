@@ -31,7 +31,7 @@ dependencies:
   flutter_local_notifications: ^9.6.1
   rxdart: ^0.27.4 # TODO remove usages
   email_validator: ^2.0.1
-  graphql_flutter: ^5.1.0
+  graphql_flutter: ^5.1.1-beta.3
   flutter_secure_storage: ^5.0.2
   flutter_dotenv: ^5.0.2 # TODO replace usages with flutter_config
   timeago: ^3.2.2
