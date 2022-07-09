@@ -43,10 +43,12 @@ class _FeedCardState extends State<FeedCard> {
     print("bluetooth state is now POWERED_ON, starting peripheral scan");
     await for (final r
         in _flutterBlue.scan(withServices: [Guid(HUB_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
-      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
-      _flutterBlue.stopScan();
-      setState(() => _foundHub = r.device);
-      break;
+      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
+      if (r.device.id.id.toLowerCase() == widget.hubFrag.serial) {
+        _flutterBlue.stopScan();
+        setState(() => _foundHub = r.device);
+        break;
+      }
     }
     if (mounted) setState(() => _scanning = false);
     if (_foundHub == null) {

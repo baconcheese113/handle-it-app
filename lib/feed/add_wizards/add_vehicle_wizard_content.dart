@@ -86,20 +86,23 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       return;
     }
 
+    final hubIds = widget.userFrag.hubs.map((h) => h.serial).toSet();
+    print("Ignoring hubIds: $hubIds");
+
     setState(() => _scanning = true);
     print("bluetooth state is now POWERED_ON, starting peripheral scan");
     await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
       if (r.device.name.isEmpty) continue;
       setState(() => _curDevice = r.device);
-      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
-      if (r.device.name == HUB_NAME) {
+      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
+      if (r.device.name == HUB_NAME && !hubIds.contains(r.device.id.id.toLowerCase())) {
         setState(() => _foundHub = r.device);
         _flutterBlue.stopScan();
         break;
       }
     }
     if (_foundHub == null) {
-      print("no devices found and scan stopped");
+      print("no new devices found and scan stopped");
       await _resetConn();
       return;
     }

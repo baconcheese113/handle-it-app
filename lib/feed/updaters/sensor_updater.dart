@@ -59,7 +59,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     print("bluetooth state is now POWERED_ON, starting sensor scan");
     await for (final r
         in _flutterBlue.scan(withServices: [Guid(VOLTS_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
-      print("Scanned sensor ${r.device.name}, RSSI ${r.rssi}");
+      print("Scanned sensor ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
       _flutterBlue.stopScan();
       setState(() => _foundSensor = r.device);
       break;

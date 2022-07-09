@@ -12,17 +12,21 @@ import 'package:rxdart/subjects.dart';
 
 import 'feed/add_wizards/add_vehicle_wizard_content.dart';
 
-final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
+final localNotifications = FlutterLocalNotificationsPlugin();
 
-final BehaviorSubject<String> selectNotificationSubject = BehaviorSubject<String>();
+final selectNotificationSubject = BehaviorSubject<String>();
+
+enum DataKey { type, title, body, eventId, hubSerial }
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
+  final data = message.data.cast<DataKey, String>();
   bool hubIsNearby = false;
   if (await flutterBlue.isOn) {
     await for (final r
         in flutterBlue.scan(timeout: const Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
-      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}");
+      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
+      if (r.device.id.id.toLowerCase() != data[DataKey.hubSerial]) continue;
       if (r.rssi.abs() < 75) hubIsNearby = true;
       flutterBlue.stopScan();
       break;
@@ -40,8 +44,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       fullScreenIntent: true,
       showWhen: true);
   const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics);
-  await localNotifications.show(1, message.data['title'], message.data['body'], platformSpecifics,
-      payload: message.data['eventId']);
+  await localNotifications.show(1, data[DataKey.title], data[DataKey.body], platformSpecifics,
+      payload: data[DataKey.eventId]);
   print("showed notification");
 }
 

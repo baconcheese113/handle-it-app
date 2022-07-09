@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
@@ -23,10 +25,12 @@ class _AddTestHubState extends State<AddTestHub> {
       ),
       builder: (runMutation, result) {
         void commitChange() async {
+          final random = Random().nextInt(1000);
           await runMutation(
             AddTestHubArguments(
               name: _name,
-              serial: 'testSerial',
+              serial: 'testSerial$random',
+              imei: 'testImei$random',
             ).toJson(),
           ).networkResult;
           if (!result!.hasException && result.isNotLoading) {

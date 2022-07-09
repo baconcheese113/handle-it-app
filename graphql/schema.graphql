@@ -52,7 +52,7 @@ type Location {
 type Mutation {
     acceptNetworkMembership(networkMemberId: Int!): Network
     createEvent(serial: String!): Event
-    createHub(name: String!, serial: String!): Hub
+    createHub(imei: String!, name: String!, serial: String!): Hub
     createLocation(age: Int!, course: Float!, hdop: Float!, lat: Float!, lng: Float!, speed: Float!): Location
     createNetwork(name: String!): Network
     createNetworkMember(email: String!, networkId: Int!, role: RoleType!): NetworkMember
@@ -61,7 +61,7 @@ type Mutation {
     deleteHub(id: ID!): Hub
     deleteNetwork(networkId: Int!): Network
     deleteNetworkMember(networkMemberId: Int!): Network
-    loginAsHub(serial: String!, userId: ID!): String
+    loginAsHub(imei: String!, serial: String!, userId: ID!): String
     loginWithPassword(email: String!, fcmToken: String!, password: String!): String
     propagateEventToNetworks(eventId: Int!): Event
     registerWithPassword(email: String!, fcmToken: String!, firstName: String, lastName: String, password: String!): String
@@ -177,6 +177,7 @@ input EventWhereUniqueInput {
 
 input HubWhereUniqueInput {
     id: Int
+    imei: String
     serial: String
 }
 

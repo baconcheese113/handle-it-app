@@ -1,5 +1,5 @@
-mutation AddTestHub($name: String!, $serial: String!) {
-  createHub(name: $name, serial: $serial) {
+mutation AddTestHub($name: String!, $serial: String!, $imei: String!) {
+  createHub(name: $name, serial: $serial, imei: $imei) {
     __typename
     id
     ...feedCard_hub
