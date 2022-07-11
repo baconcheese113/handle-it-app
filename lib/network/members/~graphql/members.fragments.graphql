@@ -2,8 +2,8 @@ fragment networkMembersList_network on Network {
   __typename
   id
   name
-  # FIXME artemis
-  networkMembers: members {
+  ...networkMembersCreate_network
+  members {
     __typename
     id
     role
@@ -14,8 +14,6 @@ fragment networkMembersList_network on Network {
       isMe
     }
     ...networkMemberTile_member
-    # FIXME artemis this should be on networkMemberTile_member
-    ...networkMemberDelete_member
     ...networkMemberUpdate_member
   }
 }
@@ -23,14 +21,4 @@ fragment networkMembersList_network on Network {
 fragment networkMembersCreate_network on Network {
   __typename
   id
-}
-
-fragment networkMembersTab_viewer on Viewer {
-  networks (status: active) {
-    __typename
-    id
-    ...networkMembersList_network
-    # FIXME artemis this should be on networkMembersList_network
-    ...networkMembersCreate_network
-  }
 }

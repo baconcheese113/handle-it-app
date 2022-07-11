@@ -19,7 +19,7 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
   @override
   Widget build(BuildContext context) {
     final networkFrag = widget.networkFrag;
-    final members = networkFrag.networkMembers;
+    final members = networkFrag.members;
     var isOwner = members.any((m) => m.user.isMe && m.role.name == 'owner');
     final List<Widget> membersList = [];
     for (final m in members) {
@@ -33,15 +33,13 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
           final data = result?.data;
           if (data == null) return;
           final id = data['deleteNetwork']['id'];
-          final query = NetworkHomeQuery();
+          final query = NetworkMembersTabQuery();
           final request = QueryOptions(document: query.document).asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;
           final map = query.parse(readQuery);
           final viewer = map.viewer;
-          viewer.activeNetworks.removeWhere((n) => n.id == id);
           viewer.networks.removeWhere((n) => n.id == id);
-          viewer.user.networkMemberships.removeWhere((m) => m.memNetwork.id == id);
           cache.writeQuery(request, data: map.toJson(), broadcast: true);
         },
       ),

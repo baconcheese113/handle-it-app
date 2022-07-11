@@ -28,6 +28,7 @@ fragment networkMemberTile_member on NetworkMember {
   role
   inviteeAcceptedAt
   inviterAcceptedAt
+  ...networkMemberDelete_member
   network {
     __typename
     id

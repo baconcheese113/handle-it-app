@@ -25,6 +25,19 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
       options: MutationOptions(
         document: CREATE_NETWORK_MEMBER_MUTATION_DOCUMENT,
         operationName: CREATE_NETWORK_MEMBER_MUTATION_DOCUMENT_OPERATION_NAME,
+        update: (cache, result) {
+          if (result?.data == null) return;
+          final mutation = CreateNetworkMember$Mutation.fromJson(result!.data!);
+          final data = mutation.createNetworkMember!;
+          final query = NetworkMembersTabQuery();
+          final request = QueryOptions(document: query.document).asRequest;
+          final readQuery = cache.readQuery(request);
+          if (readQuery == null) return;
+          final map = query.parse(readQuery);
+          final network = map.viewer.networks.firstWhere((n) => n.id == data.network.id);
+          network.members.add(NetworkMembersListNetworkMixin$Members.fromJson(data.toJson()));
+          cache.writeQuery(request, data: map.toJson(), broadcast: true);
+        },
       ),
       builder: (runMutation, result) {
         void handleCreate() async {

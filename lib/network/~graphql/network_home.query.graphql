@@ -1,7 +1,7 @@
 query NetworkHome {
   viewer {
+    # TODO move these to their own queries
     ...networkMapTab_viewer
-    ...networkMembersTab_viewer
     ...networkInvitesTab_viewer
   }
 }

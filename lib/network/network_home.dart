@@ -46,7 +46,7 @@ class _NetworkHomeState extends State<NetworkHome> {
                 Expanded(
                   child: TabBarView(physics: const NeverScrollableScrollPhysics(), children: [
                     NetworkMapTab(viewerFrag: viewer, refetch: refetch!),
-                    NetworkMembersTab(viewerFrag: viewer, refetch: refetch),
+                    const NetworkMembersTab(),
                     NetworkInvitesTab(viewerFrag: viewer, refetch: refetch),
                   ]),
                 )
