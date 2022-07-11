@@ -180,6 +180,18 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       options: MutationOptions(
         document: ADD_VEHICLE_WIZARD_MUTATION_DOCUMENT,
         operationName: ADD_VEHICLE_WIZARD_MUTATION_DOCUMENT_OPERATION_NAME,
+        update: (cache, result) {
+          if (result?.data == null) return;
+          final data = AddVehicleWizard$Mutation.fromJson(result!.data!);
+          final query = FeedHomeQuery();
+          final request = QueryOptions(document: query.document).asRequest;
+          final readQuery = cache.readQuery(request);
+          if (readQuery == null) return;
+          final map = query.parse(readQuery);
+          final hubs = map.viewer.user.hubs;
+          hubs.add(FeedHome$Query$Viewer$User$Hubs.fromJson(data.updateHub!.toJson()));
+          cache.writeQuery(request, data: map.toJson(), broadcast: true);
+        },
       ),
       builder: (runMutation, result) {
         void handleSetName() async {
