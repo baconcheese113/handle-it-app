@@ -3,7 +3,7 @@ fragment networkMemberUpdate_member on NetworkMember {
   id
   role
   # FIXME artemis
-  membUser: user {
+  mUser: user {
     __typename
     id
     isMe
@@ -14,7 +14,7 @@ fragment networkMemberDelete_member on NetworkMember {
   __typename
   id
   # FIXME artemis
-  mUser: user {
+  membUser: user {
     __typename
     id
     isMe
@@ -35,7 +35,7 @@ fragment networkMemberTile_member on NetworkMember {
     name
   }
   canDelete
-  user {
+  memUser: user {
     __typename
     id
     isMe

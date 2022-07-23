@@ -4,7 +4,7 @@ mutation CreateNetworkMember($networkId: Int!, $email: String!, $role: RoleType!
     id
     role
     # FIXME artemis
-    memUser: user {
+    emUser: user {
       __typename
       id
       isMe

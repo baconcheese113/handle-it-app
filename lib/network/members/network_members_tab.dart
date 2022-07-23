@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/members/network_create.dart';
 import 'package:handle_it/network/members/network_members_join.dart';
 import 'package:handle_it/utils.dart';
 
@@ -18,79 +19,31 @@ class _NetworkMembersTabState extends State<NetworkMembersTab> {
   @override
   Widget build(BuildContext context) {
     return Query(
-        options: QueryOptions(
-          document: _query.document,
-          operationName: _query.operationName,
-        ),
-        builder: (result, {refetch, fetchMore}) {
-          final noDataWidget = validateResult(result);
-          if (noDataWidget != null) return noDataWidget;
+      options: QueryOptions(
+        document: _query.document,
+        operationName: _query.operationName,
+      ),
+      builder: (result, {refetch, fetchMore}) {
+        final noDataWidget = validateResult(result);
+        if (noDataWidget != null) return noDataWidget;
 
-          final viewer = _query.parse(result.data!).viewer;
-          final networksList = [];
-          for (final n in viewer.networks) {
-            networksList.add(NetworkMembersList(networkFrag: n));
-          }
-          onNetworkAdded(String msg) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-          }
+        final viewer = _query.parse(result.data!).viewer;
+        final networksList = [];
+        for (final n in viewer.networks) {
+          networksList.add(NetworkMembersList(networkFrag: n));
+        }
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              await refetch!();
-            },
-            child: Mutation(
-              options: MutationOptions(
-                document: CREATE_NETWORK_MUTATION_DOCUMENT,
-                operationName: CREATE_NETWORK_MUTATION_DOCUMENT_OPERATION_NAME,
-              ),
-              builder: (runMutation, result) {
-                void handleCreateNetwork() {
-                  String name = "";
-                  showDialog(
-                    context: context,
-                    builder: (dialogContext) {
-                      return AlertDialog(
-                        title: const Text("Enter Network Name"),
-                        content: TextFormField(
-                          key: const ValueKey('input.networkName'),
-                          onChanged: (String n) => name = n,
-                        ),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
-                          TextButton(
-                            key: const ValueKey('button.create'),
-                            onPressed: () async {
-                              final mutation = await runMutation(
-                                CreateNetworkArguments(
-                                  name: name,
-                                ).toJson(),
-                              ).networkResult;
-                              if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
-                                onNetworkAdded("Network created successfully");
-                              }
-                              if (mounted) Navigator.of(dialogContext).pop();
-                            },
-                            child: const Text("Create"),
-                          )
-                        ],
-                      );
-                    },
-                  );
-                }
-
-                return ListView(key: const ValueKey('list.networks'), children: [
-                  TextButton(
-                    key: const ValueKey('button.createNetwork'),
-                    onPressed: handleCreateNetwork,
-                    child: const Text("Create Network"),
-                  ),
-                  const NetworkMembersJoin(),
-                  ...networksList.reversed.toList(),
-                ]);
-              },
-            ),
-          );
-        });
+        return RefreshIndicator(
+          onRefresh: () async {
+            await refetch!();
+          },
+          child: ListView(key: const ValueKey('list.networks'), children: [
+            const NetworkCreate(),
+            const NetworkMembersJoin(),
+            ...networksList.reversed.toList(),
+          ]),
+        );
+      },
+    );
   }
 }

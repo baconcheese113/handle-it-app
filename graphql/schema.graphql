@@ -13,7 +13,8 @@ type Event {
 }
 
 type Hub {
-    batteryLevel: Int
+    "Battery level from 0 - 100"
+    batteryLevel: Float
     createdAt: DateTime!
     events: [Event!]!
     id: Int!
@@ -68,6 +69,8 @@ type Mutation {
     requestNetworkMembership(networkName: String!): NetworkMember
     seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User
     updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub
+    "Volts should be between 0 - 1023, percent between 0 - 100"
+    updateHubBatteryLevel(percent: Float!, volts: Float!): Hub
     updateNetworkMember(networkMemberId: Int!, role: RoleType): NetworkMember
     updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride
     updateSensor(id: ID!, isOpen: Boolean): Sensor

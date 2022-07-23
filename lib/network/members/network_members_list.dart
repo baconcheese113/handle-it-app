@@ -20,7 +20,7 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
   Widget build(BuildContext context) {
     final networkFrag = widget.networkFrag;
     final members = networkFrag.members;
-    var isOwner = members.any((m) => m.user.isMe && m.role.name == 'owner');
+    var isOwner = members.any((m) => m.memberUser.isMe && m.role.name == 'owner');
     final List<Widget> membersList = [];
     for (final m in members) {
       membersList.add(NetworkMemberTile(memberFrag: m));

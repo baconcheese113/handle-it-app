@@ -1,0 +1,7 @@
+mutation CreateNetwork($name: String!) {
+  createNetwork(name: $name) {
+    __typename
+    id
+    # ...networkMembersList_network
+  }
+}

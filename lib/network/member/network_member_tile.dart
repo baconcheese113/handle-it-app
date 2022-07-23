@@ -23,9 +23,9 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
   Widget build(BuildContext context) {
     final netProvider = Provider.of<NetworkProvider>(context, listen: false);
     final member = widget.memberFrag;
-    final isMe = member.user.isMe;
+    final isMe = member.memUser.isMe;
     final canDelete = member.canDelete;
-    final hubs = member.user.hubs;
+    final hubs = member.memUser.hubs;
     bool hasHubWithLocation = false;
     final List<Widget> hubListTiles = [];
     final List<Widget> hubNames = [];
@@ -59,7 +59,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         ]);
       }
       return Row(mainAxisSize: MainAxisSize.min, children: [
-        if (!member.user.isMe) NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
+        if (!member.memUser.isMe) NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
         NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
       ]);
     }
@@ -70,7 +70,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         textColor: isMe ? Colors.black : null,
         iconColor: isMe ? Colors.black : null,
         leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
-        title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
+        title: Text("${member.memUser.email} - ${member.status!.name} ${member.role.name}"),
         subtitle: Column(children: hubNames),
         trailing: canDelete ? getTrailing() : null,
       );
@@ -84,7 +84,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
       textColor: isMe ? Colors.black : null,
       iconColor: isMe ? Colors.black : null,
       leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
-      title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
+      title: Text("${member.memUser.email} - ${member.status!.name} ${member.role.name}"),
       subtitle: Column(children: hubNames),
       onExpansionChanged: (isExpanded) => setState(() => _isExpanded = isExpanded),
       trailing: canDelete && _isExpanded ? getTrailing() : null,

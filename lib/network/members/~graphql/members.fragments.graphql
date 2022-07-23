@@ -8,7 +8,7 @@ fragment networkMembersList_network on Network {
     id
     role
     # FIXME artemis
-    memUser: user {
+    memberUser: user {
       __typename
       id
       isMe
