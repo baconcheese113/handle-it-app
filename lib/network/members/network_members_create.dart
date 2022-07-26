@@ -19,10 +19,6 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
 
   @override
   Widget build(BuildContext context) {
-    onSubmitEnd(String msg) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    }
-
     return Mutation$CreateNetworkMember$Widget(
       options: WidgetOptions$Mutation$CreateNetworkMember(
         update: (cache, result) {
@@ -49,8 +45,6 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
 
           if (mutation != null && !mutation.hasException && mutation.isNotLoading) {
             _controller.clear();
-            // TODO avoid needing to refresh manually
-            onSubmitEnd("User added, refresh to view");
           }
         }
 
