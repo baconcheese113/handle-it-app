@@ -10,4 +10,3 @@ targets:
             DateTime:
               type: DateTime
           outputDirectory: __generated__
-          generatedFileHeader: "// ignore_for_file: type=lint\n"
