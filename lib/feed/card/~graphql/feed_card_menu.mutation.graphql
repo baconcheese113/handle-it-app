@@ -1,6 +1,5 @@
 mutation feedCardDelete($id: ID!) {
   deleteHub(id: $id) {
-    __typename
     id
     ...feedCard_hub
   }

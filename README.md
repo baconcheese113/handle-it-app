@@ -4,10 +4,10 @@ Generate the schema with the Android Studio GraphQL plugin pointed at localhost
 
 Then run
 ```powershell
-flutter pub run build_runner build --delete-conflicting-outputs
+flutter pub run build_runner build
 ```
 
-to generate the Artemis types
+to generate the graphql_codegen types
 
 ## Testing
 

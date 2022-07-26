@@ -1,5 +1,4 @@
 fragment settings_user on User {
-  __typename
   id
   email
   firstName
@@ -8,12 +7,10 @@ fragment settings_user on User {
 }
 
 fragment addTestHub_user on User {
-  __typename
   id
 }
 
 fragment notificationSettings_user on User {
-  __typename
   id
   defaultFullNotification
 }

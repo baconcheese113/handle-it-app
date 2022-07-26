@@ -1,51 +1,41 @@
 fragment networkMemberUpdate_member on NetworkMember {
-  __typename
   id
   role
-  # FIXME artemis
-  mUser: user {
-    __typename
+  user {
     id
     isMe
   }
 }
 
 fragment networkMemberDelete_member on NetworkMember {
-  __typename
   id
-  # FIXME artemis
-  membUser: user {
-    __typename
+  user {
     id
     isMe
   }
 }
 
 fragment networkMemberTile_member on NetworkMember {
-  __typename
   id
   status
   role
   inviteeAcceptedAt
   inviterAcceptedAt
   ...networkMemberDelete_member
+  ...networkMemberUpdate_member
   network {
-    __typename
     id
     name
   }
   canDelete
-  memUser: user {
-    __typename
+  user {
     id
     isMe
     email
     hubs {
-      __typename
       id
       name
       locations(last: 1) {
-        __typename
         id
         lat
         lng

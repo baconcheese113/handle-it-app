@@ -1,11 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/~graphql/__generated__/feed_home.query.graphql.dart';
+import 'package:handle_it/settings/~graphql/__generated__/add_test_hub.mutation.graphql.dart';
+import 'package:handle_it/settings/~graphql/__generated__/settings.fragments.graphql.dart';
 
 class AddTestHub extends StatefulWidget {
-  final AddTestHubUserMixin user;
+  final Fragment$addTestHub_user user;
   const AddTestHub({Key? key, required this.user}) : super(key: key);
 
   @override
@@ -18,20 +19,17 @@ class _AddTestHubState extends State<AddTestHub> {
 
   @override
   Widget build(BuildContext context) {
-    return Mutation(
-      options: MutationOptions(
-        document: ADD_TEST_HUB_MUTATION_DOCUMENT,
-        operationName: ADD_TEST_HUB_MUTATION_DOCUMENT_OPERATION_NAME,
+    return Mutation$AddTestHub$Widget(
+      options: WidgetOptions$Mutation$AddTestHub(
         update: (cache, result) {
           if (result?.data == null) return;
-          final data = AddTestHub$Mutation.fromJson(result!.data!);
-          final query = FeedHomeQuery();
-          final request = QueryOptions(document: query.document).asRequest;
+          final newHub = result!.parsedData!.createHub!;
+          final request = Options$Query$FeedHome().asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;
-          final map = query.parse(readQuery);
+          final map = Query$FeedHome.fromJson(readQuery);
           final hubs = map.viewer.user.hubs;
-          hubs.add(FeedHome$Query$Viewer$User$Hubs.fromJson(data.createHub!.toJson()));
+          hubs.add(Query$FeedHome$viewer$user$hubs.fromJson(newHub.toJson()));
           cache.writeQuery(request, data: map.toJson(), broadcast: true);
         },
       ),
@@ -39,11 +37,11 @@ class _AddTestHubState extends State<AddTestHub> {
         void commitChange() async {
           final random = Random().nextInt(1000);
           await runMutation(
-            AddTestHubArguments(
+            Variables$Mutation$AddTestHub(
               name: _name,
               serial: 'testSerial$random',
               imei: 'testImei$random',
-            ).toJson(),
+            ),
           ).networkResult;
           if (!result!.hasException && result.isNotLoading) {
             setState(() => _name = "");

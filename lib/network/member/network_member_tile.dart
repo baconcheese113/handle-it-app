@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/member/network_member_accept.dart';
 import 'package:handle_it/network/member/network_member_decline.dart';
 import 'package:handle_it/network/member/network_member_delete.dart';
 import 'package:handle_it/network/member/network_member_update.dart';
+import 'package:handle_it/network/member/~graphql/__generated__/member.fragments.graphql.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:provider/provider.dart';
 
 class NetworkMemberTile extends StatefulWidget {
-  final NetworkMemberTileMemberMixin memberFrag;
+  final Fragment$networkMemberTile_member memberFrag;
   const NetworkMemberTile({Key? key, required this.memberFrag}) : super(key: key);
 
   @override
@@ -23,9 +23,9 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
   Widget build(BuildContext context) {
     final netProvider = Provider.of<NetworkProvider>(context, listen: false);
     final member = widget.memberFrag;
-    final isMe = member.memUser.isMe;
+    final isMe = member.user.isMe;
     final canDelete = member.canDelete;
-    final hubs = member.memUser.hubs;
+    final hubs = member.user.hubs;
     bool hasHubWithLocation = false;
     final List<Widget> hubListTiles = [];
     final List<Widget> hubNames = [];
@@ -59,8 +59,8 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         ]);
       }
       return Row(mainAxisSize: MainAxisSize.min, children: [
-        if (!member.memUser.isMe) NetworkMemberUpdate(memberFrag: member as NetworkMemberUpdateMemberMixin),
-        NetworkMemberDelete(memberFrag: member as NetworkMemberDeleteMemberMixin),
+        if (!member.user.isMe) NetworkMemberUpdate(memberFrag: member),
+        NetworkMemberDelete(memberFrag: member),
       ]);
     }
 
@@ -70,7 +70,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         textColor: isMe ? Colors.black : null,
         iconColor: isMe ? Colors.black : null,
         leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
-        title: Text("${member.memUser.email} - ${member.status!.name} ${member.role.name}"),
+        title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
         subtitle: Column(children: hubNames),
         trailing: canDelete ? getTrailing() : null,
       );
@@ -84,7 +84,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
       textColor: isMe ? Colors.black : null,
       iconColor: isMe ? Colors.black : null,
       leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
-      title: Text("${member.memUser.email} - ${member.status!.name} ${member.role.name}"),
+      title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
       subtitle: Column(children: hubNames),
       onExpansionChanged: (isExpanded) => setState(() => _isExpanded = isExpanded),
       trailing: canDelete && _isExpanded ? getTrailing() : null,

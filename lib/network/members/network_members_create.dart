@@ -1,10 +1,12 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/graphql/__generated__/schema.graphql.dart';
+import 'package:handle_it/network/members/~graphql/__generated__/members.fragments.graphql.dart';
+import 'package:handle_it/network/members/~graphql/__generated__/network_members_create.mutation.graphql.dart';
+import 'package:handle_it/network/members/~graphql/__generated__/network_members_tab.query.graphql.dart';
 
 class NetworkMembersCreate extends StatefulWidget {
-  final NetworkMembersCreateNetworkMixin networkFrag;
+  final Fragment$networkMembersCreate_network networkFrag;
   const NetworkMembersCreate({Key? key, required this.networkFrag}) : super(key: key);
 
   @override
@@ -21,32 +23,28 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
 
-    return Mutation(
-      options: MutationOptions(
-        document: CREATE_NETWORK_MEMBER_MUTATION_DOCUMENT,
-        operationName: CREATE_NETWORK_MEMBER_MUTATION_DOCUMENT_OPERATION_NAME,
+    return Mutation$CreateNetworkMember$Widget(
+      options: WidgetOptions$Mutation$CreateNetworkMember(
         update: (cache, result) {
           if (result?.data == null) return;
-          final mutation = CreateNetworkMember$Mutation.fromJson(result!.data!);
-          final data = mutation.createNetworkMember!;
-          final query = NetworkMembersTabQuery();
-          final request = QueryOptions(document: query.document).asRequest;
+          final newMember = result!.parsedData!.createNetworkMember!;
+          final request = Options$Query$NetworkMembersTab().asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;
-          final map = query.parse(readQuery);
-          final network = map.viewer.networks.firstWhere((n) => n.id == data.network.id);
-          network.members.add(NetworkMembersListNetworkMixin$Members.fromJson(data.toJson()));
+          final map = Query$NetworkMembersTab.fromJson(readQuery);
+          final network = map.viewer.networks.firstWhere((n) => n.id == newMember.network.id);
+          network.members.add(Query$NetworkMembersTab$viewer$networks$members.fromJson(newMember.toJson()));
           cache.writeQuery(request, data: map.toJson(), broadcast: true);
         },
       ),
       builder: (runMutation, result) {
         void handleCreate() async {
           final mutation = await runMutation(
-            CreateNetworkMemberArguments(
+            Variables$Mutation$CreateNetworkMember(
               networkId: widget.networkFrag.id,
               email: _newEmail,
-              role: RoleType.member,
-            ).toJson(),
+              role: Enum$RoleType.member,
+            ),
           ).networkResult;
 
           if (mutation != null && !mutation.hasException && mutation.isNotLoading) {

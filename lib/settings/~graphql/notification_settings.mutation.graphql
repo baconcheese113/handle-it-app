@@ -1,6 +1,5 @@
 mutation UpdateNotificationSettings($defaultFullNotification: Boolean!) {
   updateUser(defaultFullNotification: $defaultFullNotification) {
-    __typename
     id
     defaultFullNotification
   }

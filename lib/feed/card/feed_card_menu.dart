@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
+import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
+import 'package:handle_it/feed/card/~graphql/__generated__/feed_card_menu.mutation.graphql.dart';
 
 class FeedCardMenu extends StatefulWidget {
-  final FeedCardMenuHubMixin hubFrag;
+  final Fragment$feedCardMenu_hub hubFrag;
   final Function onDelete;
   const FeedCardMenu({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
 
@@ -21,11 +22,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
       }
     }
 
-    return Mutation(
-      options: MutationOptions(
-        document: FEED_CARD_DELETE_MUTATION_DOCUMENT,
-        operationName: FEED_CARD_DELETE_MUTATION_DOCUMENT_OPERATION_NAME,
-      ),
+    return Mutation$feedCardDelete$Widget(
       builder: (runMutation, result) {
         void handleDelete() {
           showDialog(
@@ -38,9 +35,9 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
                 TextButton(
                   onPressed: () async {
                     await runMutation(
-                      FeedCardDeleteArguments(
+                      Variables$Mutation$feedCardDelete(
                         id: "${widget.hubFrag.id}",
-                      ).toJson(),
+                      ),
                     ).networkResult;
                     widget.onDelete();
                     if (mounted) Navigator.pop(context);

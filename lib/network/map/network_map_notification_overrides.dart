@@ -1,40 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/map/~graphql/__generated__/map.fragments.graphql.dart';
+import 'package:handle_it/network/map/~graphql/__generated__/network_map_notification_overrides.mutation.graphql.dart';
 
-class NetworkMapNotificationOverrides extends StatefulWidget {
-  final NetworkMapNotificationOverridesHubMixin hubFrag;
+class NetworkMapNotificationOverrides extends StatelessWidget {
+  final Fragment$networkMapNotificationOverrides_hub hubFrag;
   final Function refetch;
   const NetworkMapNotificationOverrides({Key? key, required this.hubFrag, required this.refetch}) : super(key: key);
 
   @override
-  State<NetworkMapNotificationOverrides> createState() => _NetworkMapNotificationOverridesState();
-}
-
-class _NetworkMapNotificationOverridesState extends State<NetworkMapNotificationOverrides> {
-  @override
   Widget build(BuildContext context) {
-    final bool isMuted = widget.hubFrag.hubNotifications?.isMuted ?? false;
-    return Mutation(
-        options: MutationOptions(
-          document: UPDATE_NOTIFICATION_OVERRIDE_MUTATION_DOCUMENT,
-          operationName: UPDATE_NOTIFICATION_OVERRIDE_MUTATION_DOCUMENT_OPERATION_NAME,
-        ),
-        builder: (runMutation, result) {
-          void handleIconPress() async {
-            await runMutation(
-              UpdateNotificationOverrideArguments(
-                hubId: widget.hubFrag.id,
-                shouldMute: !isMuted,
-              ).toJson(),
-            ).networkResult;
-            if (widget.hubFrag.hubNotifications == null) await widget.refetch();
-          }
+    final bool isMuted = hubFrag.notificationOverride?.isMuted ?? false;
+    return Mutation$UpdateNotificationOverride$Widget(
+      builder: (runMutation, result) {
+        void handleIconPress() async {
+          await runMutation(
+            Variables$Mutation$UpdateNotificationOverride(
+              hubId: hubFrag.id,
+              shouldMute: !isMuted,
+            ),
+          ).networkResult;
+          if (hubFrag.notificationOverride == null) await refetch();
+        }
 
-          return IconButton(
-            onPressed: widget.hubFrag.hubOwner.isMe ? null : handleIconPress,
-            icon: Icon(isMuted ? Icons.notifications_off : Icons.notifications_on),
-          );
-        });
+        return IconButton(
+          onPressed: hubFrag.owner.isMe ? null : handleIconPress,
+          icon: Icon(isMuted ? Icons.notifications_off : Icons.notifications_on),
+        );
+      },
+    );
   }
 }

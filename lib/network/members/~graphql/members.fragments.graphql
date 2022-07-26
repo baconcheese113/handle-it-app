@@ -1,15 +1,11 @@
 fragment networkMembersList_network on Network {
-  __typename
   id
   name
   ...networkMembersCreate_network
   members {
-    __typename
     id
     role
-    # FIXME artemis
-    memberUser: user {
-      __typename
+    user {
       id
       isMe
     }
@@ -19,6 +15,5 @@ fragment networkMembersList_network on Network {
 }
 
 fragment networkMembersCreate_network on Network {
-  __typename
   id
 }

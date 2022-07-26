@@ -1,6 +1,5 @@
 mutation feedCardArm($id: ID!, $isArmed: Boolean!) {
   updateHub(id: $id, isArmed: $isArmed) {
-    __typename
     id
     ...feedCard_hub
   }

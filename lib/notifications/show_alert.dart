@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/home.dart';
+import 'package:handle_it/notifications/~graphql/__generated__/show_alert.mutation.graphql.dart';
 import 'package:just_audio/just_audio.dart';
 
 const int interval = 50;
@@ -71,17 +70,13 @@ class _ShowAlert extends State<ShowAlert> {
       Navigator.of(context).pushReplacementNamed(Home.routeName);
     }
 
-    return Mutation(
-        options: MutationOptions(
-          document: PROPAGATE_EVENT_TO_NETWORKS_MUTATION_DOCUMENT,
-          operationName: PROPAGATE_EVENT_TO_NETWORKS_MUTATION_DOCUMENT_OPERATION_NAME,
-        ),
+    return Mutation$PropagateEventToNetworks$Widget(
         builder: (runMutation, result) {
           if (_canSendMutation && _loopNum == 0) {
             runMutation(
-              PropagateEventToNetworksArguments(
+              Variables$Mutation$PropagateEventToNetworks(
                 eventId: int.parse(widget.eventId!),
-              ).toJson(),
+              ),
             );
             _canSendMutation = false;
           }

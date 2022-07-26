@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_vehicle_wizard.query.graphql.dart';
 import 'package:handle_it/utils.dart';
 
 import 'add_vehicle_wizard_content.dart';
@@ -15,22 +14,16 @@ class AddVehicleWizard extends StatefulWidget {
 }
 
 class _AddVehicleWizardState extends State<AddVehicleWizard> {
-  final _query = AddVehicleWizardQuery();
   int? _pairedHubId;
 
   @override
   Widget build(BuildContext context) {
-    return Query(
-      options: QueryOptions(
-        document: _query.document,
-        operationName: _query.operationName,
-        fetchPolicy: FetchPolicy.networkOnly,
-      ),
+    return Query$AddVehicleWizard$Widget(
       builder: (result, {refetch, fetchMore}) {
         final noDataWidget = validateResult(result, allowCache: false);
         if (noDataWidget != null) return noDataWidget;
 
-        final viewer = _query.parse(result.data!).viewer;
+        final viewer = result.parsedData!.viewer;
         return AddVehicleWizardContent(
           userFrag: viewer.user,
           pairedHubId: _pairedHubId,

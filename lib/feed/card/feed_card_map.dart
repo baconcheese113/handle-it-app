@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 
-class FeedCardMap extends StatefulWidget {
-  final FeedCardMapHubMixin hubFrag;
+class FeedCardMap extends StatelessWidget {
+  final Fragment$feedCardMap_hub hubFrag;
   const FeedCardMap({Key? key, required this.hubFrag}) : super(key: key);
 
   @override
-  State<FeedCardMap> createState() => _FeedCardMapState();
-}
-
-class _FeedCardMapState extends State<FeedCardMap> {
-  @override
   Widget build(BuildContext context) {
-    final locations = widget.hubFrag.locations;
+    final locations = hubFrag.locations;
     if (locations.isEmpty) {
       return const Center(child: Text("Add GPS module to see location"));
     }

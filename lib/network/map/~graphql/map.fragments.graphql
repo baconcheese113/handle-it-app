@@ -1,16 +1,11 @@
 fragment networkMapNotificationOverrides_hub on Hub {
-  __typename
   id
-  # FIXME artemis
-  hubOwner: owner {
-    __typename
+  owner {
     id
     isMe
     email
   }
-  # FIXME artemis
-  hubNotifications: notificationOverride {
-    __typename
+  notificationOverride {
     id
     isMuted
     createdAt
@@ -19,26 +14,21 @@ fragment networkMapNotificationOverrides_hub on Hub {
 
 fragment networkMapTab_viewer on Viewer {
   activeNetworks: networks (status: active) {
-    __typename
     id
     name
     createdById
     members {
-      __typename
       id
       status
       role
       user {
-        __typename
         id
         isMe
         email
         hubs {
-          __typename
           id
           name
           locations(last: 1) {
-            __typename
             id
             lat
             lng

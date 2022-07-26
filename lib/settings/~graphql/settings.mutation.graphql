@@ -1,6 +1,5 @@
 mutation SettingsUpdateUser($firstName: String!) {
   updateUser(firstName: $firstName) {
-    __typename
     id
     firstName
   }

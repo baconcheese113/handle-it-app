@@ -1,7 +1,6 @@
 query NetworkMembersTab {
   viewer {
     networks (status: active) {
-      __typename
       id
       ...networkMembersList_network
     }

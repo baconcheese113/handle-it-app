@@ -29,13 +29,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.1"
-  artemis:
-    dependency: "direct main"
-    description:
-      name: artemis
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "7.9.0-beta"
   async:
     dependency: transitive
     description:
@@ -70,7 +63,7 @@ packages:
       name: build_config
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.1.0"
   build_daemon:
     dependency: transitive
     description:
@@ -91,7 +84,7 @@ packages:
       name: build_runner
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.11"
+    version: "2.2.0"
   build_runner_core:
     dependency: transitive
     description:
@@ -232,13 +225,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
-  equatable:
-    dependency: "direct main"
-    description:
-      name: equatable
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.3"
   fake_async:
     dependency: transitive
     description:
@@ -468,7 +454,7 @@ packages:
     source: hosted
     version: "2.2.0"
   gql:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: gql
       url: "https://pub.dartlang.org"
@@ -524,12 +510,26 @@ packages:
     source: hosted
     version: "0.2.2"
   graphql:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: graphql
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.1.2-beta.3"
+    version: "5.1.2-beta.4"
+  graphql_codegen:
+    dependency: "direct dev"
+    description:
+      name: graphql_codegen
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.10.1"
+  graphql_codegen_config:
+    dependency: transitive
+    description:
+      name: graphql_codegen_config
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.6"
   graphql_flutter:
     dependency: "direct main"
     description:
@@ -604,14 +604,14 @@ packages:
       name: json_annotation
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.5.0"
+    version: "4.6.0"
   json_serializable:
     dependency: "direct dev"
     description:
       name: json_serializable
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "6.2.0"
+    version: "6.3.1"
   just_audio:
     dependency: "direct main"
     description:

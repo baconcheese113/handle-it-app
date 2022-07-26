@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/updaters/~graphql/__generated__/updaters.fragments.graphql.dart';
 import 'package:http/http.dart' as http;
 
 import '../add_wizards/add_vehicle_wizard_content.dart';
@@ -14,7 +14,7 @@ const String TRANSFER_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34f
 const String FIRMWARE_CHARACTERISTIC_UUID = "00002A26-0000-1000-8000-00805f9b34fb";
 
 class HubUpdater extends StatefulWidget {
-  final HubUpdaterHubMixin hubFrag;
+  final Fragment$hubUpdater_hub hubFrag;
   final BluetoothDevice foundHub;
   const HubUpdater({Key? key, required this.hubFrag, required this.foundHub}) : super(key: key);
 

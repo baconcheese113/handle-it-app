@@ -1,9 +1,7 @@
 mutation DeclineNetworkMembership($networkMemberId: Int!) {
   declineNetworkMembership(networkMemberId: $networkMemberId) {
-    __typename
     id
     members {
-      __typename
       id
       userId
       status
@@ -13,10 +11,8 @@ mutation DeclineNetworkMembership($networkMemberId: Int!) {
 
 mutation AcceptNetworkMembership($networkMemberId: Int!) {
   acceptNetworkMembership(networkMemberId: $networkMemberId) {
-    __typename
     id
     members {
-      __typename
       id
       userId
       status

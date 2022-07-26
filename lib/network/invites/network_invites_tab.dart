@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/graphql/__generated__/schema.graphql.dart';
 import 'package:handle_it/network/invites/network_invites_card.dart';
 import 'package:handle_it/network/invites/network_requests_card.dart';
+import 'package:handle_it/network/invites/~graphql/__generated__/invites.fragments.graphql.dart';
 
-class NetworkInvitesTab extends StatefulWidget {
-  final NetworkInvitesTabViewerMixin viewerFrag;
+class NetworkInvitesTab extends StatelessWidget {
+  final Fragment$networkInvitesTab_viewer viewerFrag;
   final Function refetch;
   const NetworkInvitesTab({Key? key, required this.viewerFrag, required this.refetch}) : super(key: key);
 
   @override
-  State<NetworkInvitesTab> createState() => _NetworkInvitesTabState();
-}
-
-class _NetworkInvitesTabState extends State<NetworkInvitesTab> {
-  @override
   Widget build(BuildContext context) {
-    final allMemberships = widget.viewerFrag.user.networkMemberships;
-    final invitedMemberships = allMemberships.where((mem) => mem.status == NetworkMemberStatus.invited);
-    final requestedMemberships = allMemberships.where((mem) => mem.status == NetworkMemberStatus.requested);
+    final allMemberships = viewerFrag.user.networkMemberships;
+    final invitedMemberships = allMemberships.where((mem) => mem.status == Enum$NetworkMemberStatus.invited);
+    final requestedMemberships = allMemberships.where((mem) => mem.status == Enum$NetworkMemberStatus.requested);
     print('requested $requestedMemberships');
 
     return RefreshIndicator(
         onRefresh: () async {
-          widget.refetch();
+          refetch();
         },
         child: ListView(
           children: [

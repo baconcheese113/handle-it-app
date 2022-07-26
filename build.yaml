@@ -1,25 +1,13 @@
 targets:
   $default:
-    sources:
-      - lib/**
-      - graphql/schema.graphql
     builders:
-      artemis:
+      graphql_codegen:
         options:
-          generate_helpers: true
-          scalar_mapping:
-            - custom_parser_import: 'package:handle_it/~graphql/coercers.dart'
-              graphql_type: DateTime
-              dart_type: DateTime
-          schema_mapping:
-            - schema: graphql/schema.graphql
-              queries_glob: lib/**.[!f]*.graphql
-              output: lib/__generated__/api.graphql.dart
-              naming_scheme: pathedWithFields
-              append_type_name: true
-          fragments_glob: lib/**.fragments.graphql
-          ignore_for_file:
-            - prefer_const_declarations
-            - prefer_const_constructors
-            - prefer_const_literals_to_create_immutables
-            - non_constant_identifier_names
+          clients:
+            - graphql
+            - graphql_flutter
+          scalars:
+            DateTime:
+              type: DateTime
+          outputDirectory: __generated__
+          generatedFileHeader: "// ignore_for_file: type=lint\n"

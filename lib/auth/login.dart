@@ -1,9 +1,8 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/auth/register.dart';
+import 'package:handle_it/auth/~graphql/__generated__/login.mutation.graphql.dart';
 import 'package:handle_it/common/loading.dart';
 import 'package:handle_it/home.dart';
 
@@ -39,11 +38,7 @@ class _LoginState extends State<Login> {
         centerTitle: true,
         title: const Text("HandleIt"),
       ),
-      body: Mutation(
-        options: MutationOptions(
-          document: LOGIN_MUTATION_DOCUMENT,
-          operationName: LOGIN_MUTATION_DOCUMENT_OPERATION_NAME,
-        ),
+      body: Mutation$Login$Widget(
         builder: (runMutation, result) {
           print("Render of login called");
           if (result == null || result.isLoading) return const Loading();
@@ -73,11 +68,11 @@ class _LoginState extends State<Login> {
                         if (_email.length < 3 || _password.length < 3) return; // TODO validate
                         final fcmToken = await FirebaseMessaging.instance.getToken();
                         runMutation(
-                          LoginArguments(
+                          Variables$Mutation$Login(
                             email: _email,
                             password: _password,
                             fcmToken: fcmToken!,
-                          ).toJson(),
+                          ),
                         );
                       },
                       child: const Text("Login"),

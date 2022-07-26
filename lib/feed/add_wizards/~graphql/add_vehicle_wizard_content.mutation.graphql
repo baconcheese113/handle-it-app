@@ -1,6 +1,5 @@
-mutation addVehicleWizard($id: ID!, $name: String) {
+mutation AddVehicleWizardContent($id: ID!, $name: String) {
   updateHub(id: $id, name: $name) {
-    __typename
     id
     ...feedCard_hub
   }

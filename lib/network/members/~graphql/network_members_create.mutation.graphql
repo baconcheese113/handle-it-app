@@ -1,15 +1,11 @@
 mutation CreateNetworkMember($networkId: Int!, $email: String!, $role: RoleType!) {
   createNetworkMember(networkId: $networkId, email: $email, role: $role) {
-    __typename
     id
     role
-    # FIXME artemis
-    emUser: user {
-      __typename
+    user {
       id
       isMe
     }
     ...networkMemberTile_member
-    ...networkMemberUpdate_member
   }
 }

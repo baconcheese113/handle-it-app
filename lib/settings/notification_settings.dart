@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/settings/~graphql/__generated__/notification_settings.mutation.graphql.dart';
+import 'package:handle_it/settings/~graphql/__generated__/settings.fragments.graphql.dart';
 
 class NotificationSettings extends StatefulWidget {
-  final NotificationSettingsUserMixin user;
+  final Fragment$notificationSettings_user user;
   const NotificationSettings({Key? key, required this.user}) : super(key: key);
 
   @override
@@ -15,19 +15,15 @@ class _NotificationSettingsState extends State<NotificationSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Mutation(
-      options: MutationOptions(
-        document: UPDATE_NOTIFICATION_SETTINGS_MUTATION_DOCUMENT,
-        operationName: UPDATE_NOTIFICATION_SETTINGS_MUTATION_DOCUMENT_OPERATION_NAME,
-      ),
+    return Mutation$UpdateNotificationSettings$Widget(
       builder: (runMutation, result) {
         void commitChange(bool defaultFullNotification) async {
           if (_loading || defaultFullNotification == widget.user.defaultFullNotification) return;
           setState(() => _loading = true);
-          final res = await runMutation(
-            UpdateNotificationSettingsArguments(
+          await runMutation(
+            Variables$Mutation$UpdateNotificationSettings(
               defaultFullNotification: defaultFullNotification,
-            ).toJson(),
+            ),
           ).networkResult;
           setState(() => _loading = false);
         }

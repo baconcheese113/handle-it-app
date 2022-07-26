@@ -1,11 +1,8 @@
-query addSensorWizard {
+query AddSensorWizard {
   viewer {
-    __typename
     user {
-      __typename
       id
       hubs {
-        __typename
         ...addSensorWizardContent_hub
       }
     }

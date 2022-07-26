@@ -3,21 +3,16 @@ mutation RequestNetworkMembership($networkName: String!) {
     id
     role
     user {
-      __typename
       id
       networkMemberships {
         ...networkInvitesCard_member
-        __typename
         id
         status
         inviterAcceptedAt
-        # FIXME artemis
-        memNetwork: network {
-          __typename
+        network {
           id
           name
           members {
-            __typename
             id
             status
           }

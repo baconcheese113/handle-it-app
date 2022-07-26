@@ -5,14 +5,14 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_wizards.fragments.graphql.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'add_vehicle_wizard_content.dart';
 
 class AddSensorWizardContent extends StatefulWidget {
-  final AddSensorWizardContentHubMixin hubFrag;
+  final Fragment$addSensorWizardContent_hub hubFrag;
   const AddSensorWizardContent({Key? key, required this.hubFrag}) : super(key: key);
 
   @override

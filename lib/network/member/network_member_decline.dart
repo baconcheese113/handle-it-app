@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/invites/~graphql/__generated__/network_invites_card.mutations.graphql.dart';
 
 class NetworkMemberDecline extends StatelessWidget {
   final int memberId;
@@ -8,18 +7,14 @@ class NetworkMemberDecline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Mutation(
-      options: MutationOptions(
-        document: DECLINE_NETWORK_MEMBERSHIP_MUTATION_DOCUMENT,
-        operationName: DECLINE_NETWORK_MEMBERSHIP_MUTATION_DOCUMENT_OPERATION_NAME,
-      ),
+    return Mutation$DeclineNetworkMembership$Widget(
       builder: (runMutation, result) {
         return IconButton(
           onPressed: () {
             runMutation(
-              DeclineNetworkMembershipArguments(
+              Variables$Mutation$DeclineNetworkMembership(
                 networkMemberId: memberId,
-              ).toJson(),
+              ),
             );
           },
           icon: const Icon(Icons.clear_outlined),

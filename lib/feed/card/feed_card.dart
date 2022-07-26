@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:handle_it/feed/updaters/hub_updater.dart';
 import 'package:handle_it/utils.dart';
@@ -16,7 +16,7 @@ import 'feed_card_menu.dart';
 import 'feed_card_rssi.dart';
 
 class FeedCard extends StatefulWidget {
-  final FeedCardHubMixin hubFrag;
+  final Fragment$feedCard_hub hubFrag;
   final Function onDelete;
   const FeedCard({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
 
@@ -101,7 +101,7 @@ class _FeedCardState extends State<FeedCard> {
     }();
     final hubFrag = widget.hubFrag;
     final sensors = hubFrag.sensors;
-    final events = sensors.fold<List<FeedCardHubMixin$Sensors$Events>>([], (arr, sensor) {
+    final events = sensors.fold<List<Fragment$feedCard_hub$sensors$events>>([], (arr, sensor) {
       return sensor.events.isNotEmpty ? [...arr, ...sensor.events] : arr;
     });
     final int sensorCount = sensors.length;
@@ -118,13 +118,13 @@ class _FeedCardState extends State<FeedCard> {
             FeedCardRssi(foundHub: _foundHub, deviceState: _deviceState),
           ]),
           trailing: Column(children: [
-            FeedCardMenu(hubFrag: hubFrag as FeedCardMenuHubMixin, onDelete: widget.onDelete),
+            FeedCardMenu(hubFrag: hubFrag, onDelete: widget.onDelete),
             if (_batteryLevel > -1) BatteryStatus(batteryLevel: _batteryLevel, variant: Variant.small),
           ]),
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
-          Center(child: HubUpdater(hubFrag: hubFrag as HubUpdaterHubMixin, foundHub: _foundHub!)),
-        SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag as FeedCardMapHubMixin)),
+          Center(child: HubUpdater(hubFrag: hubFrag, foundHub: _foundHub!)),
+        SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag)),
         Center(
           child: Stack(clipBehavior: Clip.none, children: [
             Icon(
@@ -162,7 +162,7 @@ class _FeedCardState extends State<FeedCard> {
             ]);
           }).toList(),
         ),
-        FeedCardArm(hubFrag: hubFrag as FeedCardArmHubMixin),
+        FeedCardArm(hubFrag: hubFrag),
       ],
     ));
   }

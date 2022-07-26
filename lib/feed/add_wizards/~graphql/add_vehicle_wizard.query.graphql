@@ -1,8 +1,6 @@
-query addVehicleWizard {
+query AddVehicleWizard {
   viewer {
-    __typename
     user {
-      __typename
       id
       ...addVehicleWizardContent_user
     }

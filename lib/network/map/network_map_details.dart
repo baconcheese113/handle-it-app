@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/map/~graphql/__generated__/network_map_details.query.graphql.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
@@ -36,19 +35,16 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
     final netProvider = Provider.of<NetworkProvider>(context, listen: false);
     final hubId = widget.hubObject.hubId;
     final networkId = widget.hubObject.networkId;
-    final query = NetworkMapDetailsQuery(variables: NetworkMapDetailsArguments(hubId: hubId));
-    return Query(
-      options: QueryOptions(
-        document: query.document,
-        operationName: query.operationName,
-        variables: query.variables.toJson(),
-        fetchPolicy: FetchPolicy.networkOnly,
+
+    return Query$networkMapDetails$Widget(
+      options: Options$Query$networkMapDetails(
+        variables: Variables$Query$networkMapDetails(hubId: hubId),
       ),
-      builder: (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
+      builder: (result, {refetch, fetchMore}) {
         final noDataWidget = validateResult(result);
         if (noDataWidget != null) return noDataWidget;
 
-        final hub = query.parse(result.data!).hub;
+        final hub = result.parsedData!.hub;
         final networks = hub?.networks;
         final network = networks?.firstWhereOrNull((n) => n.id == networkId);
         if (network == null) return const SizedBox();
@@ -59,7 +55,7 @@ class _NetworkMapDetailsState extends State<NetworkMapDetails> {
           return "Muted";
         }();
         final fixedAt = timeago.format(hub.locations[0].fixedAt!);
-        Chip getChipFromNetwork(NetworkMapDetails$Query$Hub$Networks n) {
+        Chip getChipFromNetwork(Query$networkMapDetails$hub$networks n) {
           return Chip(
             label: Text(n.name, style: const TextStyle(fontSize: 10)),
             backgroundColor: netProvider.registerNetwork(n.id),

@@ -1,6 +1,6 @@
 {
   "name": "HandleIt GraphQL Schema",
-  "schemaPath": "graphql/schema.graphql",
+  "schemaPath": "lib/graphql/schema.graphql",
   "extensions": {
     "endpoints": {
       "Default GraphQL Endpoint": {

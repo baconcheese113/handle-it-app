@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/graphql/__generated__/schema.graphql.dart';
+import 'package:handle_it/network/invites/~graphql/__generated__/invites.fragments.graphql.dart';
 import 'package:handle_it/network/member/network_member_accept.dart';
 import 'package:handle_it/network/member/network_member_decline.dart';
 import 'package:handle_it/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class NetworkInvitesCard extends StatefulWidget {
-  final NetworkInvitesCardMemberMixin memberFrag;
+class NetworkInvitesCard extends StatelessWidget {
+  final Fragment$networkInvitesCard_member memberFrag;
   const NetworkInvitesCard({Key? key, required this.memberFrag}) : super(key: key);
 
   @override
-  State<NetworkInvitesCard> createState() => _NetworkInvitesCardState();
-}
-
-class _NetworkInvitesCardState extends State<NetworkInvitesCard> {
-  @override
   Widget build(BuildContext context) {
-    final inviterAcceptedAt = widget.memberFrag.inviterAcceptedAt;
+    final inviterAcceptedAt = memberFrag.inviterAcceptedAt;
     if (inviterAcceptedAt == null) return const SizedBox();
     final invitationCreatedAt = timeago.format(inviterAcceptedAt);
-    final network = widget.memberFrag.memberNetwork;
+    final network = memberFrag.network;
     final members = network.members;
-    final int numMembers = members.where((mem) => mem.status == NetworkMemberStatus.active).length;
+    final int numMembers = members
+        .where(
+          (mem) => mem.status == Enum$NetworkMemberStatus.active,
+        )
+        .length;
     return Card(
       child: ListTile(
         title: Text(network.name),
@@ -30,8 +30,8 @@ class _NetworkInvitesCardState extends State<NetworkInvitesCard> {
           Text(pluralize("active member", numMembers)),
         ]),
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-          NetworkMemberAccept(memberId: widget.memberFrag.id),
-          NetworkMemberDecline(memberId: widget.memberFrag.id),
+          NetworkMemberAccept(memberId: memberFrag.id),
+          NetworkMemberDecline(memberId: memberFrag.id),
         ]),
       ),
     );

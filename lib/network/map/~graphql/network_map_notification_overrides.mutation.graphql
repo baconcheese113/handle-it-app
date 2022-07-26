@@ -1,6 +1,5 @@
 mutation UpdateNotificationOverride($hubId: Int!, $shouldMute: Boolean!) {
   updateNotificationOverride(hubId: $hubId, shouldMute: $shouldMute) {
-    __typename
     id
     userId
     hubId

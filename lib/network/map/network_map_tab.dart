@@ -3,8 +3,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/network/map/network_map_details.dart';
+import 'package:handle_it/network/map/~graphql/__generated__/map.fragments.graphql.dart';
 import 'package:handle_it/network/network_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -58,7 +58,7 @@ Future<Uint8List> getCustomMarker(Color color, String name, bool isAlert, bool i
 }
 
 class NetworkMapTab extends StatefulWidget {
-  final NetworkMapTabViewerMixin viewerFrag;
+  final Fragment$networkMapTab_viewer viewerFrag;
   final Function refetch;
   const NetworkMapTab({Key? key, required this.viewerFrag, required this.refetch}) : super(key: key);
 

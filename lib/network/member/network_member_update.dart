@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/graphql/__generated__/schema.graphql.dart';
+import 'package:handle_it/network/member/~graphql/__generated__/member.fragments.graphql.dart';
+import 'package:handle_it/network/member/~graphql/__generated__/network_member_update.mutation.graphql.dart';
 
 class NetworkMemberUpdate extends StatefulWidget {
-  final NetworkMemberUpdateMemberMixin memberFrag;
+  final Fragment$networkMemberUpdate_member memberFrag;
   const NetworkMemberUpdate({Key? key, required this.memberFrag}) : super(key: key);
 
   @override
@@ -13,14 +14,10 @@ class NetworkMemberUpdate extends StatefulWidget {
 class _NetworkMemberUpdateState extends State<NetworkMemberUpdate> {
   @override
   Widget build(BuildContext context) {
-    return Mutation(
-      options: MutationOptions(
-        document: UPDATE_NETWORK_MEMBER_MUTATION_DOCUMENT,
-        operationName: UPDATE_NETWORK_MEMBER_MUTATION_DOCUMENT_OPERATION_NAME,
-      ),
+    return Mutation$UpdateNetworkMember$Widget(
       builder: (runMutation, result) {
         void handleEdit() {
-          RoleType curRole = widget.memberFrag.role;
+          Enum$RoleType curRole = widget.memberFrag.role;
           showDialog(
             context: context,
             builder: (dialogContext) {
@@ -28,10 +25,10 @@ class _NetworkMemberUpdateState extends State<NetworkMemberUpdate> {
                 builder: (context, setState) {
                   return AlertDialog(
                     title: const Text("Update Network Member"),
-                    content: DropdownButton<RoleType>(
+                    content: DropdownButton<Enum$RoleType>(
                       hint: Text(curRole.name),
                       onChanged: (newValue) => setState(() => curRole = newValue!),
-                      items: [RoleType.member, RoleType.owner]
+                      items: [Enum$RoleType.member, Enum$RoleType.owner]
                           .map(
                             (role) => DropdownMenuItem(
                               value: role,
@@ -41,15 +38,18 @@ class _NetworkMemberUpdateState extends State<NetworkMemberUpdate> {
                           .toList(),
                     ),
                     actions: [
-                      TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
+                      TextButton(
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: const Text("Cancel"),
+                      ),
                       TextButton(
                         onPressed: curRole != widget.memberFrag.role
                             ? () async {
                                 final mutation = await runMutation(
-                                  UpdateNetworkMemberArguments(
+                                  Variables$Mutation$UpdateNetworkMember(
                                     networkMemberId: widget.memberFrag.id,
                                     role: curRole,
-                                  ).toJson(),
+                                  ),
                                 ).networkResult;
                                 if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
                                   if (mounted) Navigator.of(dialogContext).pop();

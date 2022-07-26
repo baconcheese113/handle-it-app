@@ -5,8 +5,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_vehicle_wizard_content.mutation.graphql.dart';
+import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_wizards.fragments.graphql.dart';
+import 'package:handle_it/feed/~graphql/__generated__/feed_home.query.graphql.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -15,7 +16,7 @@ const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
 const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
 
 class AddVehicleWizardContent extends StatefulWidget {
-  final AddVehicleWizardContentUserMixin userFrag;
+  final Fragment$addVehicleWizardContent_user userFrag;
   final int? pairedHubId;
   final Function(int) setPairedHubId;
   final Function refetch;
@@ -176,20 +177,17 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       return true;
     }
 
-    return Mutation(
-      options: MutationOptions(
-        document: ADD_VEHICLE_WIZARD_MUTATION_DOCUMENT,
-        operationName: ADD_VEHICLE_WIZARD_MUTATION_DOCUMENT_OPERATION_NAME,
+    return Mutation$AddVehicleWizardContent$Widget(
+      options: WidgetOptions$Mutation$AddVehicleWizardContent(
         update: (cache, result) {
           if (result?.data == null) return;
-          final data = AddVehicleWizard$Mutation.fromJson(result!.data!);
-          final query = FeedHomeQuery();
-          final request = QueryOptions(document: query.document).asRequest;
+          final newHub = result!.parsedData!.updateHub!;
+          final request = Options$Query$FeedHome().asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;
-          final map = query.parse(readQuery);
+          final map = Query$FeedHome.fromJson(readQuery);
           final hubs = map.viewer.user.hubs;
-          hubs.add(FeedHome$Query$Viewer$User$Hubs.fromJson(data.updateHub!.toJson()));
+          hubs.add(Query$FeedHome$viewer$user$hubs.fromJson(newHub.toJson()));
           cache.writeQuery(request, data: map.toJson(), broadcast: true);
         },
       ),
@@ -197,10 +195,10 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
         void handleSetName() async {
           if (_formsPageViewController!.page! > 0) {
             await runMutation(
-              AddVehicleWizardArguments(
+              Variables$Mutation$AddVehicleWizardContent(
                 id: "${widget.pairedHubId}",
                 name: _hubCustomName,
-              ).toJson(),
+              ),
             ).networkResult;
             if (!mounted) return;
             Navigator.pop(context);

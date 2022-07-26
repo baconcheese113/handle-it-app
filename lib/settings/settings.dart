@@ -1,16 +1,16 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/settings/add_test_hub.dart';
 import 'package:handle_it/settings/notification_settings.dart';
+import 'package:handle_it/settings/~graphql/__generated__/settings.fragments.graphql.dart';
+import 'package:handle_it/settings/~graphql/__generated__/settings.mutation.graphql.dart';
 import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
-  final SettingsUserMixin userFrag;
+  final Fragment$settings_user userFrag;
   final Function reinitialize;
   const Settings(this.userFrag, this.reinitialize, {Key? key}) : super(key: key);
 
@@ -42,17 +42,13 @@ class _SettingsState extends State<Settings> {
       Navigator.pushReplacementNamed(context, Login.routeName);
     }
 
-    return Mutation(
-      options: MutationOptions(
-        document: SETTINGS_UPDATE_USER_MUTATION_DOCUMENT,
-        operationName: SETTINGS_UPDATE_USER_MUTATION_DOCUMENT_OPERATION_NAME,
-      ),
+    return Mutation$SettingsUpdateUser$Widget(
       builder: (runMutation, result) {
         final canUpdateName = _firstName != widget.userFrag.firstName;
-        handleUpdateName() async {
+        Future<void> handleUpdateName() async {
           if (!canUpdateName) return;
           await runMutation(
-            SettingsUpdateUserArguments(firstName: _firstName).toJson(),
+            Variables$Mutation$SettingsUpdateUser(firstName: _firstName),
           ).networkResult;
         }
 
@@ -94,14 +90,14 @@ class _SettingsState extends State<Settings> {
               padding: EdgeInsets.only(top: 10, bottom: 10),
               child: Text("Notification type", textScaleFactor: 1.4),
             ),
-            NotificationSettings(user: widget.userFrag as NotificationSettingsUserMixin),
+            NotificationSettings(user: widget.userFrag),
             const Padding(padding: EdgeInsets.only(top: 40)),
             const Divider(),
             const Padding(
               padding: EdgeInsets.only(top: 40, bottom: 20),
               child: Text("Developer tools", textScaleFactor: 1.4),
             ),
-            AddTestHub(user: widget.userFrag as AddTestHubUserMixin),
+            AddTestHub(user: widget.userFrag),
             Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: ElevatedButton(

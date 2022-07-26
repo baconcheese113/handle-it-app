@@ -1,15 +1,12 @@
 fragment addSensorWizardContent_hub on Hub {
-  __typename
   id
   name
   serial
 }
 
 fragment addVehicleWizardContent_user on User {
-  __typename
   id
   hubs {
-    __typename
     id
     name
     serial

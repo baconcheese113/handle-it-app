@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:handle_it/__generated__/api.graphql.dart';
+import 'package:handle_it/network/invites/~graphql/__generated__/invites.fragments.graphql.dart';
+import 'package:handle_it/network/invites/~graphql/__generated__/network_invites_card.mutations.graphql.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class NetworkRequestsCard extends StatelessWidget {
-  final NetworkRequestsCardMemberMixin memberFrag;
+  final Fragment$networkRequestsCard_member memberFrag;
   const NetworkRequestsCard({Key? key, required this.memberFrag}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Mutation(
-      options: MutationOptions(
-        document: DECLINE_NETWORK_MEMBERSHIP_MUTATION_DOCUMENT,
-        operationName: DECLINE_NETWORK_MEMBERSHIP_MUTATION_DOCUMENT_OPERATION_NAME,
-      ),
+    return Mutation$DeclineNetworkMembership$Widget(
       builder: (runMutation, result) {
         final inviteeAcceptedAt = memberFrag.inviteeAcceptedAt;
         if (inviteeAcceptedAt == null) return const SizedBox();
@@ -24,9 +20,9 @@ class NetworkRequestsCard extends StatelessWidget {
             subtitle: Text("Sent $invitationCreatedAt"),
             trailing: IconButton(
               onPressed: () => runMutation(
-                DeclineNetworkMembershipArguments(
+                Variables$Mutation$DeclineNetworkMembership(
                   networkMemberId: memberFrag.id,
-                ).toJson(),
+                ),
               ),
               icon: const Icon(Icons.clear_outlined),
             ),
