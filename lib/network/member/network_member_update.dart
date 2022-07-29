@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:handle_it/graphql/__generated__/schema.graphql.dart';
 import 'package:handle_it/network/member/~graphql/__generated__/member.fragments.graphql.dart';
 import 'package:handle_it/network/member/~graphql/__generated__/network_member_update.mutation.graphql.dart';
+import 'package:vrouter/vrouter.dart';
 
 class NetworkMemberUpdate extends StatefulWidget {
   final Fragment$networkMemberUpdate_member memberFrag;
@@ -39,7 +40,7 @@ class _NetworkMemberUpdateState extends State<NetworkMemberUpdate> {
                     ),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        onPressed: () => dialogContext.vRouter.pop(),
                         child: const Text("Cancel"),
                       ),
                       TextButton(
@@ -52,7 +53,7 @@ class _NetworkMemberUpdateState extends State<NetworkMemberUpdate> {
                                   ),
                                 ).networkResult;
                                 if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
-                                  if (mounted) Navigator.of(dialogContext).pop();
+                                  dialogContext.vRouter.pop();
                                 }
                               }
                             : null,

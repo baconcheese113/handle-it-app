@@ -45,6 +45,7 @@ dependencies:
   intl: ^0.17.0
   collection: ^1.16.0
   graphql: ^5.1.2-beta.4 # Used with graphql_codegen for Options types
+  vrouter: ^1.2.1
 
 dev_dependencies:
   integration_test:

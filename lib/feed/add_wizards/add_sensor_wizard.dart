@@ -7,7 +7,7 @@ import 'add_sensor_wizard_content.dart';
 class AddSensorWizard extends StatelessWidget {
   const AddSensorWizard({Key? key}) : super(key: key);
 
-  static String routeName = "/add-sensor";
+  static const routeName = "/add-sensor";
 
   @override
   Widget build(BuildContext context) {

@@ -9,6 +9,7 @@ import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:handle_it/utils.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:vrouter/vrouter.dart';
 
 import 'feed/add_wizards/add_vehicle_wizard.dart';
 
@@ -42,10 +43,10 @@ class AuthenticationState extends ChangeNotifier {
 }
 
 class App extends StatefulWidget {
-  final String? initialRoute;
+  final String initialRoute;
   final BehaviorSubject<String>? selectNotificationSubject;
   final String? eventId;
-  App({Key? key, this.initialRoute, this.selectNotificationSubject, this.eventId}) : super(key: key);
+  App({Key? key, required this.initialRoute, this.selectNotificationSubject, this.eventId}) : super(key: key);
 
   final GlobalKey<NavigatorState> _navigator = GlobalKey<NavigatorState>();
 
@@ -69,10 +70,11 @@ class _AppState extends State<App> {
     authenticationState.addListener(listenForAuthStateChanges);
     authenticationState.checkForExistingToken();
     print("app: init state");
-    widget.selectNotificationSubject?.stream.listen((String payload) async {
-      print("heard $payload from the stream");
-      await widget._navigator.currentState?.pushNamed(ShowAlert.routeName);
-    });
+    // TODO handle tapping notifications better
+    // widget.selectNotificationSubject?.stream.listen((String payload) async {
+    //   print("heard $payload from the stream");
+    //   await widget._navigator.currentState?.pushNamed(ShowAlert.routeName);
+    // });
   }
 
   @override
@@ -106,19 +108,19 @@ class _AppState extends State<App> {
     }
     return GraphQLProvider(
       client: client,
-      child: MaterialApp(
+      child: VRouter(
         title: 'HandleIt',
-        initialRoute: initialRoute,
+        initialUrl: initialRoute,
         navigatorKey: widget._navigator,
-        routes: <String, WidgetBuilder>{
-          Home.routeName: (_) => Home(reinitialize: reinitialize),
-          ShowAlert.routeName: (_) => ShowAlert(eventId: widget.eventId),
+        routes: [
+          VWidget(path: Home.routeName, widget: Home(reinitialize: reinitialize)),
+          VWidget(path: ShowAlert.routeName, widget: ShowAlert(eventId: widget.eventId)),
           // TODO refactor reinitialize to a provider
-          Register.routeName: (_) => Register(reinitialize: reinitialize),
-          Login.routeName: (_) => Login(reinitialize: reinitialize),
-          AddVehicleWizard.routeName: (_) => const AddVehicleWizard(),
-          AddSensorWizard.routeName: (_) => const AddSensorWizard(),
-        },
+          VWidget(path: Register.routeName, widget: Register(reinitialize: reinitialize)),
+          VWidget(path: Login.routeName, widget: Login(reinitialize: reinitialize)),
+          VWidget(path: AddVehicleWizard.routeName, widget: const AddVehicleWizard()),
+          VWidget(path: AddSensorWizard.routeName, widget: const AddSensorWizard()),
+        ],
         theme: buildTheme(),
       ),
     );

@@ -8,6 +8,7 @@ import 'package:handle_it/settings/~graphql/__generated__/settings.fragments.gra
 import 'package:handle_it/settings/~graphql/__generated__/settings.mutation.graphql.dart';
 import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrouter/vrouter.dart';
 
 class Settings extends StatefulWidget {
   final Fragment$settings_user userFrag;
@@ -38,8 +39,7 @@ class _SettingsState extends State<Settings> {
     void logout() async {
       await const FlutterSecureStorage().delete(key: 'token');
       widget.reinitialize();
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, Login.routeName);
+      context.vRouter.to(Login.routeName, isReplacement: true);
     }
 
     return Mutation$SettingsUpdateUser$Widget(

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
 import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 import 'package:handle_it/feed/card/~graphql/__generated__/feed_card_menu.mutation.graphql.dart';
+import 'package:handle_it/feed/vehicle/vehicle_screen.dart';
+import 'package:vrouter/vrouter.dart';
 
 class FeedCardMenu extends StatefulWidget {
   final Fragment$feedCardMenu_hub hubFrag;
@@ -15,11 +16,19 @@ class FeedCardMenu extends StatefulWidget {
 
 class _FeedCardMenuState extends State<FeedCardMenu> {
   @override
-  Mutation build(BuildContext context) {
+  Widget build(BuildContext context) {
+    void handleEditVehicleDetails() {
+      context.vRouter.to(
+        VehicleScreen.routeName,
+        queryParameters: {'hubId': widget.hubFrag.id.toString()},
+      );
+    }
+
     void handleAddSensor() {
-      if (mounted) {
-        Navigator.pushNamed(context, AddSensorWizard.routeName, arguments: {'hubId': widget.hubFrag.id});
-      }
+      context.vRouter.to(
+        AddSensorWizard.routeName,
+        queryParameters: {'hubId': widget.hubFrag.id.toString()},
+      );
     }
 
     return Mutation$feedCardDelete$Widget(
@@ -31,7 +40,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
               title: const Text("Delete Hub"),
               content: const Text("This will remove this hub and it's associated sensors from your account."),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Cancel')),
+                TextButton(onPressed: () => context.vRouter.pop(), child: const Text('Cancel')),
                 TextButton(
                   onPressed: () async {
                     await runMutation(
@@ -40,7 +49,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
                       ),
                     ).networkResult;
                     widget.onDelete();
-                    if (mounted) Navigator.pop(context);
+                    if (mounted) context.vRouter.pop();
                   },
                   child: const Text("Delete"),
                 )
@@ -52,16 +61,21 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
         return PopupMenuButton(
           child: const Icon(Icons.more_vert),
           onSelected: (idx) {
-            if (idx == 0) handleAddSensor();
-            if (idx == 1) handleDelete();
+            if (idx == 0) handleEditVehicleDetails();
+            if (idx == 1) handleAddSensor();
+            if (idx == 2) handleDelete();
           },
           itemBuilder: (menuContext) => [
             const PopupMenuItem(
               value: 0,
-              child: ListTile(leading: Icon(Icons.add), title: Text("Add Sensor")),
+              child: ListTile(leading: Icon(Icons.edit), title: Text("Edit vehicle details")),
             ),
             const PopupMenuItem(
               value: 1,
+              child: ListTile(leading: Icon(Icons.add), title: Text("Add Sensor")),
+            ),
+            const PopupMenuItem(
+              value: 2,
               child: ListTile(
                 leading: Icon(Icons.delete),
                 title: Text("Delete", style: TextStyle(color: Colors.red)),

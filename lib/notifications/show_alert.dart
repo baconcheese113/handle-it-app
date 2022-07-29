@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/~graphql/__generated__/show_alert.mutation.graphql.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:vrouter/vrouter.dart';
 
 const int interval = 50;
 const int numLoops = 10000 ~/ interval;
 
 class ShowAlert extends StatefulWidget {
-  static const String routeName = '/showAlert';
+  static const routeName = '/showAlert';
   final String? eventId;
   const ShowAlert({Key? key, required this.eventId}) : super(key: key);
 
@@ -67,56 +68,55 @@ class _ShowAlert extends State<ShowAlert> {
   Widget build(BuildContext context) {
     void handleDismiss() {
       _audioPlayer?.stop();
-      Navigator.of(context).pushReplacementNamed(Home.routeName);
+      context.vRouter.to(Home.routeName, isReplacement: true);
     }
 
-    return Mutation$PropagateEventToNetworks$Widget(
-        builder: (runMutation, result) {
-          if (_canSendMutation && _loopNum == 0) {
-            runMutation(
-              Variables$Mutation$PropagateEventToNetworks(
-                eventId: int.parse(widget.eventId!),
-              ),
-            );
-            _canSendMutation = false;
-          }
-          Widget getProgressWidget() {
-            if (result?.data != null) return const Text("Sent to network");
-            if (_loopNum > 0 && _canSendMutation) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Preparing to alert network"),
-                  LinearProgressIndicator(value: _loopNum / numLoops),
-                ],
-              );
-            }
-            if (_loopNum > 0 && !_canSendMutation) return const SizedBox();
-            if (result == null || result.isLoading) return const Text("Sending to network members....");
-            return const Text("An error occurred");
-          }
-
+    return Mutation$PropagateEventToNetworks$Widget(builder: (runMutation, result) {
+      if (_canSendMutation && _loopNum == 0) {
+        runMutation(
+          Variables$Mutation$PropagateEventToNetworks(
+            eventId: int.parse(widget.eventId!),
+          ),
+        );
+        _canSendMutation = false;
+      }
+      Widget getProgressWidget() {
+        if (result?.data != null) return const Text("Sent to network");
+        if (_loopNum > 0 && _canSendMutation) {
           return Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              getProgressWidget(),
-              Column(children: const [
-                Icon(
-                  Icons.warning,
-                  size: 200,
-                  color: Colors.red,
-                ),
-                Text("Handle pull detected", textScaleFactor: 1.4),
-              ]),
-              TextButton(
-                  onPressed: handleDismiss,
-                  child: const Text(
-                    "Dismiss Alert and View",
-                    textScaleFactor: 1.5,
-                  ))
+              const Text("Preparing to alert network"),
+              LinearProgressIndicator(value: _loopNum / numLoops),
             ],
           );
-        });
+        }
+        if (_loopNum > 0 && !_canSendMutation) return const SizedBox();
+        if (result == null || result.isLoading) return const Text("Sending to network members....");
+        return const Text("An error occurred");
+      }
+
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          getProgressWidget(),
+          Column(children: const [
+            Icon(
+              Icons.warning,
+              size: 200,
+              color: Colors.red,
+            ),
+            Text("Handle pull detected", textScaleFactor: 1.4),
+          ]),
+          TextButton(
+              onPressed: handleDismiss,
+              child: const Text(
+                "Dismiss Alert and View",
+                textScaleFactor: 1.5,
+              ))
+        ],
+      );
+    });
   }
 }

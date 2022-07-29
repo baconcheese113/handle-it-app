@@ -5,11 +5,12 @@ import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/auth/~graphql/__generated__/register.mutation.graphql.dart';
 import 'package:handle_it/common/loading.dart';
 import 'package:handle_it/home.dart';
+import 'package:vrouter/vrouter.dart';
 
 class Register extends StatefulWidget {
   final Function reinitialize;
   const Register({Key? key, required this.reinitialize}) : super(key: key);
-  static String routeName = '/register';
+  static const routeName = '/register';
 
   @override
   State<Register> createState() => _RegisterState();
@@ -22,14 +23,14 @@ class _RegisterState extends State<Register> {
   String _firstName = "";
   String _lastName = "";
 
-  void _switchToLogin() async {
-    await Navigator.pushReplacementNamed(context, Login.routeName);
+  void _switchToLogin() {
+    context.vRouter.to(Login.routeName, isReplacement: true);
   }
 
   Future<void> _switchToHome(String newToken) async {
     await const FlutterSecureStorage().write(key: 'token', value: newToken);
     await widget.reinitialize(newToken);
-    if (mounted) await Navigator.pushReplacementNamed(context, Home.routeName);
+    context.vRouter.to(Home.routeName, isReplacement: true);
   }
 
   @override

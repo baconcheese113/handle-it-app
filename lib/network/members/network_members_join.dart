@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:handle_it/network/members/~graphql/__generated__/network_members_join.mutation.graphql.dart';
+import 'package:vrouter/vrouter.dart';
 
 class NetworkMembersJoin extends StatefulWidget {
   const NetworkMembersJoin({Key? key}) : super(key: key);
@@ -29,7 +30,10 @@ class _NetworkMembersJoinState extends State<NetworkMembersJoin> {
                   ],
                 ),
                 actions: [
-                  TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
+                  TextButton(
+                    onPressed: () => dialogContext.vRouter.pop(),
+                    child: const Text("Cancel"),
+                  ),
                   TextButton(
                     onPressed: () async {
                       final mutation = await runMutation(
@@ -39,7 +43,7 @@ class _NetworkMembersJoinState extends State<NetworkMembersJoin> {
                       ).networkResult;
                       if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
                         // onNetworkAdded("Network created successfully, refresh to view");
-                        if (mounted) Navigator.of(dialogContext).pop();
+                        dialogContext.vRouter.pop();
                       } else if (mutation?.hasException ?? false) {
                         setState(() => exceptions = mutation!.exception!.graphqlErrors[0].message);
                       }

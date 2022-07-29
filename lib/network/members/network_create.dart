@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:handle_it/network/members/~graphql/__generated__/network_create.mutation.graphql.dart';
 import 'package:handle_it/network/members/~graphql/__generated__/network_members_tab.query.graphql.dart';
+import 'package:vrouter/vrouter.dart';
 
 class NetworkCreate extends StatefulWidget {
   const NetworkCreate({Key? key}) : super(key: key);
@@ -40,7 +41,7 @@ class _NetworkCreateState extends State<NetworkCreate> {
                 onChanged: (String n) => name = n,
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text("Cancel")),
+                TextButton(onPressed: () => dialogContext.vRouter.pop(), child: const Text("Cancel")),
                 TextButton(
                   key: const ValueKey('button.create'),
                   onPressed: () async {
@@ -52,7 +53,7 @@ class _NetworkCreateState extends State<NetworkCreate> {
                     if (mutation != null && mutation.isNotLoading && !mutation.hasException) {
                       onNetworkAdded("Network created successfully");
                     }
-                    if (mounted) Navigator.of(dialogContext).pop();
+                    dialogContext.vRouter.pop();
                   },
                   child: const Text("Create"),
                 )

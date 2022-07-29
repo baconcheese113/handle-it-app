@@ -7,7 +7,7 @@ import 'add_vehicle_wizard_content.dart';
 class AddVehicleWizard extends StatefulWidget {
   const AddVehicleWizard({Key? key}) : super(key: key);
 
-  static String routeName = "/add-vehicle";
+  static const routeName = "/add-vehicle";
 
   @override
   State<AddVehicleWizard> createState() => _AddVehicleWizardState();

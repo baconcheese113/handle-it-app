@@ -10,6 +10,7 @@ import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_wizards.fr
 import 'package:handle_it/feed/~graphql/__generated__/feed_home.query.graphql.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vrouter/vrouter.dart';
 
 const String HUB_NAME = "HandleIt Hub";
 const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
@@ -172,8 +173,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   Widget build(BuildContext context) {
     Future<bool> cancelForm() async {
       _resetConn();
-      if (!mounted) return true;
-      Navigator.pop(context);
+      context.vRouter.pop();
       return true;
     }
 
@@ -200,8 +200,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                 name: _hubCustomName,
               ),
             ).networkResult;
-            if (!mounted) return;
-            Navigator.pop(context);
+            context.vRouter.pop();
           }
         }
 

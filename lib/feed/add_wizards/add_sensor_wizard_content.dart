@@ -8,6 +8,7 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_wizards.fragments.graphql.dart';
 import 'package:handle_it/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vrouter/vrouter.dart';
 
 import 'add_vehicle_wizard_content.dart';
 
@@ -134,7 +135,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       await _commandChar?.write([]);
       await _foundHub?.disconnect();
       await _flutterBlue.stopScan();
-      if (mounted) Navigator.pop(context);
+      context.vRouter.pop();
       return true;
     }
 

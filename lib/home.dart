@@ -7,6 +7,7 @@ import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:handle_it/utils.dart';
 import 'package:handle_it/~graphql/__generated__/home.query.graphql.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vrouter/vrouter.dart';
 
 import 'feed/add_wizards/add_vehicle_wizard.dart';
 
@@ -14,7 +15,7 @@ class Home extends StatefulWidget {
   final Function reinitialize;
   const Home({Key? key, required this.reinitialize}) : super(key: key);
 
-  static String routeName = "/home";
+  static const routeName = "/home";
 
   @override
   State<Home> createState() => _HomeState();
@@ -37,8 +38,8 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
-  void _handleAddVehicle(BuildContext c) {
-    Navigator.pushNamed(c, AddVehicleWizard.routeName);
+  void _handleAddVehicle() {
+    context.vRouter.to(AddVehicleWizard.routeName);
   }
 
   @override
@@ -58,7 +59,7 @@ class _HomeState extends State<Home> {
         final viewer = result.parsedData!.viewer;
         final addVehicleFab = FloatingActionButton.extended(
           key: const ValueKey('fab'),
-          onPressed: () => _handleAddVehicle(context),
+          onPressed: _handleAddVehicle,
           icon: const Icon(Icons.add, color: Colors.black),
           label: const Text("Add Hub", style: TextStyle(color: Colors.black)),
           backgroundColor: Colors.amberAccent,
