@@ -5,6 +5,9 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/auth/register.dart';
 import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
+import 'package:handle_it/feed/vehicle/vehicle_screen.dart';
+import 'package:handle_it/feed/vehicle/vehicle_select_color.dart';
+import 'package:handle_it/feed/vehicle/vehicle_select_model.dart';
 import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:handle_it/utils.dart';
@@ -113,13 +116,26 @@ class _AppState extends State<App> {
         initialUrl: initialRoute,
         navigatorKey: widget._navigator,
         routes: [
-          VWidget(path: Home.routeName, widget: Home(reinitialize: reinitialize)),
+          VWidget(
+            path: Home.routeName,
+            widget: Home(reinitialize: reinitialize),
+            stackedRoutes: [
+              VWidget(path: AddVehicleWizard.routeName, widget: const AddVehicleWizard()),
+              VWidget(path: AddSensorWizard.routeName, widget: const AddSensorWizard()),
+              VWidget(
+                path: "${VehicleScreen.routeName}/:hubId",
+                widget: const VehicleScreen(),
+                stackedRoutes: [
+                  VWidget(path: VehicleSelectModel.routeName, widget: const VehicleSelectModel()),
+                  VWidget(path: "${VehicleSelectColor.routeName}/:vehicleId", widget: const VehicleSelectColor()),
+                ],
+              ),
+            ],
+          ),
           VWidget(path: ShowAlert.routeName, widget: ShowAlert(eventId: widget.eventId)),
           // TODO refactor reinitialize to a provider
           VWidget(path: Register.routeName, widget: Register(reinitialize: reinitialize)),
           VWidget(path: Login.routeName, widget: Login(reinitialize: reinitialize)),
-          VWidget(path: AddVehicleWizard.routeName, widget: const AddVehicleWizard()),
-          VWidget(path: AddSensorWizard.routeName, widget: const AddSensorWizard()),
         ],
         theme: buildTheme(),
       ),

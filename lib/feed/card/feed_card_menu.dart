@@ -19,8 +19,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
   Widget build(BuildContext context) {
     void handleEditVehicleDetails() {
       context.vRouter.to(
-        VehicleScreen.routeName,
-        queryParameters: {'hubId': widget.hubFrag.id.toString()},
+        "${VehicleScreen.routeName}/${widget.hubFrag.id}",
       );
     }
 

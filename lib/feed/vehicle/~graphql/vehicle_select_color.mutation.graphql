@@ -1,0 +1,6 @@
+mutation UpdateVehicleColor($id: ID!, $color: String) {
+  updateVehicle(id: $id, color: $color) {
+    id
+    ...vehicleColor_vehicle
+  }
+}

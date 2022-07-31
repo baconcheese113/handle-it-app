@@ -1,0 +1,10 @@
+query VehicleScreen($hubId: Int!) {
+  hub(id: $hubId) {
+    id
+    vehicle {
+      ...vehicleModel_vehicle
+      ...vehicleColor_vehicle
+      ...vehicleNotes_vehicle
+    }
+  }
+}

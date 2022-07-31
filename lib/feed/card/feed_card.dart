@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:handle_it/feed/updaters/hub_updater.dart';
+import 'package:handle_it/feed/vehicle/vehicle_select_color.dart';
 import 'package:handle_it/utils.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -25,17 +27,12 @@ class FeedCard extends StatefulWidget {
 }
 
 class _FeedCardState extends State<FeedCard> {
-  bool _armed = false;
   bool _scanning = false;
   final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   BluetoothDevice? _foundHub;
   BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
   StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
   int _batteryLevel = -1;
-
-  void handleArmToggle() {
-    setState(() => _armed = !_armed);
-  }
 
   void autoConnect() async {
     await _flutterBlue.stopScan();
@@ -95,16 +92,14 @@ class _FeedCardState extends State<FeedCard> {
       return Colors.amber;
     }();
 
-    MaterialColor isArmedColor = () {
-      if (!_armed) return Colors.grey;
-      return Colors.green;
-    }();
     final hubFrag = widget.hubFrag;
     final sensors = hubFrag.sensors;
     final events = sensors.fold<List<Fragment$feedCard_hub$sensors$events>>([], (arr, sensor) {
       return sensor.events.isNotEmpty ? [...arr, ...sensor.events] : arr;
     });
     final int sensorCount = sensors.length;
+
+    final carColor = carColors.firstWhereOrNull((c) => c.name == hubFrag.vehicle?.color);
 
     return Card(
         child: Column(
@@ -130,7 +125,7 @@ class _FeedCardState extends State<FeedCard> {
             Icon(
               Icons.directions_car,
               size: 128,
-              color: isArmedColor,
+              color: carColor?.color,
             ),
             for (int idx = 0; idx < sensors.length; idx++)
               Positioned(

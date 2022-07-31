@@ -1,0 +1,14 @@
+fragment vehicleModel_vehicle on Vehicle {
+  id
+  carQueryId
+}
+
+fragment vehicleColor_vehicle on Vehicle {
+  id
+  color
+}
+
+fragment vehicleNotes_vehicle on Vehicle {
+  id
+  notes
+}

@@ -1,0 +1,6 @@
+mutation CreateVehicle($hubId: ID!, $carQueryId: String!, $year: Int!, $makeId: String!, $modelName: String!, $modelTrim: String!, $modelBody: String!) {
+  createVehicle(hubId: $hubId, carQueryId: $carQueryId, year: $year, makeId: $makeId, modelName: $modelName, modelTrim: $modelTrim, modelBody: $modelBody) {
+    id
+    ...vehicleModel_vehicle
+  }
+}

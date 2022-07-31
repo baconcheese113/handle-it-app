@@ -29,6 +29,7 @@ type Hub {
     ownerId: Int!
     sensors(after: SensorWhereUniqueInput, before: SensorWhereUniqueInput, first: Int, last: Int): [Sensor!]!
     serial: String!
+    vehicle: Vehicle
 }
 
 type Location {
@@ -58,10 +59,12 @@ type Mutation {
     createNetwork(name: String!): Network
     createNetworkMember(email: String!, networkId: Int!, role: RoleType!): NetworkMember
     createSensor(batteryLevel: Int, doorColumn: Int!, doorRow: Int!, isConnected: Boolean, isOpen: Boolean, serial: ID!): Sensor
+    createVehicle(carQueryId: String!, hubId: ID!, makeId: String!, modelBody: String!, modelName: String!, modelTrim: String!, year: Int!): Vehicle
     declineNetworkMembership(networkMemberId: Int!): Network
     deleteHub(id: ID!): Hub
     deleteNetwork(networkId: Int!): Network
     deleteNetworkMember(networkMemberId: Int!): Network
+    deleteVehicle(id: ID!): Vehicle
     loginAsHub(imei: String!, serial: String!, userId: ID!): String
     loginWithPassword(email: String!, fcmToken: String!, password: String!): String
     propagateEventToNetworks(eventId: Int!): Event
@@ -75,6 +78,7 @@ type Mutation {
     updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride
     updateSensor(id: ID!, isOpen: Boolean): Sensor
     updateUser(defaultFullNotification: Boolean, firstName: String, lastName: String): User
+    updateVehicle(color: String, id: ID!, notes: String): Vehicle
 }
 
 type Network {
@@ -147,6 +151,20 @@ type User {
     lastName: String
     networkMemberships(after: NetworkMemberWhereUniqueInput, before: NetworkMemberWhereUniqueInput, first: Int, last: Int): [NetworkMember!]!
     notificationOverrides(after: NotificationOverrideWhereUniqueInput, before: NotificationOverrideWhereUniqueInput, first: Int, last: Int): [NotificationOverride!]!
+}
+
+type Vehicle {
+    carQueryId: String!
+    color: String
+    createdAt: DateTime!
+    hub: Hub!
+    id: Int!
+    makeId: String!
+    modelBody: String!
+    modelName: String!
+    modelTrim: String!
+    notes: String
+    year: Int!
 }
 
 type Viewer {

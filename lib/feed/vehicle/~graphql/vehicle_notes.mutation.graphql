@@ -1,0 +1,6 @@
+mutation UpdateVehicleNotes($id: ID!, $notes: String) {
+  updateVehicle(id: $id, notes: $notes) {
+    id
+    ...vehicleNotes_vehicle
+  }
+}
