@@ -23,7 +23,7 @@ class _AddTestHubState extends State<AddTestHub> {
       options: WidgetOptions$Mutation$AddTestHub(
         update: (cache, result) {
           if (result?.data == null) return;
-          final newHub = result!.parsedData!.createHub!;
+          final newHub = result!.parsedData!.createHub;
           final request = Options$Query$FeedHome().asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;

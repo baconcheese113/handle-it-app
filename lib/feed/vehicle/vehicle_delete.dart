@@ -16,7 +16,7 @@ class VehicleDelete extends StatelessWidget {
       options: WidgetOptions$Mutation$DeleteVehicle(
         update: (cache, result) {
           if (result?.data == null) return;
-          final id = result!.parsedData!.deleteVehicle!.id;
+          final id = result!.parsedData!.deleteVehicle.id;
           final request = Options$Query$VehicleScreen(
             variables: Variables$Query$VehicleScreen(hubId: hubId),
           ).asRequest;

@@ -30,7 +30,7 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
       options: WidgetOptions$Mutation$DeleteNetwork(
         update: (cache, result) {
           if (result?.data == null) return;
-          final networkId = result!.parsedData!.deleteNetwork!.id;
+          final networkId = result!.parsedData!.deleteNetwork.id;
           final request = Options$Query$NetworkMembersTab().asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;

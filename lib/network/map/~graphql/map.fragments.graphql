@@ -28,7 +28,7 @@ fragment networkMapTab_viewer on Viewer {
         hubs {
           id
           name
-          locations(last: 1) {
+          locations {
             id
             lat
             lng

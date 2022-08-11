@@ -18,7 +18,7 @@ fragment feedCard_hub on Hub {
     isConnected
     doorRow
     doorColumn
-    events(orderBy: [{ createdAt: desc }]) {
+    events {
       id
       createdAt
       sensor {
@@ -37,7 +37,7 @@ fragment feedCardArm_hub on Hub {
 
 fragment feedCardMap_hub on Hub {
   id
-  locations(last: 2) {
+  locations {
     id
     lat
     lng

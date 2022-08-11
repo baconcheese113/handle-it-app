@@ -114,7 +114,7 @@ class _VehicleSelectModelState extends State<VehicleSelectModel> {
     return Mutation$CreateVehicle$Widget(options: WidgetOptions$Mutation$CreateVehicle(
       update: (cache, result) {
         if (result?.data == null) return;
-        final vehicle = result!.parsedData!.createVehicle!;
+        final vehicle = result!.parsedData!.createVehicle;
         final request = Options$Query$VehicleScreen(
           variables: Variables$Query$VehicleScreen(hubId: int.parse(hubId)),
         ).asRequest;

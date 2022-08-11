@@ -7,7 +7,7 @@ query networkMapDetails($hubId: Int!) {
       isMe
       email
     }
-    locations(last: 1) {
+    locations {
       id
       fixedAt
     }

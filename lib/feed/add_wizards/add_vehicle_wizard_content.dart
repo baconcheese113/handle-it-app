@@ -181,7 +181,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       options: WidgetOptions$Mutation$AddVehicleWizardContent(
         update: (cache, result) {
           if (result?.data == null) return;
-          final newHub = result!.parsedData!.updateHub!;
+          final newHub = result!.parsedData!.updateHub;
           final request = Options$Query$FeedHome().asRequest;
           final readQuery = cache.readQuery(request);
           if (readQuery == null) return;

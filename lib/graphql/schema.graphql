@@ -21,13 +21,13 @@ type Hub {
     isArmed: Boolean!
     isCharging: Boolean
     latestVersion: Int!
-    locations(after: LocationWhereUniqueInput, before: LocationWhereUniqueInput, first: Int, last: Int): [Location!]!
+    locations: [Location!]!
     name: String!
     networks: [Network!]!
     notificationOverride: NotificationOverride
     owner: User!
     ownerId: Int!
-    sensors(after: SensorWhereUniqueInput, before: SensorWhereUniqueInput, first: Int, last: Int): [Sensor!]!
+    sensors: [Sensor!]!
     serial: String!
     vehicle: Vehicle
 }
@@ -52,33 +52,33 @@ type Location {
 }
 
 type Mutation {
-    acceptNetworkMembership(networkMemberId: Int!): Network
-    createEvent(serial: String!): Event
-    createHub(imei: String!, name: String!, serial: String!): Hub
-    createLocation(age: Int!, course: Float!, hdop: Float!, lat: Float!, lng: Float!, speed: Float!): Location
-    createNetwork(name: String!): Network
-    createNetworkMember(email: String!, networkId: Int!, role: RoleType!): NetworkMember
-    createSensor(batteryLevel: Int, doorColumn: Int!, doorRow: Int!, isConnected: Boolean, isOpen: Boolean, serial: ID!): Sensor
-    createVehicle(carQueryId: String!, hubId: ID!, makeId: String!, modelBody: String!, modelName: String!, modelTrim: String!, year: Int!): Vehicle
-    declineNetworkMembership(networkMemberId: Int!): Network
-    deleteHub(id: ID!): Hub
-    deleteNetwork(networkId: Int!): Network
-    deleteNetworkMember(networkMemberId: Int!): Network
-    deleteVehicle(id: ID!): Vehicle
-    loginAsHub(imei: String!, serial: String!, userId: ID!): String
-    loginWithPassword(email: String!, fcmToken: String!, password: String!): String
-    propagateEventToNetworks(eventId: Int!): Event
-    registerWithPassword(email: String!, fcmToken: String!, firstName: String, lastName: String, password: String!): String
-    requestNetworkMembership(networkName: String!): NetworkMember
-    seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User
-    updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub
+    acceptNetworkMembership(networkMemberId: Int!): Network!
+    createEvent(serial: String!): Event!
+    createHub(imei: String!, name: String!, serial: String!): Hub!
+    createLocation(age: Int!, course: Float!, hdop: Float!, lat: Float!, lng: Float!, speed: Float!): Location!
+    createNetwork(name: String!): Network!
+    createNetworkMember(email: String!, networkId: Int!, role: RoleType!): NetworkMember!
+    createSensor(batteryLevel: Int, doorColumn: Int!, doorRow: Int!, isConnected: Boolean, isOpen: Boolean, serial: ID!): Sensor!
+    createVehicle(carQueryId: String!, hubId: ID!, makeId: String!, modelBody: String!, modelName: String!, modelTrim: String!, year: Int!): Vehicle!
+    declineNetworkMembership(networkMemberId: Int!): Network!
+    deleteHub(id: ID!): Hub!
+    deleteNetwork(networkId: Int!): Network!
+    deleteNetworkMember(networkMemberId: Int!): Network!
+    deleteVehicle(id: ID!): Vehicle!
+    loginAsHub(imei: String!, serial: String!, userId: ID!): String!
+    loginWithPassword(email: String!, fcmToken: String!, password: String!): String!
+    propagateEventToNetworks(eventId: Int!): Event!
+    registerWithPassword(email: String!, fcmToken: String!, firstName: String, lastName: String, password: String!): String!
+    requestNetworkMembership(networkName: String!): NetworkMember!
+    seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User!
+    updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub!
     "Volts should be between 0 - 1023, percent between 0 - 100"
-    updateHubBatteryLevel(percent: Float!, volts: Float!): Hub
-    updateNetworkMember(networkMemberId: Int!, role: RoleType): NetworkMember
-    updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride
-    updateSensor(id: ID!, isOpen: Boolean): Sensor
-    updateUser(defaultFullNotification: Boolean, firstName: String, lastName: String): User
-    updateVehicle(color: String, id: ID!, notes: String): Vehicle
+    updateHubBatteryLevel(percent: Float!, volts: Float!): Hub!
+    updateNetworkMember(networkMemberId: Int!, role: RoleType): NetworkMember!
+    updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride!
+    updateSensor(id: ID!, isOpen: Boolean): Sensor!
+    updateUser(defaultFullNotification: Boolean, firstName: String, lastName: String): User!
+    updateVehicle(color: String, id: ID!, notes: String): Vehicle!
 }
 
 type Network {
@@ -86,7 +86,7 @@ type Network {
     createdById: Int!
     hubs: [Hub!]!
     id: Int!
-    members(after: NetworkMemberWhereUniqueInput, before: NetworkMemberWhereUniqueInput, first: Int, last: Int): [NetworkMember!]!
+    members: [NetworkMember!]!
     name: String!
 }
 
@@ -106,7 +106,7 @@ Requested: they requested to join network.
     
 Active: accepted on both sides into network
     """
-    status: NetworkMemberStatus
+    status: NetworkMemberStatus!
     user: User!
     userId: Int!
 }
@@ -131,7 +131,7 @@ type Sensor {
     batteryLevel: Int
     doorColumn: Int!
     doorRow: Int!
-    events(after: EventWhereUniqueInput, before: EventWhereUniqueInput, first: Int, last: Int, orderBy: [SensorEventsOrderByInput!]): [Event!]!
+    events: [Event!]!
     hub: Hub!
     id: Int!
     isConnected: Boolean!
@@ -145,12 +145,12 @@ type User {
     displayName: String!
     email: String!
     firstName: String
-    hubs(after: HubWhereUniqueInput, before: HubWhereUniqueInput, first: Int, last: Int): [Hub!]!
+    hubs: [Hub!]!
     id: Int!
     isMe: Boolean!
     lastName: String
-    networkMemberships(after: NetworkMemberWhereUniqueInput, before: NetworkMemberWhereUniqueInput, first: Int, last: Int): [NetworkMember!]!
-    notificationOverrides(after: NotificationOverrideWhereUniqueInput, before: NotificationOverrideWhereUniqueInput, first: Int, last: Int): [NotificationOverride!]!
+    networkMemberships: [NetworkMember!]!
+    notificationOverrides: [NotificationOverride!]!
 }
 
 type Vehicle {
@@ -185,40 +185,5 @@ enum RoleType {
     owner
 }
 
-enum SortOrder {
-    asc
-    desc
-}
-
+"A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar."
 scalar DateTime
-
-input EventWhereUniqueInput {
-    id: Int
-}
-
-input HubWhereUniqueInput {
-    id: Int
-    imei: String
-    serial: String
-}
-
-input LocationWhereUniqueInput {
-    id: Int
-}
-
-input NetworkMemberWhereUniqueInput {
-    id: Int
-}
-
-input NotificationOverrideWhereUniqueInput {
-    id: Int
-}
-
-input SensorEventsOrderByInput {
-    createdAt: SortOrder
-}
-
-input SensorWhereUniqueInput {
-    id: Int
-    serial: String
-}

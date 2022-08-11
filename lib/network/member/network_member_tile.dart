@@ -70,7 +70,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         textColor: isMe ? Colors.black : null,
         iconColor: isMe ? Colors.black : null,
         leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
-        title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
+        title: Text("${member.user.email} - ${member.status.name} ${member.role.name}"),
         subtitle: Column(children: hubNames),
         trailing: canDelete ? getTrailing() : null,
       );
@@ -84,7 +84,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
       textColor: isMe ? Colors.black : null,
       iconColor: isMe ? Colors.black : null,
       leading: hasHubWithLocation ? const Icon(Icons.pin_drop) : null,
-      title: Text("${member.user.email} - ${member.status!.name} ${member.role.name}"),
+      title: Text("${member.user.email} - ${member.status.name} ${member.role.name}"),
       subtitle: Column(children: hubNames),
       onExpansionChanged: (isExpanded) => setState(() => _isExpanded = isExpanded),
       trailing: canDelete && _isExpanded ? getTrailing() : null,

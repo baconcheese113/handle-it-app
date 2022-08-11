@@ -20,7 +20,7 @@ class _NetworkCreateState extends State<NetworkCreate> {
     return Mutation$CreateNetwork$Widget(options: WidgetOptions$Mutation$CreateNetwork(
       update: (cache, result) {
         if (result?.data == null) return;
-        final network = result!.parsedData!.createNetwork!;
+        final network = result!.parsedData!.createNetwork;
         final request = Options$Query$NetworkMembersTab().asRequest;
         final readQuery = cache.readQuery(request);
         if (readQuery == null) return;
