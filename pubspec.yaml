@@ -24,28 +24,26 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^10.0.0
-  firebase_core: ^1.19.1
-  firebase_messaging: ^11.4.4
-  just_audio: ^0.9.27
-  shared_preferences: ^2.0.15
-  flutter_local_notifications: ^9.6.1
-  rxdart: ^0.27.4 # TODO remove usages
+  firebase_core: ^1.19.1 # Used with messaging for receiving notifications
+  firebase_messaging: ^11.4.4 # Used with core for receiving notifications
+  just_audio: ^0.9.27 # Used to play notification audio
+  shared_preferences: ^2.0.15 # Used similar to local storage on web
+  flutter_local_notifications: ^9.6.1 # Used to show full screen notifications programmatically from app
+  rxdart: ^0.27.4 # Used with notifications to get notification subject and capture taps
   email_validator: ^2.0.1
   graphql_flutter: ^5.1.1-beta.4
-  flutter_secure_storage: ^5.0.2
+  flutter_secure_storage: ^5.0.2 # Similar to shared_preferences but for storing auth token
   flutter_dotenv: ^5.0.2 # TODO replace usages with flutter_config
   timeago: ^3.2.2
   flutter_blue_plus: ^1.1.3
   http: ^0.13.4
-  version: ^3.0.2
+  version: ^3.0.2 # Used to parse sensor/hub versions
   google_maps_flutter: ^2.1.8
-  flutter_config: ^2.0.0
+  flutter_config: ^2.0.0 # flutter_dotenv but also compatible with native
   provider: ^6.0.3
-  json_annotation: ^4.6.0 # In dependencies because the generated types need it
-  intl: ^0.17.0
-  collection: ^1.16.0
+  collection: ^1.16.0 # Used for nullable array operations
   graphql: ^5.1.2-beta.4 # Used with graphql_codegen for Options types
-  vrouter: ^1.2.1
+  vrouter: ^1.2.1 # URL routing solution
 
 dev_dependencies:
   integration_test:
@@ -54,8 +52,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
   build_runner: ^2.2.0 # Used with graphql_codegen for generating Dart type files
-  json_serializable: ^6.3.1 # Used with graphql_codegen for parsing new types
-  graphql_codegen: ^0.10.3
+  graphql_codegen: ^0.11.0-beta.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
