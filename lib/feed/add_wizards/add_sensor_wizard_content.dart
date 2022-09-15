@@ -56,7 +56,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
         if (r.device.name.isEmpty) continue;
         print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-        if (r.device.name == HUB_NAME && r.device.id.id.toLowerCase() == widget.hubFrag.serial) {
+        if (r.device.name == HUB_NAME && r.device.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
           _flutterBlue.stopScan();
           setState(() => _foundHub = r.device);
           break;

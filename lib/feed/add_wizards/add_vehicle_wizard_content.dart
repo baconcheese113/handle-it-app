@@ -150,9 +150,9 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       print(">>readCharacteristic ${bytes.toString()}");
       rawHubId = String.fromCharCodes(bytes);
       print(">>rawHubId = $rawHubId");
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 2000));
       setState(() => _logText += ".");
-      if (DateTime.now().millisecondsSinceEpoch > startTime + 20000 || _foundHub == null) {
+      if (DateTime.now().millisecondsSinceEpoch > startTime + 60000 || _foundHub == null) {
         setState(() => _logText += "\nNever received a response, likely a network error");
         await Future.delayed(const Duration(seconds: 5));
         print(">>> Read timed out, resetting...");
