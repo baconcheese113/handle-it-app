@@ -1,16 +1,18 @@
 import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:handle_it/feed/updaters/~graphql/__generated__/updaters.fragments.graphql.dart';
-import 'package:http/http.dart' as http;
+import 'package:mcumgr/mcumgr.dart';
+import 'package:version/version.dart';
 
 import '../add_wizards/add_vehicle_wizard_content.dart';
 
-const String TRANSFER_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fe";
+const String SMP_SERVICE_UUID = "8d53dc1d-1db7-4cd3-868b-8a527460aa84";
+const String SMP_UPDATE_CHARACTERISTIC_UUID = "da2e7828-fbce-4e01-ae9e-261174997c48";
 const String FIRMWARE_CHARACTERISTIC_UUID = "00002A26-0000-1000-8000-00805f9b34fb";
 
 class HubUpdater extends StatefulWidget {
@@ -25,11 +27,13 @@ class HubUpdater extends StatefulWidget {
 class _HubUpdaterState extends State<HubUpdater> {
   bool _installed = false;
   double _progressPercent = -1;
-  int _hubVersion = -1;
+  Version? _hubVersion;
+  File? _update;
   int? _startTime;
-  final List<int> _firmwareBin = [];
+  Client? _client;
 
   void checkVersion() async {
+    await Future.delayed(const Duration(seconds: 2));
     print(">>> checking version");
     List<BluetoothService> services = await widget.foundHub.discoverServices();
 
@@ -38,39 +42,64 @@ class _HubUpdaterState extends State<HubUpdater> {
         hubService.characteristics.firstWhere((c) => c.uuid == Guid(FIRMWARE_CHARACTERISTIC_UUID));
 
     final bytes = await firmwareChar.read();
-    final arr = Int8List.fromList(bytes);
-    final num = ByteData.sublistView(arr);
-    final hubVersion = num.getInt32(0, Endian.little);
-    print(">>> found version: v$hubVersion");
+    final hubVersionStr = utf8.decode(bytes).replaceAll(RegExp(r'\x00'), "");
+    print(">>> hub software version string: $hubVersionStr");
+    final hubVersion = Version.parse(hubVersionStr);
+    print(">>> parsed to $hubVersion");
     setState(() => _hubVersion = hubVersion);
+  }
+
+  void _initializeClient() async {
+    print(">>> initializing client");
+    final services = await widget.foundHub.discoverServices();
+    final smpService = services.firstWhere((s) => s.uuid == Guid(SMP_SERVICE_UUID));
+    final smpChar = smpService.characteristics.firstWhere((c) => c.uuid == Guid(SMP_UPDATE_CHARACTERISTIC_UUID));
+    // Some amount of delay needed for setNotifyValue() to work
+    await Future.delayed(const Duration(milliseconds: 500));
+    final notifyVal = await smpChar.setNotifyValue(true);
+    print(">>> notifyVal is $notifyVal");
+
+    final mtu = await widget.foundHub.requestMtu(252);
+    print(">>> new mtu is $mtu");
+
+    final newClient = Client(
+      input: smpChar.onValueChangedStream.handleError((err) {
+        //  ignore errors
+      }),
+      output: (msg) => smpChar.write(msg, withoutResponse: true),
+    );
+    print(">>> newClient setup");
+    final newImageState = await newClient.readImageState(const Duration(seconds: 2));
+    print("new image state is ${newImageState.toString()}");
+    // before image sent
+    //ImageState{images: [Image{slot: 0, version: 0.0.0, hash: [228, 197, 224, etc...], bootable: true, pending: false, confirmed: true, active: true, permanent: false}, Image{slot: 1, version: 0.0.0, hash: [212, 177, 159, etc...], bootable: true, pending: false, confirmed: false, active: false, permanent: false}], splitStatus: 0}
+    // after image sent and set as pending and confirmed
+    //ImageState{images: [Image{slot: 0, version: 0.0.0, hash: [228, 197, 224, etc...], bootable: true, pending: false, confirmed: true, active: true, permanent: false}, Image{slot: 1, version: 0.0.0, hash: [212, 177, 159, etc...], bootable: true, pending: true, confirmed: false, active: false, permanent: true}], splitStatus: 0}
+
+    setState(() {
+      _client = newClient;
+    });
   }
 
   @override
   void initState() {
     checkVersion();
+    _initializeClient();
     super.initState();
   }
 
   void downloadUpdate() async {
-    final req =
-        await http.Client().send(http.Request('GET', Uri.parse("${dotenv.env['FIRMWARE_SERVER_URL']}/update-v2.bin")));
-    int total = req.contentLength ?? 0;
-    print("ContentLength is $total");
-    req.stream.listen((newBytes) {
-      _firmwareBin.addAll(newBytes);
-      int received = _firmwareBin.length;
-      print('newBytes length is ${newBytes.length} and we\'ve received $received so far');
-      setState(() => _progressPercent = received / total);
-    }).onDone(() {
-      print('stream complete');
-      setState(() => _progressPercent = -1);
+    // the downloads are so quick (<1MB) that it's not worth setting an actual value
+    setState(() => _progressPercent = .5);
+    final file = await DefaultCacheManager().getSingleFile("${dotenv.env['FIRMWARE_SERVER_URL']}/hub-0-1-1.bin");
+    setState(() {
+      _update = file;
+      _progressPercent = -1;
     });
   }
 
   void installUpdate() async {
-    late BluetoothDeviceState deviceState;
     final stateStreamSub = widget.foundHub.state.listen((state) {
-      deviceState = state;
       print(">>> New connection state is: $state");
     });
 
@@ -78,76 +107,52 @@ class _HubUpdaterState extends State<HubUpdater> {
       _progressPercent = 0;
       _startTime = DateTime.now().microsecondsSinceEpoch;
     });
-    print(">>> discoveringservices");
-    List<BluetoothService> services = await widget.foundHub.discoverServices();
 
-    BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
-    BluetoothCharacteristic commandChar =
-        hubService.characteristics.firstWhere((c) => c.uuid == Guid(COMMAND_CHARACTERISTIC_UUID));
-    BluetoothCharacteristic transferChar =
-        hubService.characteristics.firstWhere((c) => c.uuid == Guid(TRANSFER_CHARACTERISTIC_UUID));
-    // clear out any left over artifacts
-    await transferChar.write([]);
+    final content = await _update!.readAsBytes();
+    final image = McuImage.decode(content);
 
-    String command = "StartHubUpdate:${_firmwareBin.length}";
-    List<int> bytes = utf8.encode(command);
-    print(">>> writing characteristic with value $command");
-    Uint8List hubUpdateCharValue = Uint8List.fromList(bytes);
-    await commandChar.write(hubUpdateCharValue);
-
-    int lastChunkEnd = 0;
-    int chunkSize = 250;
-
-    while (deviceState == BluetoothDeviceState.connected) {
-      List<int> bytes = await transferChar.read();
-      print(">>readCharacteristic ${bytes.toString()}");
-      if (bytes.length > 2) continue;
-      int end = min(lastChunkEnd + chunkSize, _firmwareBin.length);
-      List<int> bytesToWrite = _firmwareBin.getRange(lastChunkEnd, end).toList();
-      print(">>> writing bytes: $bytesToWrite");
-      await transferChar.write(bytesToWrite);
-      setState(() => _progressPercent = lastChunkEnd / _firmwareBin.length);
-      print(">>> _progressPercent is: $_progressPercent");
-      lastChunkEnd = end;
-      if (end >= _firmwareBin.length - 1) break;
+    try {
+      await _client!.uploadImage(
+        0,
+        content,
+        image.hash,
+        const Duration(seconds: 30),
+        onProgress: (count) {
+          print(">>> progress $count of ${content.length}");
+          setState(() => _progressPercent = count.toDouble() / content.length);
+        },
+      );
+    } catch (err) {
+      print(">>> Error: $err");
+    } finally {
+      print(">>> DFU complete");
     }
 
-    if (lastChunkEnd < _firmwareBin.length) {
-      print(">>> transfer timed out");
-      setState(() {
-        _progressPercent = -1;
-        _startTime = null;
-      });
-      stateStreamSub.cancel();
-      return;
-    }
+    const timeout = Duration(seconds: 10);
+    final newPendingState = await _client!.setPendingImage(image.hash, true, timeout);
+    print(">>> newPendingState set ${newPendingState.toString()}, now resetting");
+    // ImageState{images: [Image{slot: 0, version: 0.0.0, hash: [143, 252, 237, 139, 193, 30, 150, 213, 126, 228, 234, 22, 1, 229, 217, 93, 91, 211, 111, 145, 40, 94, 27, 207, 2, 88, 84, 30, 41, 228, 197, 224], bootable: true, pending: false, confirmed: true, active: true, permanent: false}, Image{slot: 1, version: 0.0.0, hash: [139, 73, 99, 110, 15, 155, 119, 219, 123, 133, 46, 87, 50, 182, 125, 116, 111, 57, 41, 182, 52, 111, 163, 57, 246, 157, 215, 61, 13, 212, 177, 159], bootable: true, pending: true, confirmed: false, active: false, permanent: true}], splitStatus: 0}
+    await _client!.reset(timeout);
+    print(">>> reset sent");
 
-    String hubUpdateEndResponse = "";
-    while (hubUpdateEndResponse.length < 13 || hubUpdateEndResponse.substring(0, 12) != "HubUpdateEnd") {
-      List<int> bytes = await commandChar.read();
-      print(">>readCharacteristic ${bytes.toString()}");
-      hubUpdateEndResponse = String.fromCharCodes(bytes);
-      print(">>hubUpdateEndResponse = $hubUpdateEndResponse");
-    }
-    int hubUpdateEndResult = int.parse(hubUpdateEndResponse.substring(13));
     stateStreamSub.cancel();
-
+    await DefaultCacheManager().emptyCache();
     setState(() {
       _installed = true;
-      _hubVersion = hubUpdateEndResult;
+      _update = null;
       _startTime = null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_hubVersion < 0) return const SizedBox();
-    if (_installed || _hubVersion >= widget.hubFrag.latestVersion) return Text("Current version: v$_hubVersion");
+    if (_hubVersion == null) return const SizedBox();
+    final hubVersionCurrent = _hubVersion!.compareTo(Version.parse(widget.hubFrag.latestVersion)) >= 0;
+    if (_installed || hubVersionCurrent) return Text("Current version: v$_hubVersion");
     if (_startTime != null && _progressPercent.isFinite && _progressPercent > 0.0) {
       final microsecondsElapsed = DateTime.now().microsecondsSinceEpoch - _startTime!;
       final totalEstMicroseconds = microsecondsElapsed / _progressPercent;
       final timeRemaining = Duration(microseconds: (totalEstMicroseconds - microsecondsElapsed).round());
-      print(">>> $microsecondsElapsed microseconds elapsed, $totalEstMicroseconds total est microseconds");
       return Column(
         children: [
           LinearProgressIndicator(value: _progressPercent),
@@ -157,7 +162,7 @@ class _HubUpdaterState extends State<HubUpdater> {
       );
     }
     if (_progressPercent > -1) return LinearProgressIndicator(value: _progressPercent);
-    if (_firmwareBin.isNotEmpty) return TextButton(onPressed: installUpdate, child: const Text("Install"));
+    if (_update != null) return TextButton(onPressed: installUpdate, child: const Text("Install"));
     return TextButton(onPressed: downloadUpdate, child: const Text("Download update"));
   }
 }

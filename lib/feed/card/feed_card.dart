@@ -41,7 +41,7 @@ class _FeedCardState extends State<FeedCard> {
     await for (final r
         in _flutterBlue.scan(withServices: [Guid(HUB_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-      if (r.device.id.id.toLowerCase() == widget.hubFrag.serial) {
+      if (r.device.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
         _flutterBlue.stopScan();
         setState(() => _foundHub = r.device);
         break;

@@ -88,7 +88,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       return;
     }
 
-    final hubIds = widget.userFrag.hubs.map((h) => h.serial).toSet();
+    final hubIds = widget.userFrag.hubs.map((h) => h.serial.toLowerCase()).toSet();
     print("Ignoring hubIds: $hubIds");
 
     setState(() => _scanning = true);

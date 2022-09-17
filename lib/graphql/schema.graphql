@@ -20,7 +20,7 @@ type Hub {
     id: Int!
     isArmed: Boolean!
     isCharging: Boolean
-    latestVersion: Int!
+    latestVersion: String!
     locations: [Location!]!
     name: String!
     networks: [Network!]!
