@@ -3,15 +3,20 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:handle_it/main.dart' as app;
 import 'package:integration_test/integration_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils.dart';
 
-void main() async {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  const storage = FlutterSecureStorage();
-  await storage.deleteAll();
-
+void authTests() {
   group('auth test', () {
+    setUpAll(() async {
+      IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+      const storage = FlutterSecureStorage();
+      await storage.deleteAll();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+    });
+
     testWidgets("Should register", (widgetTester) async {
       app.main();
       final tokenFinder = find.text("Checking for token...");

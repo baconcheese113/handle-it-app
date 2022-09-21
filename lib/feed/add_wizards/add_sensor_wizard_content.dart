@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -42,7 +41,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
               setState(() => _foundHub = d);
               return true;
             }
-            if(d.name.isNotEmpty) print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
+            if (d.name.isNotEmpty) print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
             return false;
           });
       await _foundHub?.connect(timeout: const Duration(seconds: 10));
@@ -84,10 +83,8 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     }
 
     String command = "StartSensorSearch:1";
-    List<int> bytes = utf8.encode(command);
     print(">>> writing characteristic with value $command");
-    Uint8List sensorSearchCharValue = Uint8List.fromList(bytes);
-    await commandChar.write(sensorSearchCharValue);
+    await commandChar.write(utf8.encode(command));
     setState(() => _commandChar = commandChar);
 
     String rawSensorId = "";
@@ -128,10 +125,8 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       print(">>Adding sensor id $_sensorSerial as a $leftOrRight/$frontOrRear door sensor");
 
       String command = "SensorConnect:1";
-      List<int> bytes = utf8.encode(command);
       print(">>> writing characteristic with value $command");
-      Uint8List sensorConnectCharValue = Uint8List.fromList(bytes);
-      await _commandChar!.write(sensorConnectCharValue);
+      await _commandChar!.write(utf8.encode(command));
 
       String sensorAddedResponse = "";
       while (sensorAddedResponse.length < 12 || sensorAddedResponse.substring(0, 11) != "SensorAdded") {

@@ -17,40 +17,53 @@ const String SMP_UPDATE_CHARACTERISTIC_UUID = "da2e7828-fbce-4e01-ae9e-261174997
 class BleProvider extends ChangeNotifier {
   final _flutterBlue = FlutterBluePlus.instance;
   bool scanning = false;
-  bool hasPermissions = false;
+  bool _hasPermissions = false;
+  bool _isDisposed = false;
 
-  Future<void> checkBlePermissions() async {
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (_isDisposed) return;
+    super.notifyListeners();
+  }
+
+  Future<void> _checkBlePermissions() async {
     if (Platform.isAndroid) {
       if (!await hasPermission(Permission.location) ||
           !await hasPermission(Permission.bluetoothScan) ||
           !await hasPermission(Permission.bluetoothConnect)) {
-        hasPermissions = false;
+        _hasPermissions = false;
         notifyListeners();
         return;
       }
     }
-    hasPermissions = true;
+    _hasPermissions = true;
     notifyListeners();
   }
 
-  Future<bool> requestBlePermissions() async {
+  Future<bool> _requestBlePermissions() async {
     if (Platform.isAndroid) {
       if (!await requestPermission(Permission.location) ||
           !await requestPermission(Permission.bluetoothScan) ||
           !await requestPermission(Permission.bluetoothConnect)) {
-        hasPermissions = false;
+        _hasPermissions = false;
         notifyListeners();
         return false;
       }
     }
-    hasPermissions = true;
+    _hasPermissions = true;
     notifyListeners();
     return true;
   }
 
   /// Returns true if Ble turned on and permissions granted
   Future<bool> tryTurnOnBle() async {
-    if (!await requestBlePermissions()) return false;
+    if (!await _requestBlePermissions()) return false;
     if (!await _flutterBlue.isOn) {
       print("about to turn on bluetooth");
       bool isNowOn = await _flutterBlue.turnOn();

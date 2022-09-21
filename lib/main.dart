@@ -47,7 +47,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("showed notification");
 }
 
-void main() async {
+void main({BleProvider? bleProvider}) async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -81,5 +81,6 @@ void main() async {
     initialRoute: initialRoute,
     selectNotificationSubject: selectNotificationSubject,
     eventId: launchDetails?.payload,
+    bleProvider: bleProvider,
   ));
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:handle_it/main.dart' as app;
@@ -8,23 +9,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'utils.dart';
 
-void main() async {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  const storage = FlutterSecureStorage();
-  await storage.deleteAll();
-  final prefs = await SharedPreferences.getInstance();
-  prefs.setBool(introTutPrefKey, true);
+void networkTests() {
+  group('network_test', () {
+    setUpAll(() async {
+      IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+      const storage = FlutterSecureStorage();
+      await storage.deleteAll();
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setBool(introTutPrefKey, true);
+    });
 
-  group('feed_test', () {
-    testWidgets('Creates a new hub', (widgetTester) async {
+    testWidgets('Creates/deletes network and adds members', (widgetTester) async {
       app.main();
       await login(widgetTester);
 
+      const MethodChannel('plugins.flutter.io/google_maps_0').setMockMethodCallHandler((MethodCall methodCall) async {
+        if (methodCall.method == 'map#waitForMap') {
+          return null;
+        }
+        return null;
+      });
       await Future.delayed(const Duration(seconds: 3));
-
-      final fabFinder = find.byKey(const ValueKey('fab'));
-      await pumpUntilFound(widgetTester, fabFinder);
-      expect(fabFinder, findsOneWidget);
 
       final networkFinder = find.byKey(const ValueKey('navIcon.network'));
       await pumpUntilFound(widgetTester, networkFinder);

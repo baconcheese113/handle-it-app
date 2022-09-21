@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -106,11 +105,8 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     setState(() => _logText += "Discovered all services\nWriting characteristic with userId...\n");
 
     String command = "UserId:${widget.userFrag.id}";
-    List<int> bytes = utf8.encode(command);
     print(">>> writing characteristic with value $command");
-    // TODO is this required??
-    Uint8List userIdCharValue = Uint8List.fromList(bytes);
-    await commandChar.write(userIdCharValue);
+    await commandChar.write(utf8.encode(command));
 
     setState(() => _logText += "Wrote characteristic\nListening for response...");
     print(">>Starting rawHubId parse loop");
@@ -192,7 +188,10 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                           if (_curDevice != null) Text("...found ${_curDevice!.name}"),
                           if (_bleProvider.scanning && _logText.isEmpty) const CircularProgressIndicator(),
                           if (!_bleProvider.scanning && _logText.isEmpty)
-                            TextButton(onPressed: _findNewHub, child: const Text("Start scanning")),
+                            TextButton(
+                                key: const ValueKey("button.startScan"),
+                                onPressed: _findNewHub,
+                                child: const Text("Start scanning")),
                           if (_logText.isNotEmpty) Text(_logText),
                         ])))),
                 Row(mainAxisSize: MainAxisSize.max, children: [

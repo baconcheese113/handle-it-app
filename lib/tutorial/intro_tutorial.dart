@@ -89,7 +89,7 @@ class _IntroTutorialState extends State<IntroTutorial> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(50),
+                  padding: const EdgeInsets.all(30),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,

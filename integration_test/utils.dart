@@ -6,10 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 Future<void> pumpUntilFound(
   WidgetTester tester,
   Finder finder, {
-  Duration timeout = const Duration(seconds: 30),
+  Duration timeout = const Duration(seconds: 10),
 }) async {
   bool timerDone = false;
-  final timer = Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
+  final timer = Timer(timeout, () => timerDone = true);
   while (timerDone != true) {
     await tester.pump();
 
@@ -42,4 +42,16 @@ Future<void> login(WidgetTester widgetTester) async {
 
   final fabFinder = find.byKey(const ValueKey('fab'));
   expect(fabFinder, findsOneWidget);
+}
+
+// Useful for waiting for mock BLE delays
+Future<void> tapAndWaitMs(
+  WidgetTester widgetTester,
+  Finder finder,
+  int milliseconds,
+) async {
+  await widgetTester.tap(finder);
+  await widgetTester.pumpAndSettle();
+  await Future.delayed(Duration(milliseconds: milliseconds));
+  await widgetTester.pumpAndSettle();
 }
