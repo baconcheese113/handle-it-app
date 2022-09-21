@@ -6,8 +6,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:handle_it/common/ble_provider.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:version/version.dart';
 
 const String SPOTA_SERVICE_UUID = "0000fef5-0000-1000-8000-00805f9b34fb";
@@ -40,11 +42,10 @@ class SensorUpdater extends StatefulWidget {
 }
 
 class _SensorUpdaterState extends State<SensorUpdater> {
-  bool _scanning = false;
-  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   BluetoothDevice? _foundSensor;
   BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
   StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
+  late BleProvider _bleProvider;
   double _progressPercent = -1;
   Version? _sensorVersion;
   final List<int> _firmwareBin = [];
@@ -54,48 +55,50 @@ class _SensorUpdaterState extends State<SensorUpdater> {
   int _batteryVolts = -1;
 
   void autoConnect() async {
-    await _flutterBlue.stopScan();
-    setState(() => _scanning = true);
-    print("bluetooth state is now POWERED_ON, starting sensor scan");
-    await for (final r
-        in _flutterBlue.scan(withServices: [Guid(VOLTS_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
-      print("Scanned sensor ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-      _flutterBlue.stopScan();
-      setState(() => _foundSensor = r.device);
-      break;
-    }
-    if (mounted) setState(() => _scanning = false);
-    if (_foundSensor == null) {
-      print("no devices found and scan stopped");
-      return;
-    }
-
-    _stateStreamSub = _foundSensor!.state.listen((state) {
+    await _bleProvider.scan(
+      services: [Guid(VOLTS_SERVICE_UUID)],
+      timeout: const Duration(seconds: 10),
+      onScanResult: (d) {
+        print("Scanned sensor ${d.name}, MAC ${d.id.id}");
+        setState(() => _foundSensor = d);
+        return true;
+      },
+    );
+    _stateStreamSub = _foundSensor?.state.listen((state) {
       setState(() => _deviceState = state);
       print(">>> New sensor connection state is: $state");
     });
+    await _foundSensor?.connect(timeout: const Duration(seconds: 10));
+    if (_foundSensor == null) {
+      print("no devices connected and scan stopped");
+      return;
+    }
 
-    print(">>> sensor connecting");
-    await _foundSensor!.connect();
-    print(">>> sensor connecting finished");
-
-    final services = await _foundSensor!.discoverServices();
-    final deviceInfoService = services.firstWhere((s) => s.uuid == Guid(ORG_BLUETOOTH_SERVICE_DEVICE_INFORMATION));
-    final sensorVerChar = deviceInfoService.characteristics
-        .firstWhere((c) => c.uuid == Guid(ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING));
-    List<int> sensorVerBytes = await sensorVerChar.read();
+    final sensorVerChar = await _bleProvider.getChar(
+      _foundSensor!,
+      ORG_BLUETOOTH_SERVICE_DEVICE_INFORMATION,
+      ORG_BLUETOOTH_CHARACTERISTIC_SOFTWARE_REVISION_STRING,
+    );
+    List<int> sensorVerBytes = await sensorVerChar!.read();
     final sensorVersionStr = utf8.decode(sensorVerBytes).replaceAll(RegExp(r'\x00'), "");
     print(">>> sensor software version string: $sensorVersionStr");
     final sensorVersion = Version.parse(sensorVersionStr);
     print(">>> parsed to $sensorVersion");
 
     if (sensorVersion >= '0.1.1') {
-      final battService = services.firstWhere((s) => s.uuid == Guid(BATTERY_SERVICE_UUID));
-      final battLevelChar = battService.characteristics.firstWhere((c) => c.uuid == Guid(BATTERY_LEVEL_UUID));
-      final battVoltsChar = battService.characteristics.firstWhere((c) => c.uuid == Guid(BATTERY_VOLTS_UUID));
-      List<int> battLevelBytes = await battLevelChar.read();
+      final battLevelChar = await _bleProvider.getChar(
+        _foundSensor!,
+        BATTERY_SERVICE_UUID,
+        BATTERY_LEVEL_UUID,
+      );
+      final battVoltsChar = await _bleProvider.getChar(
+        _foundSensor!,
+        BATTERY_SERVICE_UUID,
+        BATTERY_VOLTS_UUID,
+      );
+      List<int> battLevelBytes = await battLevelChar!.read();
       print(">>> battery level is ${battLevelBytes[0]}");
-      List<int> battVoltsBytes = await battVoltsChar.read();
+      List<int> battVoltsBytes = await battVoltsChar!.read();
       final voltsByteData = ByteData.sublistView(Int8List.fromList(battVoltsBytes));
       final battVolts = voltsByteData.getInt16(0, Endian.big);
       print(">>> battery volts are $battVolts");
@@ -167,18 +170,15 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     final totalBlocks = (_firmwareBin.length / blockSize).ceil();
 
     setState(() => _progressPercent = 0);
-    print(">>> discoveringservices");
-    final services = await _foundSensor!.discoverServices();
 
-    final suotaService = services.firstWhere((s) => s.uuid == Guid(SPOTA_SERVICE_UUID));
-    final servStatusChar = suotaService.characteristics.firstWhere((c) => c.uuid == Guid(SPOTA_SERV_STATUS_UUID));
-    final memDevChar = suotaService.characteristics.firstWhere((c) => c.uuid == Guid(SPOTA_MEM_DEV_UUID));
-    final gpioMapChar = suotaService.characteristics.firstWhere((c) => c.uuid == Guid(SPOTA_GPIO_MAP_UUID));
-    final patchLenChar = suotaService.characteristics.firstWhere((c) => c.uuid == Guid(SPOTA_PATCH_LEN_UUID));
-    final patchDataChar = suotaService.characteristics.firstWhere((c) => c.uuid == Guid(SPOTA_PATCH_DATA_UUID));
+    final servStatusChar = await _bleProvider.getChar(_foundSensor!, SPOTA_SERVICE_UUID, SPOTA_SERV_STATUS_UUID);
+    final memDevChar = await _bleProvider.getChar(_foundSensor!, SPOTA_SERVICE_UUID, SPOTA_MEM_DEV_UUID);
+    final gpioMapChar = await _bleProvider.getChar(_foundSensor!, SPOTA_SERVICE_UUID, SPOTA_GPIO_MAP_UUID);
+    final patchLenChar = await _bleProvider.getChar(_foundSensor!, SPOTA_SERVICE_UUID, SPOTA_PATCH_LEN_UUID);
+    final patchDataChar = await _bleProvider.getChar(_foundSensor!, SPOTA_SERVICE_UUID, SPOTA_PATCH_DATA_UUID);
     print(">>> Finished finding chars");
 
-    await servStatusChar.setNotifyValue(true);
+    await servStatusChar!.setNotifyValue(true);
     print(">>> setNotifyValue to true");
     int servStatus = -1;
     final servStatusStream = servStatusChar.onValueChangedStream.listen((value) {
@@ -187,7 +187,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     });
 
     print(">>> Writing SPOTA_MEM_DEV = 'External SPI' (0x13000000)");
-    await memDevChar.write([0x00, 0x00, 0x00, 0x13]);
+    await memDevChar!.write([0x00, 0x00, 0x00, 0x13]);
 
     // Wait for IMG_STARTED (0x10) from SPOTA_SERV_STATUS
     while (servStatus == -1) {
@@ -203,10 +203,10 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     await Future.delayed(const Duration(milliseconds: 200));
 
     print(">>> Writing SPOTA_GPIO_MAP = 0x03000104");
-    await gpioMapChar.write([0x04, 0x01, 0x00, 0x03]);
+    await gpioMapChar!.write([0x04, 0x01, 0x00, 0x03]);
 
     print(">>> Writing SPOTA_PATCH_LEN = 244");
-    await patchLenChar.write([0xf4, 0x00]);
+    await patchLenChar!.write([0xf4, 0x00]);
 
     int lastBlockSize = _firmwareBin.length % blockSize;
     if (lastBlockSize == 0) lastBlockSize = blockSize;
@@ -227,7 +227,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       final currentEnd = min(currentPos + blockSize, _firmwareBin.length);
       final bytesToWrite = _firmwareBin.getRange(currentPos, currentEnd).toList();
       print("Writing block ${currentBlock + 1} of $totalBlocks. Block size is ${bytesToWrite.length}");
-      await patchDataChar.write(bytesToWrite, withoutResponse: true);
+      await patchDataChar!.write(bytesToWrite, withoutResponse: true);
       currentBlock++;
       servStatus = -1;
       setState(() => _progressPercent = currentBlock / totalBlocks);
@@ -275,7 +275,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
 
   void resetState(bool updateState) {
     _foundSensor?.disconnect();
-    _flutterBlue.stopScan();
+    _bleProvider.stopScan();
     _stateStreamSub?.cancel();
     _firmwareBin.clear();
     if (!updateState) return;
@@ -284,7 +284,6 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       _foundSensor = null;
       _sensorVersion = null;
       _deviceState = BluetoothDeviceState.disconnected;
-      _scanning = false;
       _batteryVolts = -1;
       _batteryLevel = -1;
     });
@@ -307,9 +306,10 @@ class _SensorUpdaterState extends State<SensorUpdater> {
 
   @override
   Widget build(BuildContext context) {
+    _bleProvider = Provider.of<BleProvider>(context, listen: true);
     final isConnected = _deviceState == BluetoothDeviceState.connected;
     final bluetoothIconColor = () {
-      if (!_scanning && _foundSensor == null) return Colors.grey;
+      if (!_bleProvider.scanning && _foundSensor == null) return Colors.grey;
       if (isConnected) return Colors.green;
       return Colors.amber;
     }();

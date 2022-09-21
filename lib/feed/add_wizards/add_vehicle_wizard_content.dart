@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -8,13 +7,10 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_vehicle_wizard_content.mutation.graphql.dart';
 import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_wizards.fragments.graphql.dart';
 import 'package:handle_it/feed/~graphql/__generated__/feed_home.query.graphql.dart';
-import 'package:handle_it/utils.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:vrouter/vrouter.dart';
 
-const String HUB_NAME = "HandleIt Hub";
-const String HUB_SERVICE_UUID = "0000181a-0000-1000-8000-00805f9b34fc";
-const String COMMAND_CHARACTERISTIC_UUID = "00002A58-0000-1000-8000-00805f9b34fd";
+import '../../common/ble_provider.dart';
 
 class AddVehicleWizardContent extends StatefulWidget {
   final Fragment$addVehicleWizardContent_user userFrag;
@@ -37,12 +33,10 @@ class AddVehicleWizardContent extends StatefulWidget {
 class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   PageController? _formsPageViewController;
   List? _forms;
-  bool _scanning = false;
   String _logText = "";
-  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   BluetoothDevice? _foundHub;
   BluetoothDevice? _curDevice;
-  BluetoothCharacteristic? _commandChar;
+  late BleProvider _bleProvider;
 
   String _hubCustomName = "";
 
@@ -59,83 +53,62 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   }
 
   Future<void> _resetConn() async {
-    if (_foundHub != null) await _commandChar?.write([]);
     await _foundHub?.disconnect();
-    if (_scanning) await _flutterBlue.stopScan();
+    if (_bleProvider.scanning) await _bleProvider.stopScan();
     setState(() {
       _logText = "";
-      _scanning = false;
       _foundHub = null;
       _curDevice = null;
     });
   }
 
-  // TODO prevent hub from connecting to sensors before wizard
-  // TODO wizard for adding sensors to hub
-  Future<void> _findHub() async {
-    if (Platform.isAndroid) {
-      if (!await requestPermission(Permission.location) ||
-          // !await requestPermission(Permission.bluetooth) ||
-          !await requestPermission(Permission.bluetoothScan) ||
-          !await requestPermission(Permission.bluetoothConnect)) {
-        setState(() => _scanning = false);
-        return;
-      }
-    }
-
-    if (!await tryPowerOnBLE()) {
-      _resetConn();
-      return;
-    }
+  Future<void> _findNewHub() async {
+    if (!await _bleProvider.tryTurnOnBle()) return _resetConn();
 
     final hubIds = widget.userFrag.hubs.map((h) => h.serial.toLowerCase()).toSet();
     print("Ignoring hubIds: $hubIds");
 
-    setState(() => _scanning = true);
-    print("bluetooth state is now POWERED_ON, starting peripheral scan");
-    await for (final r in _flutterBlue.scan(timeout: const Duration(seconds: 10))) {
-      if (r.device.name.isEmpty) continue;
-      setState(() => _curDevice = r.device);
-      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-      if (r.device.name == HUB_NAME && !hubIds.contains(r.device.id.id.toLowerCase())) {
-        setState(() => _foundHub = r.device);
-        _flutterBlue.stopScan();
-        break;
-      }
-    }
-    if (_foundHub == null) {
-      print("no new devices found and scan stopped");
-      await _resetConn();
-      return;
-    }
+    await _bleProvider.scan(
+      timeout: const Duration(seconds: 10),
+      onScanResult: (d) {
+        if (d.name.isEmpty) return false;
+        setState(() => _curDevice = d);
+        print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
+        if (d.name == HUB_NAME && !hubIds.contains(d.id.id.toLowerCase())) {
+          setState(() => _foundHub = d);
+          return true;
+        }
+        return false;
+      },
+    );
 
-    print(">>> connecting");
-    await _foundHub!.connect();
+    await _foundHub?.connect(timeout: const Duration(seconds: 10));
+    final isConnected = (await _foundHub?.state.last) == BluetoothDeviceState.connected;
+    if (!isConnected) {
+      print("no new devices connected and scan stopped");
+      return _resetConn();
+    }
     print(">>> Device fully connected");
-    _flutterBlue.stopScan();
     setState(() {
       _logText += "Connected to ${_foundHub!.name}\nDiscovering services...\n";
-      _scanning = false;
     });
-    print(">>> discoveringservices");
 
-    List<BluetoothService> services = await _foundHub!.discoverServices();
-    BluetoothService hubService = services.firstWhere((s) => s.uuid == Guid(HUB_SERVICE_UUID));
-    BluetoothCharacteristic commandChar =
-        hubService.characteristics.firstWhere((c) => c.uuid == Guid(COMMAND_CHARACTERISTIC_UUID));
-    setState(() => _logText += "Discovered all services\nClearing out transaction characteristic...\n");
-    print(">>> clearing out commandChar");
-    // clears out commandChar before starting, just in case we had to restart
-    await commandChar.write([]);
+    final commandChar = await _bleProvider.getChar(
+      _foundHub!,
+      HUB_SERVICE_UUID,
+      COMMAND_CHARACTERISTIC_UUID,
+    );
+    if (commandChar == null) {
+      print(">>> commandChar not found");
+      return _resetConn();
+    }
 
-    setState(() {
-      _logText += "Cleared out characteristic\nWriting characteristic with userId...\n";
-      _commandChar = commandChar;
-    });
+    setState(() => _logText += "Discovered all services\nWriting characteristic with userId...\n");
 
     String command = "UserId:${widget.userFrag.id}";
     List<int> bytes = utf8.encode(command);
     print(">>> writing characteristic with value $command");
+    // TODO is this required??
     Uint8List userIdCharValue = Uint8List.fromList(bytes);
     await commandChar.write(userIdCharValue);
 
@@ -156,8 +129,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
         setState(() => _logText += "\nNever received a response, likely a network error");
         await Future.delayed(const Duration(seconds: 5));
         print(">>> Read timed out, resetting...");
-        await _resetConn();
-        return;
+        return _resetConn();
       }
     }
 
@@ -171,6 +143,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
 
   @override
   Widget build(BuildContext context) {
+    _bleProvider = Provider.of<BleProvider>(context, listen: true);
     Future<bool> cancelForm() async {
       _resetConn();
       context.vRouter.pop();
@@ -217,9 +190,9 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                             textScaleFactor: 1.3,
                           ),
                           if (_curDevice != null) Text("...found ${_curDevice!.name}"),
-                          if (_scanning && _logText.isEmpty) const CircularProgressIndicator(),
-                          if (!_scanning && _logText.isEmpty)
-                            TextButton(onPressed: _findHub, child: const Text("Start scanning")),
+                          if (_bleProvider.scanning && _logText.isEmpty) const CircularProgressIndicator(),
+                          if (!_bleProvider.scanning && _logText.isEmpty)
+                            TextButton(onPressed: _findNewHub, child: const Text("Start scanning")),
                           if (_logText.isNotEmpty) Text(_logText),
                         ])))),
                 Row(mainAxisSize: MainAxisSize.max, children: [

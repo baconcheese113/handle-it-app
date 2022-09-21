@@ -8,9 +8,10 @@ import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:handle_it/feed/updaters/hub_updater.dart';
 import 'package:handle_it/feed/vehicle/vehicle_select_color.dart';
 import 'package:handle_it/utils.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../add_wizards/add_vehicle_wizard_content.dart';
+import '../../common/ble_provider.dart';
 import '../updaters/sensor_updater.dart';
 import 'feed_card_arm.dart';
 import 'feed_card_map.dart';
@@ -27,44 +28,44 @@ class FeedCard extends StatefulWidget {
 }
 
 class _FeedCardState extends State<FeedCard> {
-  bool _scanning = false;
-  final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   BluetoothDevice? _foundHub;
   BluetoothDeviceState _deviceState = BluetoothDeviceState.disconnected;
   StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
   int _batteryLevel = -1;
+  late BleProvider _bleProvider;
 
   void autoConnect() async {
-    await _flutterBlue.stopScan();
-    setState(() => _scanning = true);
-    print("bluetooth state is now POWERED_ON, starting peripheral scan");
-    await for (final r
-        in _flutterBlue.scan(withServices: [Guid(HUB_SERVICE_UUID)], timeout: const Duration(seconds: 10))) {
-      print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-      if (r.device.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
-        _flutterBlue.stopScan();
-        setState(() => _foundHub = r.device);
-        break;
-      }
-    }
-    if (mounted) setState(() => _scanning = false);
-    if (_foundHub == null) {
-      print("no devices found and scan stopped");
-      return;
-    }
-
-    _stateStreamSub = _foundHub!.state.listen((state) {
+    await _bleProvider.scan(
+        services: [Guid(HUB_SERVICE_UUID)],
+        timeout: const Duration(seconds: 10),
+        onScanResult: (d) {
+          print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
+          if (d.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
+            setState(() => _foundHub = d);
+            return true;
+          }
+          return false;
+        });
+    _stateStreamSub = _foundHub?.state.listen((state) {
       setState(() => _deviceState = state);
       print(">>> New connection state is: $state");
     });
+    await _foundHub?.connect(timeout: const Duration(seconds: 10));
 
-    print(">>> connecting");
-    await _foundHub!.connect();
-    print(">>> connecting finished");
+    if (_foundHub == null) {
+      print("no devices connected and scan stopped");
+      return;
+    }
 
-    final services = await _foundHub!.discoverServices();
-    final battService = services.firstWhere((s) => s.uuid == Guid(BATTERY_SERVICE_UUID));
-    final battLevelChar = battService.characteristics.firstWhere((c) => c.uuid == Guid(BATTERY_LEVEL_UUID));
+    final battLevelChar = await _bleProvider.getChar(
+      _foundHub!,
+      BATTERY_SERVICE_UUID,
+      BATTERY_LEVEL_UUID,
+    );
+    if (battLevelChar == null) {
+      print(">>> commandChar not found");
+      return;
+    }
     List<int> battLevelBytes = await battLevelChar.read();
     print(">>> battery level is ${battLevelBytes[0]}");
     setState(() => _batteryLevel = battLevelBytes[0]);
@@ -79,15 +80,16 @@ class _FeedCardState extends State<FeedCard> {
   @override
   void dispose() {
     _foundHub?.disconnect();
-    _flutterBlue.stopScan();
+    _bleProvider.stopScan();
     _stateStreamSub?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    _bleProvider = Provider.of<BleProvider>(context, listen: true);
     final bluetoothIconColor = () {
-      if (!_scanning && _deviceState == BluetoothDeviceState.disconnected) return Colors.grey;
+      if (!_bleProvider.scanning && _deviceState == BluetoothDeviceState.disconnected) return Colors.grey;
       if (_deviceState == BluetoothDeviceState.connected) return Colors.green;
       return Colors.amber;
     }();

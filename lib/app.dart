@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/auth/register.dart';
+import 'package:handle_it/common/ble_provider.dart';
 import 'package:handle_it/feed/add_wizards/add_sensor_wizard.dart';
 import 'package:handle_it/feed/vehicle/vehicle_screen.dart';
 import 'package:handle_it/feed/vehicle/vehicle_select_color.dart';
@@ -11,6 +12,7 @@ import 'package:handle_it/feed/vehicle/vehicle_select_model.dart';
 import 'package:handle_it/home.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:handle_it/utils.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:vrouter/vrouter.dart';
 
@@ -49,7 +51,14 @@ class App extends StatefulWidget {
   final String initialRoute;
   final BehaviorSubject<String>? selectNotificationSubject;
   final String? eventId;
-  App({Key? key, required this.initialRoute, this.selectNotificationSubject, this.eventId}) : super(key: key);
+  final BleProvider? bleProvider;
+  App({
+    Key? key,
+    required this.initialRoute,
+    this.selectNotificationSubject,
+    this.eventId,
+    this.bleProvider,
+  }) : super(key: key);
 
   final GlobalKey<NavigatorState> _navigator = GlobalKey<NavigatorState>();
 
@@ -60,16 +69,20 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   bool isLoading = true;
   AuthenticationState authenticationState = AuthenticationState();
+  late BleProvider _bleProvider;
 
   void listenForAuthStateChanges() {
     print(
         "authenticationState listener triggered with loading: ${authenticationState.loading}, isLoading = $isLoading");
-    if (isLoading != authenticationState.loading) setState(() => isLoading = authenticationState.loading);
+    if (isLoading != authenticationState.loading) {
+      setState(() => isLoading = authenticationState.loading);
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    _bleProvider = widget.bleProvider ?? BleProvider();
     authenticationState.addListener(listenForAuthStateChanges);
     authenticationState.checkForExistingToken();
     print("app: init state");
@@ -111,33 +124,36 @@ class _AppState extends State<App> {
     }
     return GraphQLProvider(
       client: client,
-      child: VRouter(
-        title: 'HandleIt',
-        initialUrl: initialRoute,
-        navigatorKey: widget._navigator,
-        routes: [
-          VWidget(
-            path: Home.routeName,
-            widget: Home(reinitialize: reinitialize),
-            stackedRoutes: [
-              VWidget(path: AddVehicleWizard.routeName, widget: const AddVehicleWizard()),
-              VWidget(path: AddSensorWizard.routeName, widget: const AddSensorWizard()),
-              VWidget(
-                path: "${VehicleScreen.routeName}/:hubId",
-                widget: const VehicleScreen(),
-                stackedRoutes: [
-                  VWidget(path: VehicleSelectModel.routeName, widget: const VehicleSelectModel()),
-                  VWidget(path: "${VehicleSelectColor.routeName}/:vehicleId", widget: const VehicleSelectColor()),
-                ],
-              ),
-            ],
-          ),
-          VWidget(path: ShowAlert.routeName, widget: ShowAlert(eventId: widget.eventId)),
-          // TODO refactor reinitialize to a provider
-          VWidget(path: Register.routeName, widget: Register(reinitialize: reinitialize)),
-          VWidget(path: Login.routeName, widget: Login(reinitialize: reinitialize)),
-        ],
-        theme: buildTheme(),
+      child: ChangeNotifierProvider<BleProvider>(
+        create: (BuildContext c) => _bleProvider,
+        child: VRouter(
+          title: 'HandleIt',
+          initialUrl: initialRoute,
+          navigatorKey: widget._navigator,
+          routes: [
+            VWidget(
+              path: Home.routeName,
+              widget: Home(reinitialize: reinitialize),
+              stackedRoutes: [
+                VWidget(path: AddVehicleWizard.routeName, widget: const AddVehicleWizard()),
+                VWidget(path: AddSensorWizard.routeName, widget: const AddSensorWizard()),
+                VWidget(
+                  path: "${VehicleScreen.routeName}/:hubId",
+                  widget: const VehicleScreen(),
+                  stackedRoutes: [
+                    VWidget(path: VehicleSelectModel.routeName, widget: const VehicleSelectModel()),
+                    VWidget(path: "${VehicleSelectColor.routeName}/:vehicleId", widget: const VehicleSelectColor()),
+                  ],
+                ),
+              ],
+            ),
+            VWidget(path: ShowAlert.routeName, widget: ShowAlert(eventId: widget.eventId)),
+            // TODO refactor reinitialize to a provider
+            VWidget(path: Register.routeName, widget: Register(reinitialize: reinitialize)),
+            VWidget(path: Login.routeName, widget: Login(reinitialize: reinitialize)),
+          ],
+          theme: buildTheme(),
+        ),
       ),
     );
   }

@@ -10,7 +10,7 @@ import 'package:handle_it/auth/login.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:rxdart/subjects.dart';
 
-import 'feed/add_wizards/add_vehicle_wizard_content.dart';
+import 'common/ble_provider.dart';
 
 final localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -25,7 +25,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         in flutterBlue.scan(timeout: const Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
       if (r.device.id.id.toLowerCase() != data["hubSerial"].toString().toLowerCase()) continue;
-      if (r.rssi.abs() < 75) hubIsNearby = true;
+      // if (r.rssi.abs() < 75) hubIsNearby = true;
+      hubIsNearby = true;
       flutterBlue.stopScan();
       break;
     }

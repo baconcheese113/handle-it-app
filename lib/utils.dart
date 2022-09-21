@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:gql/ast.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/common/loading.dart';
@@ -13,26 +12,17 @@ DocumentNode addFragments(DocumentNode doc, List<DocumentNode> fragments) {
   return DocumentNode(definitions: newDefinitions.toList(), span: doc.span);
 }
 
-Future<bool> requestPermission(Permission perm) async {
+Future<bool> hasPermission(Permission perm) async {
   PermissionStatus status = await perm.status;
   print("Current status for ${perm.toString()} is $status");
-  if (!status.isGranted) {
+  return status.isGranted;
+}
+
+Future<bool> requestPermission(Permission perm) async {
+  if (!await hasPermission(perm)) {
     print("${perm.toString()} was not granted");
     if (!await perm.request().isGranted) {
       print("Andddd, they denied me again!");
-      return false;
-    }
-  }
-  return true;
-}
-
-Future<bool> tryPowerOnBLE() async {
-  FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
-  print("about to turn on bluetooth");
-  if (!await flutterBlue.isOn) {
-    bool isNowOn = await flutterBlue.turnOn();
-    if (!isNowOn) {
-      print("Unable to turn on bluetooth");
       return false;
     }
   }

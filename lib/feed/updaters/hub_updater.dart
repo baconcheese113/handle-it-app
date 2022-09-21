@@ -9,11 +9,7 @@ import 'package:handle_it/feed/updaters/~graphql/__generated__/updaters.fragment
 import 'package:mcumgr/mcumgr.dart';
 import 'package:version/version.dart';
 
-import '../add_wizards/add_vehicle_wizard_content.dart';
-
-const String SMP_SERVICE_UUID = "8d53dc1d-1db7-4cd3-868b-8a527460aa84";
-const String SMP_UPDATE_CHARACTERISTIC_UUID = "da2e7828-fbce-4e01-ae9e-261174997c48";
-const String FIRMWARE_CHARACTERISTIC_UUID = "00002A26-0000-1000-8000-00805f9b34fb";
+import '../../common/ble_provider.dart';
 
 class HubUpdater extends StatefulWidget {
   final Fragment$hubUpdater_hub hubFrag;
