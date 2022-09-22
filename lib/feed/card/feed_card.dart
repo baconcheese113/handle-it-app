@@ -35,6 +35,7 @@ class _FeedCardState extends State<FeedCard> {
   late BleProvider _bleProvider;
 
   void autoConnect() async {
+    if (!await _bleProvider.hasBlePermissions()) return;
     await _bleProvider.scan(
         services: [Guid(HUB_SERVICE_UUID)],
         timeout: const Duration(seconds: 10),

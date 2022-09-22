@@ -19,6 +19,7 @@ class NetworkRequestsCard extends StatelessWidget {
             title: Text(memberFrag.network.name),
             subtitle: Text("Sent $invitationCreatedAt"),
             trailing: IconButton(
+              key: const ValueKey("button.deleteRequest"),
               onPressed: () => runMutation(
                 Variables$Mutation$DeclineNetworkMembership(
                   networkMemberId: memberFrag.id,

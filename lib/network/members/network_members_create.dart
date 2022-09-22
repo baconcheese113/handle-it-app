@@ -35,6 +35,7 @@ class _NetworkMembersCreateState extends State<NetworkMembersCreate> {
       ),
       builder: (runMutation, result) {
         void handleCreate() async {
+          FocusManager.instance.primaryFocus?.unfocus();
           final mutation = await runMutation(
             Variables$Mutation$CreateNetworkMember(
               networkId: widget.networkFrag.id,

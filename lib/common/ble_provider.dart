@@ -32,18 +32,19 @@ class BleProvider extends ChangeNotifier {
     super.notifyListeners();
   }
 
-  Future<void> _checkBlePermissions() async {
+  Future<bool> hasBlePermissions() async {
     if (Platform.isAndroid) {
       if (!await hasPermission(Permission.location) ||
           !await hasPermission(Permission.bluetoothScan) ||
           !await hasPermission(Permission.bluetoothConnect)) {
         _hasPermissions = false;
         notifyListeners();
-        return;
+        return false;
       }
     }
     _hasPermissions = true;
     notifyListeners();
+    return true;
   }
 
   Future<bool> _requestBlePermissions() async {

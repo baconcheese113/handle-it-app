@@ -21,6 +21,7 @@ class NetworkInvitesTab extends StatelessWidget {
           refetch();
         },
         child: ListView(
+          key: const ValueKey('list.invites'),
           children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               const Text("Invitations", style: TextStyle(fontSize: 24)),

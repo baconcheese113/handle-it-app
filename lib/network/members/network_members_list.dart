@@ -51,9 +51,12 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
                     builder: ((context, netProvider, child) => Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              networkFrag.name,
-                              style: TextStyle(fontSize: 24, color: netProvider.registerNetwork(networkFrag.id)),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 200),
+                              child: Text(
+                                networkFrag.name,
+                                style: TextStyle(fontSize: 24, color: netProvider.registerNetwork(networkFrag.id)),
+                              ),
                             ),
                             if (isOwner) const Chip(label: Text("Owner")),
                             if (isOwner)

@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:graphql/client.dart';
 
 Future<void> pumpUntilFound(
   WidgetTester tester,
@@ -21,15 +23,18 @@ Future<void> pumpUntilFound(
   timer.cancel();
 }
 
+const TEST_USER_EMAIL = "steve@user.com";
+
 Future<void> login(WidgetTester widgetTester) async {
-  final tokenFinder = find.text("Checking for token...");
-  await pumpUntilFound(widgetTester, tokenFinder);
-  expect(tokenFinder, findsOneWidget);
+  // Leads to flaky tests
+  // final tokenFinder = find.text("Checking for token...");
+  // await pumpUntilFound(widgetTester, tokenFinder);
+  // expect(tokenFinder, findsOneWidget);
 
   final emailInputFinder = find.widgetWithText(TextFormField, "Enter your email");
   await pumpUntilFound(widgetTester, emailInputFinder);
   expect(emailInputFinder, findsOneWidget);
-  await widgetTester.enterText(emailInputFinder, "steve@user.com");
+  await widgetTester.enterText(emailInputFinder, TEST_USER_EMAIL);
 
   final passwordInputFinder = find.widgetWithText(TextFormField, "Enter your password");
   expect(passwordInputFinder, findsOneWidget);
@@ -41,6 +46,7 @@ Future<void> login(WidgetTester widgetTester) async {
   await widgetTester.pumpAndSettle();
 
   final fabFinder = find.byKey(const ValueKey('fab'));
+  await pumpUntilFound(widgetTester, fabFinder);
   expect(fabFinder, findsOneWidget);
 }
 
@@ -57,4 +63,14 @@ Future<void> tapAndWaitMs(
     await Future.delayed(Duration(milliseconds: milliseconds));
     await widgetTester.pumpAndSettle();
   }
+}
+
+GraphQLClient getClient({String? token}) {
+  final HttpLink httpLink = HttpLink(dotenv.env['API_URL']!);
+  final AuthLink authLink = AuthLink(getToken: () => token != null ? "Bearer $token" : null);
+  final link = authLink.concat(httpLink);
+  return GraphQLClient(
+    cache: GraphQLCache(store: HiveStore()),
+    link: link,
+  );
 }

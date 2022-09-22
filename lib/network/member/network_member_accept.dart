@@ -10,6 +10,7 @@ class NetworkMemberAccept extends StatelessWidget {
     return Mutation$AcceptNetworkMembership$Widget(
       builder: (runMutation, result) {
         return IconButton(
+          key: const ValueKey("button.acceptInvitation"),
           onPressed: () {
             runMutation(
               Variables$Mutation$AcceptNetworkMembership(

@@ -25,7 +25,10 @@ class _NetworkMembersJoinState extends State<NetworkMembersJoin> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextFormField(onChanged: (String n) => name = n),
+                    TextFormField(
+                      key: const ValueKey('input.networkName'),
+                      onChanged: (String n) => name = n,
+                    ),
                     if (exceptions.isNotEmpty) Text(exceptions),
                   ],
                 ),
@@ -35,6 +38,7 @@ class _NetworkMembersJoinState extends State<NetworkMembersJoin> {
                     child: const Text("Cancel"),
                   ),
                   TextButton(
+                    key: const ValueKey('button.join'),
                     onPressed: () async {
                       final mutation = await runMutation(
                         Variables$Mutation$RequestNetworkMembership(
@@ -57,7 +61,11 @@ class _NetworkMembersJoinState extends State<NetworkMembersJoin> {
         );
       }
 
-      return TextButton(onPressed: handleJoin, child: const Text("Join Network"));
+      return TextButton(
+        key: const ValueKey("button.joinNetwork"),
+        onPressed: handleJoin,
+        child: const Text("Join Network"),
+      );
     });
   }
 }

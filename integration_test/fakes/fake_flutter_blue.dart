@@ -2,21 +2,11 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:graphql/client.dart';
 import 'package:handle_it/common/ble_provider.dart';
 
+import '../utils.dart';
 import 'fake_ble_provider.dart';
-
-GraphQLClient getClient({String? token}) {
-  final HttpLink httpLink = HttpLink(dotenv.env['API_URL']!);
-  final AuthLink authLink = AuthLink(getToken: () => token != null ? "Bearer $token" : null);
-  final link = authLink.concat(httpLink);
-  return GraphQLClient(
-    cache: GraphQLCache(store: HiveStore()),
-    link: link,
-  );
-}
 
 Future<String> createHub(GraphQLClient client, int userId) async {
   final r = Random();
