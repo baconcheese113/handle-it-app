@@ -1,13 +1,57 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:graphql/client.dart';
 import 'package:handle_it/common/ble_provider.dart';
 
+import 'fake_ble_provider.dart';
+
+GraphQLClient getClient({String? token}) {
+  final HttpLink httpLink = HttpLink(dotenv.env['API_URL']!);
+  final AuthLink authLink = AuthLink(getToken: () => token != null ? "Bearer $token" : null);
+  final link = authLink.concat(httpLink);
+  return GraphQLClient(
+    cache: GraphQLCache(store: HiveStore()),
+    link: link,
+  );
+}
+
+Future<String> createHub(GraphQLClient client, int userId) async {
+  final r = Random();
+  final imei = List.generate(18, (index) => r.nextInt(11)).join();
+  final res = await client.mutate(MutationOptions(document: gql('''
+    mutation LoginAsHubMutation {
+      loginAsHub(imei: "$imei", serial: "$TEST_HUB_MAC", userId: $userId)
+    }
+  ''')));
+  print("createHub response is ${res.data}");
+  return res.data!["loginAsHub"];
+}
+
+Future<int> getHubId(GraphQLClient client) async {
+  final res = await client.query(QueryOptions(document: gql('''
+    query getHubViewer {
+      hubViewer {
+        id
+      }
+    }
+  ''')));
+  print("hubViewer response is ${res.data}");
+  return res.data!["hubViewer"]["id"];
+}
+
 class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
-  final List<int> _fakeValue = [];
+  List<int> _fakeValue = [];
   final Guid _fakeUuid;
   bool _fakeNotify = false;
   Stream<List<int>> _fakeNotifyVal = const Stream.empty();
+  GraphQLClient _client;
 
-  FakeBluetoothCharacteristic.create(Guid uuid) : _fakeUuid = uuid;
+  FakeBluetoothCharacteristic.create(Guid uuid, GraphQLClient client)
+      : _client = client,
+        _fakeUuid = uuid;
 
   @override
   bool get isNotifying => _fakeNotify;
@@ -37,7 +81,19 @@ class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
 
   @override
   Future<Null> write(List<int> value, {bool withoutResponse = false}) async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 500));
+    final strVal = String.fromCharCodes(value);
+    if (strVal.startsWith("UserId:")) {
+      final userId = int.parse(strVal.substring(7));
+      final token = await createHub(_client, userId);
+      _client = getClient(token: token);
+      final hubId = await getHubId(_client);
+      _fakeValue = utf8.encode("HubId:$hubId");
+    } else if (strVal == "StartSensorSearch:1") {
+      _fakeValue = utf8.encode("SensorFound:$TEST_SENSOR_MAC");
+    } else if (strVal == "SensorConnect:1") {
+      _fakeValue = utf8.encode("SensorAdded:1");
+    }
     return null;
   }
 
@@ -79,7 +135,10 @@ class FakeBluetoothService implements BluetoothService {
 class FakeBluetoothDevice extends BluetoothDevice {
   List<BluetoothService> _fakeServices = [];
   BluetoothDeviceState _fakeState = BluetoothDeviceState.disconnected;
-  FakeBluetoothDevice.fromId(id) : super.fromId(id);
+  GraphQLClient _client;
+  FakeBluetoothDevice.fromId(id)
+      : _client = getClient(),
+        super.fromId(id);
 
   @override
   Stream<List<BluetoothService>> get services => Stream.value(_fakeServices);
@@ -88,8 +147,8 @@ class FakeBluetoothDevice extends BluetoothDevice {
   Future<List<BluetoothService>> discoverServices() async {
     await Future.delayed(const Duration(milliseconds: 400));
     final chars = [
-      FakeBluetoothCharacteristic.create(Guid(COMMAND_CHARACTERISTIC_UUID)),
-      FakeBluetoothCharacteristic.create(Guid("00002a01-0000-1000-8000-00805F9B34FB")),
+      FakeBluetoothCharacteristic.create(Guid(COMMAND_CHARACTERISTIC_UUID), _client),
+      FakeBluetoothCharacteristic.create(Guid("00002a01-0000-1000-8000-00805F9B34FB"), _client),
     ];
     final service = FakeBluetoothService.create(Guid(HUB_SERVICE_UUID), chars);
     _fakeServices = [service];
@@ -110,4 +169,7 @@ class FakeBluetoothDevice extends BluetoothDevice {
     await Future.delayed(const Duration(milliseconds: 100));
     _fakeState = BluetoothDeviceState.disconnected;
   }
+
+  @override
+  String get name => HUB_NAME;
 }

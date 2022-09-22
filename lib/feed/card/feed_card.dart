@@ -73,8 +73,10 @@ class _FeedCardState extends State<FeedCard> {
 
   @override
   void initState() {
-    autoConnect();
     super.initState();
+    Future.delayed(const Duration(milliseconds: 1), () {
+      autoConnect();
+    });
   }
 
   @override

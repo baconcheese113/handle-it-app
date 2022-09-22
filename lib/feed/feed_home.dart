@@ -44,7 +44,7 @@ class FeedHome extends StatelessWidget {
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 192),
-                    child: Text("Add a hub to begin"),
+                    child: Text(key: ValueKey("text.emptyFeed"), "Add a hub to begin"),
                   ),
                 )
             ],

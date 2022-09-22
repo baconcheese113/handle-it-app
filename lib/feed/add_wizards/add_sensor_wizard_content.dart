@@ -37,6 +37,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       await _bleProvider.scan(
           timeout: const Duration(seconds: 10),
           onScanResult: (d) {
+            print("${d.name} == $HUB_NAME && ${d.id.id.toLowerCase()} == ${widget.hubFrag.serial.toLowerCase()}");
             if (d.name == HUB_NAME && d.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
               setState(() => _foundHub = d);
               return true;
@@ -60,8 +61,12 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   @override
   void initState() {
     super.initState();
-    connectToKnownHub();
     _formsPageViewController = PageController(initialPage: 0);
+
+    // To initialize provider
+    Future.delayed(const Duration(milliseconds: 1), () {
+      connectToKnownHub();
+    });
   }
 
   Future<void> startSensorSearch() async {
@@ -183,7 +188,11 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                       ),
                       _bleProvider.scanning
                           ? const CircularProgressIndicator()
-                          : TextButton(onPressed: startSensorSearch, child: const Text("Start")),
+                          : TextButton(
+                              key: const ValueKey("button.startSearch"),
+                              onPressed: startSensorSearch,
+                              child: const Text("Start"),
+                            ),
                     ])))),
             Row(mainAxisSize: MainAxisSize.max, children: [
               Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
@@ -222,7 +231,10 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
               Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
               // Expanded(child: TextButton(onPressed: () => addSensor(false), child: Text("Add Another"))),
               Expanded(
-                  child: TextButton(onPressed: _processing ? null : () => addSensor(true), child: const Text("Save"))),
+                  child: TextButton(
+                      key: const ValueKey("button.save"),
+                      onPressed: _processing ? null : () => addSensor(true),
+                      child: const Text("Save"))),
             ])
           ])),
     ];

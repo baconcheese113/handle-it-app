@@ -11,7 +11,7 @@ Future<void> pumpUntilFound(
   bool timerDone = false;
   final timer = Timer(timeout, () => timerDone = true);
   while (timerDone != true) {
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     final found = tester.any(finder);
     if (found) {
@@ -50,8 +50,11 @@ Future<void> tapAndWaitMs(
   Finder finder,
   int milliseconds,
 ) async {
+  await widgetTester.pumpAndSettle();
   await widgetTester.tap(finder);
   await widgetTester.pumpAndSettle();
-  await Future.delayed(Duration(milliseconds: milliseconds));
-  await widgetTester.pumpAndSettle();
+  if (milliseconds > 0) {
+    await Future.delayed(Duration(milliseconds: milliseconds));
+    await widgetTester.pumpAndSettle();
+  }
 }

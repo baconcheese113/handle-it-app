@@ -44,7 +44,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     super.initState();
     if (widget.pairedHubId != null) {
       final hubs = widget.userFrag.hubs;
-      print(">>> Looking for ${widget.pairedHubId} and Hubs are $hubs");
+      print(">>> Looking for ${widget.pairedHubId} and Hubs are ${hubs.map((h) => h.id)}");
       _hubCustomName = hubs.firstWhere((hub) => hub.id == widget.pairedHubId).name;
     }
     print("HubCustomName is $_hubCustomName");
@@ -192,7 +192,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                                 key: const ValueKey("button.startScan"),
                                 onPressed: _findNewHub,
                                 child: const Text("Start scanning")),
-                          if (_logText.isNotEmpty) Text(_logText),
+                          if (_logText.isNotEmpty) Text(key: const ValueKey("text.log"), _logText),
                         ])))),
                 Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
@@ -220,6 +220,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                 Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
                     child: TextButton(
+                      key: const ValueKey("button.setName"),
                       onPressed: _hubCustomName.isEmpty ? null : handleSetName,
                       child: const Text("Set Name"),
                     ),

@@ -24,16 +24,50 @@ void addDeviceTests() {
       app.main(bleProvider: mockBleProvider);
       await login(widgetTester);
 
-      // TODO remove
-      await Future.delayed(const Duration(seconds: 3));
+      final fab = find.byKey(const ValueKey('fab'));
+      await pumpUntilFound(widgetTester, fab);
+      expect(fab, findsOneWidget);
+      await tapAndWaitMs(widgetTester, fab, 0);
 
-      final fabFinder = find.byKey(const ValueKey('fab'));
-      await pumpUntilFound(widgetTester, fabFinder);
-      expect(fabFinder, findsOneWidget);
-      await tapAndWaitMs(widgetTester, fabFinder, 0);
+      final startScanButton = find.byKey(const ValueKey('button.startScan'));
+      expect(startScanButton, findsOneWidget);
+      await tapAndWaitMs(widgetTester, startScanButton, 0);
 
-      final startScanFinder = find.byKey(const ValueKey('button.startScan'));
-      expect(startScanFinder, findsOneWidget);
+      final setNameButton = find.byKey(const ValueKey('button.setName')).hitTestable();
+      await pumpUntilFound(widgetTester, setNameButton);
+      expect(setNameButton, findsOneWidget);
+      await tapAndWaitMs(widgetTester, setNameButton, 0);
+
+      var cardMenuButton = find.byKey(const ValueKey('button.cardMenu'), skipOffstage: false).last;
+      await pumpUntilFound(widgetTester, cardMenuButton);
+      await widgetTester.ensureVisible(cardMenuButton);
+      await tapAndWaitMs(widgetTester, cardMenuButton, 0);
+
+      final addSensorMenuItem = find.byKey(const ValueKey('menuItem.addSensor'));
+      await pumpUntilFound(widgetTester, addSensorMenuItem);
+      await tapAndWaitMs(widgetTester, addSensorMenuItem, 0);
+
+      final startSearchButton = find.byKey(const ValueKey('button.startSearch'));
+      await pumpUntilFound(widgetTester, startSearchButton);
+      await tapAndWaitMs(widgetTester, startSearchButton, 0);
+
+      final saveButton = find.byKey(const ValueKey('button.save')).hitTestable();
+      await pumpUntilFound(widgetTester, saveButton);
+      await tapAndWaitMs(widgetTester, saveButton, 500);
+
+      await pumpUntilFound(widgetTester, cardMenuButton);
+      expect(cardMenuButton, findsOneWidget);
+      await widgetTester.ensureVisible(cardMenuButton);
+      await tapAndWaitMs(widgetTester, cardMenuButton, 0);
+
+      final deleteHubMenuItem = find.byKey(const ValueKey('menuItem.deleteHub'));
+      await pumpUntilFound(widgetTester, deleteHubMenuItem);
+      await tapAndWaitMs(widgetTester, deleteHubMenuItem, 0);
+      final deleteHubButton = find.byKey(const ValueKey('button.deleteHub'));
+      expect(deleteHubButton, findsOneWidget);
+      await tapAndWaitMs(widgetTester, deleteHubButton, 0);
+
+      await Future.delayed(const Duration(seconds: 1));
     });
   });
 }

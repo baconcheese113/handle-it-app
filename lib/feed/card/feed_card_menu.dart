@@ -41,6 +41,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
               actions: [
                 TextButton(onPressed: () => context.vRouter.pop(), child: const Text('Cancel')),
                 TextButton(
+                  key: const ValueKey("button.deleteHub"),
                   onPressed: () async {
                     await runMutation(
                       Variables$Mutation$feedCardDelete(
@@ -58,6 +59,7 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
         }
 
         return PopupMenuButton(
+          key: const ValueKey("button.cardMenu"),
           child: const Icon(Icons.more_vert),
           onSelected: (idx) {
             if (idx == 0) handleEditVehicleDetails();
@@ -70,10 +72,12 @@ class _FeedCardMenuState extends State<FeedCardMenu> {
               child: ListTile(leading: Icon(Icons.edit), title: Text("Edit vehicle details")),
             ),
             const PopupMenuItem(
+              key: ValueKey("menuItem.addSensor"),
               value: 1,
               child: ListTile(leading: Icon(Icons.add), title: Text("Add Sensor")),
             ),
             const PopupMenuItem(
+              key: ValueKey("menuItem.deleteHub"),
               value: 2,
               child: ListTile(
                 leading: Icon(Icons.delete),
