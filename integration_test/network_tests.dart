@@ -9,6 +9,7 @@ import 'package:handle_it/tutorial/intro_tutorial.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fakes/fake_ble_provider.dart';
 import 'utils.dart';
 
 void networkTests() {
@@ -22,7 +23,8 @@ void networkTests() {
     });
 
     testWidgets('Creates/deletes network and adds members', (widgetTester) async {
-      app.main();
+      final mockBleProvider = FakeBleProvider();
+      app.main(bleProvider: mockBleProvider);
       await login(widgetTester);
       final faker = Faker();
 

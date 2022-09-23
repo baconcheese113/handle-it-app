@@ -5,6 +5,7 @@ import 'package:handle_it/main.dart' as app;
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fakes/fake_ble_provider.dart';
 import 'utils.dart';
 
 void authTests() {
@@ -18,7 +19,8 @@ void authTests() {
     });
 
     testWidgets("Should register", (widgetTester) async {
-      app.main();
+      final mockBleProvider = FakeBleProvider();
+      app.main(bleProvider: mockBleProvider);
       final tokenFinder = find.text("Checking for token...");
       await pumpUntilFound(widgetTester, tokenFinder);
       expect(tokenFinder, findsOneWidget);

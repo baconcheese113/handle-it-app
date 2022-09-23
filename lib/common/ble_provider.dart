@@ -15,7 +15,6 @@ const String SMP_SERVICE_UUID = "8d53dc1d-1db7-4cd3-868b-8a527460aa84";
 const String SMP_UPDATE_CHARACTERISTIC_UUID = "da2e7828-fbce-4e01-ae9e-261174997c48";
 
 class BleProvider extends ChangeNotifier {
-  final _flutterBlue = FlutterBluePlus.instance;
   bool scanning = false;
   bool _hasPermissions = false;
   bool _isDisposed = false;
@@ -65,9 +64,9 @@ class BleProvider extends ChangeNotifier {
   /// Returns true if Ble turned on and permissions granted
   Future<bool> tryTurnOnBle() async {
     if (!await _requestBlePermissions()) return false;
-    if (!await _flutterBlue.isOn) {
+    if (!await FlutterBluePlus.instance.isOn) {
       print("about to turn on bluetooth");
-      bool isNowOn = await _flutterBlue.turnOn();
+      bool isNowOn = await FlutterBluePlus.instance.turnOn();
       if (!isNowOn) {
         print("Unable to turn on bluetooth");
         return false;
@@ -77,7 +76,7 @@ class BleProvider extends ChangeNotifier {
   }
 
   Future<BluetoothDevice?> tryGetConnectedDevice(String name) async {
-    return (await _flutterBlue.connectedDevices).firstWhereOrNull((d) => d.name == name);
+    return (await FlutterBluePlus.instance.connectedDevices).firstWhereOrNull((d) => d.name == name);
   }
 
   Future<BluetoothDevice?> scan({
@@ -89,20 +88,20 @@ class BleProvider extends ChangeNotifier {
     scanning = true;
     notifyListeners();
     BluetoothDevice? ret;
-    await for (final r in _flutterBlue.scan(timeout: timeout, withServices: services)) {
+    await for (final r in FlutterBluePlus.instance.scan(timeout: timeout, withServices: services)) {
       if (onScanResult(r.device)) {
         ret = r.device;
         break;
       }
     }
-    await _flutterBlue.stopScan();
+    await FlutterBluePlus.instance.stopScan();
     scanning = false;
     notifyListeners();
     return ret;
   }
 
   Future<void> stopScan() async {
-    await _flutterBlue.stopScan();
+    await FlutterBluePlus.instance.stopScan();
     scanning = false;
     notifyListeners();
   }
