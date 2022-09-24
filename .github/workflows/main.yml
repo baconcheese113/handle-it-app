@@ -77,6 +77,10 @@ jobs:
       - name: Add built files
         run: |
           touch .env
+          echo API_URL=${{ secrets.API_URL }} >> .env
+          echo FIRMWARE_SERVER_URL=${{ secrets.FIRMWARE_SERVER_URL }} >> .env
+          echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
+          cat .env
           flutter pub run build_runner build
       - name: Run integration tests
         # more info on https://github.com/ReactiveCircus/android-emulator-runner
