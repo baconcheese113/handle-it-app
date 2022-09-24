@@ -84,55 +84,59 @@ class _IntroTutorialState extends State<IntroTutorial> {
           ),
           Scaffold(
             backgroundColor: Colors.transparent,
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            body: ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(30),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 256,
-                        child: Image.asset("assets/images/tutorial_${_slideNum + 1}.png"),
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(30),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(slideInfo[_slideNum]["title"]!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20),
-                            child: Text(
-                              slideInfo[_slideNum]["body"]!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                          )
+                          SizedBox(
+                            height: 256,
+                            child: Image.asset("assets/images/tutorial_${_slideNum + 1}.png"),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(slideInfo[_slideNum]["title"]!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20),
+                                child: Text(
+                                  slideInfo[_slideNum]["body"]!,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              )
+                            ],
+                          ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    if (_slideNum < 1)
-                      ElevatedButton(
-                        key: const ValueKey('button.skip'),
-                        onPressed: finishTutorial,
-                        child: const Text("Skip"),
-                      ),
-                    ElevatedButton(
-                      onPressed: advanceSlide,
-                      child: Text(_slideNum > 0 ? "Finish" : "Next"),
                     ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        if (_slideNum < 1)
+                          ElevatedButton(
+                            key: const ValueKey('button.skip'),
+                            onPressed: finishTutorial,
+                            child: const Text("Skip"),
+                          ),
+                        ElevatedButton(
+                          onPressed: advanceSlide,
+                          child: Text(_slideNum > 0 ? "Finish" : "Next"),
+                        ),
+                      ],
+                    )
                   ],
-                )
+                ),
               ],
             ),
           ),

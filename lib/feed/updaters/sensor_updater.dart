@@ -347,7 +347,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       children: [
         Row(children: [
           Switch(value: _connectEnabled, onChanged: _progressPercent == -1 ? handleSwitch : null),
-          const Text("Connect to Sensors to check for updates"),
+          const Expanded(child: Text("Connect to Sensors to check for updates")),
         ]),
         if (_connectEnabled)
           Card(
