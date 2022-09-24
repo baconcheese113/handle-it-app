@@ -1,4 +1,4 @@
-package com.handle_it
+package io.handleit
 
 import io.flutter.embedding.android.FlutterActivity
 

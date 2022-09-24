@@ -7,6 +7,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/app.dart';
 import 'package:handle_it/auth/login.dart';
+import 'package:handle_it/firebase_options.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -50,7 +51,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main({BleProvider? bleProvider}) async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final NotificationAppLaunchDetails? launchDetails = await localNotifications.getNotificationAppLaunchDetails();
   String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
@@ -63,7 +64,13 @@ void main({BleProvider? bleProvider}) async {
 
   // initialize the plugin. app_icon needs to be added as a drawable resource
   const AndroidInitializationSettings androidSettings = AndroidInitializationSettings("app_icon");
-  const InitializationSettings initializationSettings = InitializationSettings(android: androidSettings);
+  const IOSInitializationSettings iosSettings = IOSInitializationSettings(
+    requestAlertPermission: false,
+    requestBadgePermission: false,
+    requestSoundPermission: false,
+  );
+  const InitializationSettings initializationSettings =
+      InitializationSettings(android: androidSettings, iOS: iosSettings);
   await localNotifications.initialize(initializationSettings, onSelectNotification: (String? payload) async {
     initialRoute = Login.routeName;
     if (payload != null) selectNotificationSubject.add(payload);
