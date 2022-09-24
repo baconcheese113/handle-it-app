@@ -53,15 +53,18 @@ void addDeviceTests() {
 
       final saveButton = find.byKey(const ValueKey('button.save')).hitTestable();
       await pumpUntilFound(widgetTester, saveButton);
+      expect(saveButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, saveButton, 500);
 
       await pumpUntilFound(widgetTester, cardMenuButton);
       expect(cardMenuButton, findsOneWidget);
       await widgetTester.ensureVisible(cardMenuButton);
+      await pumpUntilFound(widgetTester, cardMenuButton.hitTestable());
       await tapAndWaitMs(widgetTester, cardMenuButton, 0);
 
       final deleteHubMenuItem = find.byKey(const ValueKey('menuItem.deleteHub'));
       await pumpUntilFound(widgetTester, deleteHubMenuItem);
+      expect(deleteHubMenuItem, findsOneWidget);
       await tapAndWaitMs(widgetTester, deleteHubMenuItem, 0);
       final deleteHubButton = find.byKey(const ValueKey('button.deleteHub'));
       expect(deleteHubButton, findsOneWidget);

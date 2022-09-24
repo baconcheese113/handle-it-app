@@ -1,5 +1,7 @@
 import UIKit
 import Flutter
+import GoogleMaps
+import flutter_config
 //import flutter_local_notifications
 
 @UIApplicationMain
@@ -16,6 +18,9 @@ import Flutter
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
+      
+    // Add your Google Maps API key
+    GMSServices.provideAPIKey(flutter_config.FlutterConfigPlugin.env(for: "GOOGLE_MAPS_API_KEY"))
 
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
