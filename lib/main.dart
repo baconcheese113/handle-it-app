@@ -7,7 +7,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:handle_it/app.dart';
 import 'package:handle_it/auth/login.dart';
-import 'package:handle_it/firebase_options.dart';
 import 'package:handle_it/notifications/show_alert.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -51,7 +50,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main({BleProvider? bleProvider}) async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(); //options: DefaultFirebaseOptions.currentPlatform);
 
   final NotificationAppLaunchDetails? launchDetails = await localNotifications.getNotificationAppLaunchDetails();
   String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;

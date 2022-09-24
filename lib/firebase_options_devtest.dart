@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart'
 ///
 /// Example:
 /// ```dart
-/// import 'firebase_options.dart';
+/// import 'firebase_options_devtest.dart';
 /// // ...
 /// await Firebase.initializeApp(
 ///   options: DefaultFirebaseOptions.currentPlatform,
@@ -50,20 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD-cZCNtq8TIjGR-e6veLphzbx4Som_ohY',
-    appId: '1:484054438706:android:dd4b3d432062c5bd3c7d2b',
-    messagingSenderId: '484054438706',
-    projectId: 'handleit-f352d',
-    storageBucket: 'handleit-f352d.appspot.com',
+    apiKey: 'AIzaSyBVCK9veiuJGedMPWnZnOsHQ5T7rs-W9jU',
+    appId: '1:874590734915:android:8b591fa0f96ebe2980a2f6',
+    messagingSenderId: '874590734915',
+    projectId: 'handleit-devtest',
+    storageBucket: 'handleit-devtest.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAPrWy3HKgTGKDxS7asPtm3rWS4l0G5neU',
-    appId: '1:484054438706:ios:9377b8fb5fac00593c7d2b',
-    messagingSenderId: '484054438706',
-    projectId: 'handleit-f352d',
-    storageBucket: 'handleit-f352d.appspot.com',
-    iosClientId: '484054438706-s9ba1s9tn1dp5i7h7uju83nvkahqud7k.apps.googleusercontent.com',
-    iosBundleId: 'io.handleit',
+    apiKey: 'AIzaSyDBg2CXfBM8sp6YyqTY22xCFyfaOEP-E-U',
+    appId: '1:874590734915:ios:30b5ed7c147ec36480a2f6',
+    messagingSenderId: '874590734915',
+    projectId: 'handleit-devtest',
+    storageBucket: 'handleit-devtest.appspot.com',
+    iosClientId: '874590734915-1ck1tq9goccdss1k0cff4ul03381e1a0.apps.googleusercontent.com',
+    iosBundleId: 'io.handleit.devtest',
   );
 }
