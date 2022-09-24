@@ -53,6 +53,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
+          cache-dependency-path: './handle-it-server/package-lock.json'
 
       - name: Run HandleIt backend
         run: |
@@ -118,6 +119,7 @@ jobs:
         with:
           node-version: 18.7.0
           cache: 'npm'
+          cache-dependency-path: './handle-it-server/package-lock.json'
 
       - name: Run HandleIt backend
         run: |
