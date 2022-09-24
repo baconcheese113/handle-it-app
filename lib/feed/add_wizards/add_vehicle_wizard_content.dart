@@ -42,13 +42,19 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   @override
   void initState() {
     super.initState();
+    _formsPageViewController = PageController(initialPage: widget.pairedHubId != null ? 1 : 0);
+  }
+
+  @override
+  void didUpdateWidget(covariant AddVehicleWizardContent oldWidget) {
     if (widget.pairedHubId != null) {
       final hubs = widget.userFrag.hubs;
       print(">>> Looking for ${widget.pairedHubId} and Hubs are ${hubs.map((h) => h.id)}");
       _hubCustomName = hubs.firstWhere((hub) => hub.id == widget.pairedHubId).name;
+      _formsPageViewController!.animateToPage(1, duration: const Duration(milliseconds: 100), curve: Curves.ease);
     }
     print("HubCustomName is $_hubCustomName");
-    _formsPageViewController = PageController(initialPage: widget.pairedHubId != null ? 1 : 0);
+    super.didUpdateWidget(oldWidget);
   }
 
   Future<void> _resetConn() async {

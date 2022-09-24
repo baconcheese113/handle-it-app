@@ -21,9 +21,6 @@ void authTests() {
     testWidgets("Should register", (widgetTester) async {
       final mockBleProvider = FakeBleProvider();
       app.main(bleProvider: mockBleProvider);
-      final tokenFinder = find.text("Checking for token...");
-      await pumpUntilFound(widgetTester, tokenFinder);
-      expect(tokenFinder, findsOneWidget);
 
       final registerButton = find.byKey(const ValueKey('button.switchToRegister'));
       await pumpUntilFound(widgetTester, registerButton);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graphql/client.dart';
 import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_vehicle_wizard.query.graphql.dart';
 import 'package:handle_it/utils.dart';
 
@@ -19,6 +20,7 @@ class _AddVehicleWizardState extends State<AddVehicleWizard> {
   @override
   Widget build(BuildContext context) {
     return Query$AddVehicleWizard$Widget(
+      options: Options$Query$AddVehicleWizard(fetchPolicy: FetchPolicy.networkOnly),
       builder: (result, {refetch, fetchMore}) {
         final noDataWidget = validateResult(result, allowCache: false);
         if (noDataWidget != null) return noDataWidget;
