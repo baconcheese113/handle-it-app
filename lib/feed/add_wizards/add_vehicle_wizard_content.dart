@@ -44,9 +44,9 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       final hubs = widget.userFrag.hubs;
       print(">>> Looking for ${widget.pairedHubId} and Hubs are ${hubs.map((h) => h.id)}");
       _hubCustomName = hubs.firstWhere((hub) => hub.id == widget.pairedHubId).name;
+      print("HubCustomName is $_hubCustomName");
       _formsPageViewController!.animateToPage(1, duration: const Duration(milliseconds: 100), curve: Curves.ease);
     }
-    print("HubCustomName is $_hubCustomName");
   }
 
   @override
@@ -85,6 +85,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
         setState(() => _curDevice = d);
         print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
         if (d.name == HUB_NAME && !hubIds.contains(d.id.id.toLowerCase())) {
+          print("Found Hub!");
           setState(() => _foundHub = d);
           return true;
         }

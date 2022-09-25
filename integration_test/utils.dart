@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,8 +43,11 @@ Future<void> login(WidgetTester widgetTester) async {
 
   final loginFinder = find.byKey(const ValueKey('button.login'));
   expect(loginFinder, findsOneWidget);
-  await widgetTester.tap(loginFinder);
-  await widgetTester.pumpAndSettle();
+  await tapAndWaitMs(widgetTester, loginFinder, 200);
+
+  final loginErrorText = find.byKey(const ValueKey('text.loginError'));
+  final error = loginErrorText.evaluate().singleOrNull?.widget as Text?;
+  expect(error, isNull);
 
   final fabFinder = find.byKey(const ValueKey('fab'));
   await pumpUntilFound(widgetTester, fabFinder);
