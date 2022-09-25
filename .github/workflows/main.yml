@@ -223,4 +223,5 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           profile: Nexus 5
+          target: google_apis
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
