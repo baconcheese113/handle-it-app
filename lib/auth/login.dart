@@ -47,7 +47,7 @@ class _LoginState extends State<Login> {
             _switchToHome(result.data!['loginWithPassword']);
             return const Loading();
           }
-          return Column(
+          return ListView(
             children: [
               Form(
                 key: _formKey,
@@ -86,7 +86,11 @@ class _LoginState extends State<Login> {
                 onPressed: _switchToRegister,
                 child: const Text("Create an account"),
               ),
-              if (result.hasException) Text(result.exception.toString()),
+              if (result.hasException)
+                Text(
+                  key: const ValueKey('text.loginError'),
+                  result.exception.toString(),
+                ),
             ],
           );
         },

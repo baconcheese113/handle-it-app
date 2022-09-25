@@ -47,7 +47,7 @@ class _RegisterState extends State<Register> {
           return const Loading();
         }
 
-        return Column(
+        return ListView(
           children: [
             Form(
               key: _formKey,

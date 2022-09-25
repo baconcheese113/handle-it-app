@@ -18,10 +18,12 @@ void authTests() {
       await prefs.clear();
     });
 
-    testWidgets("Should register", (widgetTester) async {
+    setUp(() {
       final mockBleProvider = FakeBleProvider();
       app.main(bleProvider: mockBleProvider);
+    });
 
+    testWidgets("Should register", (widgetTester) async {
       final registerButton = find.byKey(const ValueKey('button.switchToRegister'));
       await pumpUntilFound(widgetTester, registerButton);
       expect(registerButton, findsOneWidget);
@@ -52,11 +54,11 @@ void authTests() {
       await widgetTester.tap(loginFinder);
       await widgetTester.pumpAndSettle();
 
-      final skipFinder = find.byKey(const ValueKey('button.skip'));
+      final skipFinder = find.byKey(const ValueKey('button.skip'), skipOffstage: false);
       await pumpUntilFound(widgetTester, skipFinder);
       expect(skipFinder, findsOneWidget);
-      await widgetTester.tap(skipFinder);
-      await widgetTester.pumpAndSettle();
+      await widgetTester.ensureVisible(skipFinder);
+      await tapAndWaitMs(widgetTester, skipFinder, 0);
 
       final profileFinder = find.byKey(const ValueKey('navIcon.profile'));
       expect(profileFinder, findsOneWidget);
@@ -69,7 +71,6 @@ void authTests() {
     });
 
     testWidgets("Should sign-in", (widgetTester) async {
-      app.main();
       await login(widgetTester);
     });
   });
