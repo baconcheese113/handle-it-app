@@ -24,6 +24,20 @@ jobs:
       # if one of the jobs in the matrix expansion fails, the rest of the jobs will be cancelled
       fail-fast: true
     runs-on: macos-latest # or macos-latest if you prefer, but be aware that the available simulators could be different if you run a different version
+    services:
+      postgres:
+        image: postgres:12-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: "List all simulators"
         run: "xcrun xctrace list devices"
@@ -60,8 +74,20 @@ jobs:
           echo ">>>STARTING DIRECTORY"
           ls -a
           cd handle-it-server
+          touch .env
+          echo DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
+          echo FCM_TOKEN="test_fcm_token" >> .env
+          echo JWT_SECRET="test_secret" >> .env
+          echo FIREBASE_PROJECT_ID="handleit-f352d" >> .env
+          echo FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY}} >> .env
+          echo FIREBASE_CLIENT_EMAIL="firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
+          echo HUB_CURRENT_FIRMWARE_VERSION="0.1.0" >> .env
+          echo SENSOR_CURRENT_FIRMWARE_VERSION="0.1.1" >> .env
+          cat .env
           npm install
-          npm run dev
+          npm run push-db:dev
+          npm run build
+          npm run start
 
       - name: Cache Flutter dependencies
         uses: actions/cache@v3
@@ -114,6 +140,7 @@ jobs:
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
+
       - name: Setup Nodejs
         uses: actions/setup-node@v3
         with:
@@ -126,8 +153,20 @@ jobs:
           echo ">>>STARTING DIRECTORY"
           ls -a
           cd handle-it-server
+          touch .env
+          echo DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
+          echo FCM_TOKEN="test_fcm_token" >> .env
+          echo JWT_SECRET="test_secret" >> .env
+          echo FIREBASE_PROJECT_ID="handleit-f352d" >> .env
+          echo FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY}} >> .env
+          echo FIREBASE_CLIENT_EMAIL="firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
+          echo HUB_CURRENT_FIRMWARE_VERSION="0.1.0" >> .env
+          echo SENSOR_CURRENT_FIRMWARE_VERSION="0.1.1" >> .env
+          cat .env
           npm install
-          npm run dev
+          npm run push-db:dev
+          npm run build
+          npm run start
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
