@@ -109,11 +109,15 @@ jobs:
           cat .env
           flutter pub run build_runner build
 
+      - name: Start server
+        run: |
+          cd handle-it-server &&
+          npm run start &
+          sleep 5 &&
+          curl http://localhost:4000 -I
       - name: Run integration tests
         run: |
-          cd handle-it-server
-          npm run start
-          cd ../handle-it-app
+          cd handle-it-app
           flutter test integration_test --flavor devtest --verbose
 
   # job responsible for running Flutter tests on Android devices
@@ -209,4 +213,4 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           profile: Nexus 5
-          script: cd handle-it-server && npm run start && cd ../handle-it-app && flutter test integration_test --flavor devtest --verbose
+          script: cd handle-it-server && npm run start & sleep 5 && cd ../handle-it-app && flutter test integration_test --flavor devtest --verbose
