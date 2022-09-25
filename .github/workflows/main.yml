@@ -85,19 +85,19 @@ jobs:
       - name: Cache Flutter dependencies
         uses: actions/cache@v3
         with:
-          path: /Users/runner/hostedtoolcache/flutter
-          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          path: ${{ runner.tool_cache }}//flutter
+          key: flutter-${{ env.FLUTTER_VERSION }}-stable
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          # instead of "channel: stable", you could be more precise by specifying the exact version of Flutter you're using:
-          # flutter-version: '<FLUTTER_VERSION>'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Install Flutter dependencies
         run: |
           cd handle-it-app
+          flutter --version
           flutter pub get
 
       - name: Add .env and built files
@@ -185,19 +185,19 @@ jobs:
       - name: Cache Flutter dependencies
         uses: actions/cache@v3
         with:
-          path: /Users/runner/hostedtoolcache/flutter
-          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          path: ${{ runner.tool_cache }}//flutter
+          key: flutter-${{ env.FLUTTER_VERSION }}-stable
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          # instead of "channel: stable", you could be more precise by specifying the exact version of Flutter you're using:
-          # flutter-version: '<FLUTTER_VERSION>'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
       - name: Install Flutter dependencies
         run: |
           cd handle-it-app
+          flutter --version
           flutter pub get
 
       - name: Add built files
