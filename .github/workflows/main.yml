@@ -104,7 +104,7 @@ jobs:
         run: |
           cd handle-it-app
           touch .env
-          echo API_URL=${{ secrets.API_URL }} >> .env
+          echo API_URL=http://localhost:4000 >> .env
           echo FIRMWARE_SERVER_URL=${{ secrets.FIRMWARE_SERVER_URL }} >> .env
           echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
           cat .env
@@ -204,7 +204,7 @@ jobs:
         run: |
           cd handle-it-app
           touch .env
-          echo API_URL=${{ secrets.API_URL }} >> .env
+          echo API_URL=http://10.0.2.2:4000 >> .env
           echo FIRMWARE_SERVER_URL=${{ secrets.FIRMWARE_SERVER_URL }} >> .env
           echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
           cat .env
