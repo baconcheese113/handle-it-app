@@ -85,7 +85,7 @@ jobs:
       - name: Cache Flutter dependencies
         uses: actions/cache@v3
         with:
-          path: /opt/hostedtoolcache/flutter
+          path: /Users/runner/hostedtoolcache/flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
 
       - name: Setup Flutter SDK
@@ -185,7 +185,7 @@ jobs:
       - name: Cache Flutter dependencies
         uses: actions/cache@v3
         with:
-          path: /opt/hostedtoolcache/flutter
+          path: /Users/runner/hostedtoolcache/flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
 
       - name: Setup Flutter SDK
