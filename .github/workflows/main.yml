@@ -80,7 +80,6 @@ jobs:
           npm install
           npm run push-db:dev
           npm run build
-          npm run start
 
       - name: Cache Flutter dependencies
         uses: actions/cache@v3
@@ -111,7 +110,11 @@ jobs:
           flutter pub run build_runner build
 
       - name: Run integration tests
-        run: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
+        run: |
+          cd handle-it-server
+          npm run start
+          cd ../handle-it-app
+          flutter test integration_test --flavor devtest --verbose
 
   # job responsible for running Flutter tests on Android devices
   android:
@@ -166,7 +169,6 @@ jobs:
           npm install
           npm run push-db:dev
           npm run build
-          npm run start
 
       - name: Set up JDK 11
         uses: actions/setup-java@v1
@@ -207,4 +209,4 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           profile: Nexus 5
-          script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
+          script: cd handle-it-server && npm run start && cd ../handle-it-app && flutter test integration_test --flavor devtest --verbose
