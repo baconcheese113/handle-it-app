@@ -237,7 +237,7 @@ jobs:
           profile: Nexus 5
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
 
@@ -248,6 +248,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           profile: Nexus 5
           target: google_apis
+          force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
+          disable-animations: false
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
