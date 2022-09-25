@@ -24,21 +24,15 @@ jobs:
       # if one of the jobs in the matrix expansion fails, the rest of the jobs will be cancelled
       fail-fast: true
     runs-on: macos-latest # or macos-latest if you prefer, but be aware that the available simulators could be different if you run a different version
-    services:
-      postgres:
-        image: postgres:12-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
+      - uses: ikalnytskyi/action-setup-postgres@v3
+        with:
+          username: postgres
+          password: postgres
+          database: postgres
+          port: 5432
+        id: postgres
+
       - name: "List all simulators"
         run: "xcrun xctrace list devices"
 
@@ -75,14 +69,14 @@ jobs:
           ls -a
           cd handle-it-server
           touch .env
-          echo DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
-          echo FCM_TOKEN="test_fcm_token" >> .env
-          echo JWT_SECRET="test_secret" >> .env
-          echo FIREBASE_PROJECT_ID="handleit-f352d" >> .env
-          echo FIREBASE_PRIVATE_KEY=::add-mask::${{ secrets.FIREBASE_PRIVATE_KEY }}"" >> .env
-          echo FIREBASE_CLIENT_EMAIL="firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
-          echo HUB_CURRENT_FIRMWARE_VERSION="0.1.0" >> .env
-          echo SENSOR_CURRENT_FIRMWARE_VERSION="0.1.1" >> .env
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
+          echo "FCM_TOKEN=test_fcm_token" >> .env
+          echo "JWT_SECRET=test_secret" >> .env
+          echo "FIREBASE_PROJECT_ID=handleit-f352d" >> .env
+          echo "FIREBASE_PRIVATE_KEY=::add-mask::${{ secrets.FIREBASE_PRIVATE_KEY }}"" >> .env
+          echo "FIREBASE_CLIENT_EMAIL=firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
+          echo "HUB_CURRENT_FIRMWARE_VERSION=0.1.0" >> .env
+          echo "SENSOR_CURRENT_FIRMWARE_VERSION=0.1.1" >> .env
           cat .env
           npm install
           npm run push-db:dev
@@ -130,6 +124,14 @@ jobs:
           # you can add more API level if you want to run your tests on different API
       fail-fast: true
     steps:
+      - uses: ikalnytskyi/action-setup-postgres@v3
+        with:
+          username: postgres
+          password: postgres
+          database: postgres
+          port: 5432
+        id: postgres
+
       - name: Checkout app repo
         uses: actions/checkout@v3
         with:
