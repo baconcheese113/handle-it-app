@@ -73,11 +73,10 @@ jobs:
           echo "FCM_TOKEN=test_fcm_token" >> .env
           echo "JWT_SECRET=test_secret" >> .env
           echo "FIREBASE_PROJECT_ID=handleit-f352d" >> .env
-          echo "FIREBASE_PRIVATE_KEY=::add-mask::${{ secrets.FIREBASE_PRIVATE_KEY }}"" >> .env
+          echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env
           echo "FIREBASE_CLIENT_EMAIL=firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
           echo "HUB_CURRENT_FIRMWARE_VERSION=0.1.0" >> .env
           echo "SENSOR_CURRENT_FIRMWARE_VERSION=0.1.1" >> .env
-          cat .env
           npm install
           npm run push-db:dev
           npm run build
@@ -156,15 +155,14 @@ jobs:
           ls -a
           cd handle-it-server
           touch .env
-          echo DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
-          echo FCM_TOKEN="test_fcm_token" >> .env
-          echo JWT_SECRET="test_secret" >> .env
-          echo FIREBASE_PROJECT_ID="handleit-f352d" >> .env
-          echo FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY}} >> .env
-          echo FIREBASE_CLIENT_EMAIL="firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
-          echo HUB_CURRENT_FIRMWARE_VERSION="0.1.0" >> .env
-          echo SENSOR_CURRENT_FIRMWARE_VERSION="0.1.1" >> .env
-          cat .env
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
+          echo "FCM_TOKEN=test_fcm_token" >> .env
+          echo "JWT_SECRET=test_secret" >> .env
+          echo "FIREBASE_PROJECT_ID=handleit-f352d" >> .env
+          echo "FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}" >> .env
+          echo "FIREBASE_CLIENT_EMAIL=firebase-adminsdk-icmto@handleit-f352d.iam.gserviceaccount.com" >> .env
+          echo "HUB_CURRENT_FIRMWARE_VERSION=0.1.0" >> .env
+          echo "SENSOR_CURRENT_FIRMWARE_VERSION=0.1.1" >> .env
           npm install
           npm run push-db:dev
           npm run build
