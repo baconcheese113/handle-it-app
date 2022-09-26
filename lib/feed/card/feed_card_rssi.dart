@@ -53,6 +53,6 @@ class _FeedCardRssiState extends State<FeedCardRssi> {
       if (_distance < 2) return "<1 meter";
       return "${_distance.round()} meters";
     }();
-    return Text(" $rangeStr");
+    return Expanded(child: Text(" $rangeStr"));
   }
 }
