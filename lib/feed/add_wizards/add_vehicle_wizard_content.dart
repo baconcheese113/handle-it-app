@@ -45,7 +45,15 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       print(">>> Looking for ${widget.pairedHubId} and Hubs are ${hubs.map((h) => h.id)}");
       _hubCustomName = hubs.firstWhere((hub) => hub.id == widget.pairedHubId).name;
       print("HubCustomName is $_hubCustomName");
-      _formsPageViewController!.animateToPage(1, duration: const Duration(milliseconds: 100), curve: Curves.ease);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_formsPageViewController!.hasClients) {
+          _formsPageViewController?.animateToPage(
+            1,
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     }
   }
 
