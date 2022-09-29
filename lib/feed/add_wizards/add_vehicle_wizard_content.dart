@@ -88,11 +88,12 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
 
     await _bleProvider.scan(
       timeout: const Duration(seconds: 10),
-      onScanResult: (d) {
+      onScanResult: (d, iosMac) {
         if (d.name.isEmpty) return false;
         setState(() => _curDevice = d);
-        print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
-        if (d.name == HUB_NAME && !hubIds.contains(d.id.id.toLowerCase())) {
+        final mac = (iosMac ?? d.id.id).toLowerCase();
+        print("Scanned peripheral ${d.name}, MAC $mac");
+        if (d.name == HUB_NAME && !hubIds.contains(mac)) {
           print("Found Hub!");
           setState(() => _foundHub = d);
           return true;
@@ -101,8 +102,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       },
     );
 
-    await _foundHub?.connect(timeout: const Duration(seconds: 10));
-    final isConnected = (await _foundHub?.state.last) == BluetoothDeviceState.connected;
+    final isConnected = await _bleProvider.tryConnect(_foundHub);
     if (!isConnected) {
       print("no new devices connected and scan stopped");
       return _resetConn();

@@ -58,7 +58,7 @@ class _SensorUpdaterState extends State<SensorUpdater> {
     await _bleProvider.scan(
       services: [Guid(VOLTS_SERVICE_UUID)],
       timeout: const Duration(seconds: 10),
-      onScanResult: (d) {
+      onScanResult: (d, iosMac) {
         print("Scanned sensor ${d.name}, MAC ${d.id.id}");
         setState(() => _foundSensor = d);
         return true;

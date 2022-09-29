@@ -17,6 +17,7 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 final selectNotificationSubject = BehaviorSubject<String>();
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Received RemoteMessage $message");
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   final data = message.data;
   bool hubIsNearby = false;
@@ -35,6 +36,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       return;
     }
   }
+  const IOSNotificationDetails iosSpecifics = IOSNotificationDetails();
   print("trying to show notification");
   const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails("channel_id", "channel_name",
       channelDescription: "Test bed for all dem notifications",
@@ -42,7 +44,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       priority: Priority.max,
       fullScreenIntent: true,
       showWhen: true);
-  const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics);
+  const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics, iOS: iosSpecifics);
   await localNotifications.show(1, data["title"], data["body"], platformSpecifics, payload: data["eventId"]);
   print("showed notification");
 }

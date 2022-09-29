@@ -68,6 +68,7 @@ class _LoginState extends State<Login> {
                       onPressed: () async {
                         if (_email.length < 3 || _password.length < 3) return; // TODO validate
                         final fcmToken = await FirebaseMessaging.instance.getToken();
+                        print("fcmToken is $fcmToken");
                         runMutation(
                           Variables$Mutation$Login(
                             email: _email,

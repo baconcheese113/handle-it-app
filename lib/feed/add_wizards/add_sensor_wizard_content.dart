@@ -36,19 +36,20 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     } else {
       await _bleProvider.scan(
           timeout: const Duration(seconds: 10),
-          onScanResult: (d) {
-            print("${d.name} == $HUB_NAME && ${d.id.id.toLowerCase()} == ${widget.hubFrag.serial.toLowerCase()}");
-            if (d.name == HUB_NAME && d.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
+          onScanResult: (d, iosMac) {
+            final mac = (iosMac ?? d.id.id).toLowerCase();
+            print("${d.name} == $HUB_NAME && $mac == ${widget.hubFrag.serial.toLowerCase()}");
+            if (d.name == HUB_NAME && mac == widget.hubFrag.serial.toLowerCase()) {
               setState(() => _foundHub = d);
               return true;
             }
-            if (d.name.isNotEmpty) print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
+            if (d.name.isNotEmpty) print("Scanned peripheral ${d.name}, MAC $mac");
             return false;
           });
-      await _foundHub?.connect(timeout: const Duration(seconds: 10));
-      final isConnected = (await _foundHub?.state.last) == BluetoothDeviceState.connected;
+      final isConnected = await _bleProvider.tryConnect(_foundHub);
       if (!isConnected) {
         print("no hub connected and scan stopped");
+        cancelForm();
         return;
       }
     }
@@ -107,6 +108,13 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     _formsPageViewController!.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
+  Future<bool> cancelForm() async {
+    await _foundHub?.disconnect();
+    await _bleProvider.stopScan();
+    context.vRouter.pop();
+    return true;
+  }
+
   // 1: automatically start trying to connect to hub
   // 2: Press to search for sensors (BLE message "startSensorSearch:1")
   // 3: Sensor confirm and select door (BLE messages "sensorFound:69", "sensorConnect:69" | "sensorSkip:69")
@@ -114,13 +122,6 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   @override
   Widget build(BuildContext context) {
     _bleProvider = Provider.of<BleProvider>(context, listen: true);
-
-    Future<bool> cancelForm() async {
-      await _foundHub?.disconnect();
-      await _bleProvider.stopScan();
-      context.vRouter.pop();
-      return true;
-    }
 
     void addSensor(bool shouldExit) async {
       setState(() => _processing = true);

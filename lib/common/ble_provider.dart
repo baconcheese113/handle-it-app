@@ -79,8 +79,22 @@ class BleProvider extends ChangeNotifier {
     return (await FlutterBluePlus.instance.connectedDevices).firstWhereOrNull((d) => d.name == name);
   }
 
+  Future<bool> tryConnect(BluetoothDevice? hub) async {
+    // Needed for older devices
+    BluetoothDeviceState? state;
+    final stateListener = hub?.state.listen((newState) {
+      print("New state is $newState");
+      state = newState;
+    });
+    await hub?.connect(timeout: const Duration(seconds: 10));
+    state ??= await Future<BluetoothDeviceState?>.value(hub?.state.last).timeout(const Duration(seconds: 1));
+    stateListener?.cancel();
+    final isConnected = hub != null && state == BluetoothDeviceState.connected;
+    return isConnected;
+  }
+
   Future<BluetoothDevice?> scan({
-    required bool Function(BluetoothDevice) onScanResult,
+    required bool Function(BluetoothDevice, String?) onScanResult,
     List<Guid> services = const [],
     Duration? timeout = const Duration(seconds: 20),
   }) async {
@@ -89,7 +103,10 @@ class BleProvider extends ChangeNotifier {
     notifyListeners();
     BluetoothDevice? ret;
     await for (final r in FlutterBluePlus.instance.scan(timeout: timeout, withServices: services)) {
-      if (onScanResult(r.device)) {
+      final advMacRaw = r.advertisementData.manufacturerData[0];
+      final advMacStr =
+          advMacRaw != null ? List.generate(6, (idx) => advMacRaw[idx].toRadixString(16).padLeft(2)).join(":") : null;
+      if (onScanResult(r.device, advMacStr)) {
         ret = r.device;
         break;
       }

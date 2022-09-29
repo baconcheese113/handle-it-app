@@ -55,7 +55,7 @@ class _HubUpdaterState extends State<HubUpdater> {
     final notifyVal = await smpChar.setNotifyValue(true);
     print(">>> notifyVal is $notifyVal");
 
-    final mtu = await widget.foundHub.requestMtu(252);
+    final mtu = Platform.isIOS ? await widget.foundHub.mtu.last : await widget.foundHub.requestMtu(252);
     print(">>> new mtu is $mtu");
 
     final newClient = Client(

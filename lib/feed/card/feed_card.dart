@@ -39,9 +39,10 @@ class _FeedCardState extends State<FeedCard> {
     await _bleProvider.scan(
         services: [Guid(HUB_SERVICE_UUID)],
         timeout: const Duration(seconds: 10),
-        onScanResult: (d) {
-          print("Scanned peripheral ${d.name}, MAC ${d.id.id}");
-          if (d.id.id.toLowerCase() == widget.hubFrag.serial.toLowerCase()) {
+        onScanResult: (d, iosMac) {
+          final mac = (iosMac ?? d.id.id).toLowerCase();
+          print("Scanned peripheral ${d.name}, MAC $mac");
+          if (mac == widget.hubFrag.serial.toLowerCase()) {
             setState(() => _foundHub = d);
             return true;
           }
@@ -51,9 +52,8 @@ class _FeedCardState extends State<FeedCard> {
       setState(() => _deviceState = state);
       print(">>> New connection state is: $state");
     });
-    await _foundHub?.connect(timeout: const Duration(seconds: 10));
-
-    if (_foundHub == null) {
+    final isConnected = await _bleProvider.tryConnect(_foundHub);
+    if (!isConnected) {
       print("no devices connected and scan stopped");
       return;
     }
