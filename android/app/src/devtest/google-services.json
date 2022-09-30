@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "874590734915",
+    "project_id": "handleit-devtest",
+    "storage_bucket": "handleit-devtest.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874590734915:android:c933b5694927587180a2f6",
+        "android_client_info": {
+          "package_name": "io.handleit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "874590734915-4celij3lqverl144doma0g98spnfiedq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVCK9veiuJGedMPWnZnOsHQ5T7rs-W9jU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "874590734915-4celij3lqverl144doma0g98spnfiedq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "874590734915-1ck1tq9goccdss1k0cff4ul03381e1a0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.handleit.devtest"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874590734915:android:8b591fa0f96ebe2980a2f6",
+        "android_client_info": {
+          "package_name": "io.handleit.devtest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "874590734915-4celij3lqverl144doma0g98spnfiedq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVCK9veiuJGedMPWnZnOsHQ5T7rs-W9jU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "874590734915-4celij3lqverl144doma0g98spnfiedq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "874590734915-1ck1tq9goccdss1k0cff4ul03381e1a0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.handleit.devtest"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
