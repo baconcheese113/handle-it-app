@@ -17,7 +17,7 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 final selectNotificationSubject = BehaviorSubject<String>();
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Received RemoteMessage $message");
+  print("Received RemoteMessage ${message.data.toString()}");
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   final data = message.data;
   bool hubIsNearby = false;
@@ -70,13 +70,19 @@ void main({BleProvider? bleProvider}) async {
     requestBadgePermission: false,
     requestSoundPermission: false,
   );
-  const InitializationSettings initializationSettings =
-      InitializationSettings(android: androidSettings, iOS: iosSettings);
-  await localNotifications.initialize(initializationSettings, onSelectNotification: (String? payload) async {
-    initialRoute = Login.routeName;
-    if (payload != null) selectNotificationSubject.add(payload);
-    print("Notification payload: $payload, and initialRoute: $initialRoute");
-  });
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: androidSettings,
+    iOS: iosSettings,
+  );
+  final notificationsReady = await localNotifications.initialize(
+    initializationSettings,
+    onSelectNotification: (String? payload) async {
+      initialRoute = Login.routeName;
+      if (payload != null) selectNotificationSubject.add(payload);
+      print("Notification payload: $payload, and initialRoute: $initialRoute");
+    },
+  );
+  print("notificationsReady: $notificationsReady");
   await localNotifications.cancelAll();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 

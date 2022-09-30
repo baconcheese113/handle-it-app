@@ -16,7 +16,6 @@ const String SMP_UPDATE_CHARACTERISTIC_UUID = "da2e7828-fbce-4e01-ae9e-261174997
 
 class BleProvider extends ChangeNotifier {
   bool scanning = false;
-  bool _hasPermissions = false;
   bool _isDisposed = false;
 
   @override
@@ -36,12 +35,10 @@ class BleProvider extends ChangeNotifier {
       if (!await hasPermission(Permission.location) ||
           !await hasPermission(Permission.bluetoothScan) ||
           !await hasPermission(Permission.bluetoothConnect)) {
-        _hasPermissions = false;
         notifyListeners();
         return false;
       }
     }
-    _hasPermissions = true;
     notifyListeners();
     return true;
   }
@@ -51,12 +48,10 @@ class BleProvider extends ChangeNotifier {
       if (!await requestPermission(Permission.location) ||
           !await requestPermission(Permission.bluetoothScan) ||
           !await requestPermission(Permission.bluetoothConnect)) {
-        _hasPermissions = false;
         notifyListeners();
         return false;
       }
     }
-    _hasPermissions = true;
     notifyListeners();
     return true;
   }
@@ -80,6 +75,7 @@ class BleProvider extends ChangeNotifier {
   }
 
   Future<bool> tryConnect(BluetoothDevice? hub) async {
+    if (!await FlutterBluePlus.instance.isOn) return false;
     // Needed for older devices
     BluetoothDeviceState? state;
     final stateListener = hub?.state.listen((newState) {
@@ -98,14 +94,16 @@ class BleProvider extends ChangeNotifier {
     List<Guid> services = const [],
     Duration? timeout = const Duration(seconds: 20),
   }) async {
+    if (!await FlutterBluePlus.instance.isOn) return null;
     if (scanning) await stopScan();
     scanning = true;
     notifyListeners();
     BluetoothDevice? ret;
     await for (final r in FlutterBluePlus.instance.scan(timeout: timeout, withServices: services)) {
       final advMacRaw = r.advertisementData.manufacturerData[0];
-      final advMacStr =
-          advMacRaw != null ? List.generate(6, (idx) => advMacRaw[idx].toRadixString(16).padLeft(2)).join(":") : null;
+      final advMacStr = advMacRaw != null
+          ? List.generate(6, (idx) => advMacRaw[idx].toRadixString(16).padLeft(2, '0')).join(":")
+          : null;
       if (onScanResult(r.device, advMacStr)) {
         ret = r.device;
         break;
@@ -118,6 +116,7 @@ class BleProvider extends ChangeNotifier {
   }
 
   Future<void> stopScan() async {
+    if (!await FlutterBluePlus.instance.isOn) return;
     await FlutterBluePlus.instance.stopScan();
     scanning = false;
     notifyListeners();
