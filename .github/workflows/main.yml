@@ -127,9 +127,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [23, 26, 27, 28, 29, 30]
+        api-level: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
           # you can add more API level if you want to run your tests on different API
-      fail-fast: true
+      fail-fast: false
     steps:
       - uses: ikalnytskyi/action-setup-postgres@v3
         with:
