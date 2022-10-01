@@ -187,7 +187,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                         "Turn on your sensor, then press start to search for a new sensor for ${widget.hubFrag.name}",
                         textScaleFactor: 1.3,
                       ),
-                      _bleProvider.scanning
+                      _processing
                           ? const CircularProgressIndicator()
                           : TextButton(
                               key: const ValueKey("button.startSearch"),

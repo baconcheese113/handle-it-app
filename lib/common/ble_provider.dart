@@ -75,17 +75,18 @@ class BleProvider extends ChangeNotifier {
   }
 
   Future<bool> tryConnect(BluetoothDevice? hub) async {
+    if (hub == null) return false;
     if (!await FlutterBluePlus.instance.isOn) return false;
     // Needed for older devices
     BluetoothDeviceState? state;
-    final stateListener = hub?.state.listen((newState) {
+    final stateListener = hub.state.listen((newState) {
       print("New state is $newState");
       state = newState;
     });
-    await hub?.connect(timeout: const Duration(seconds: 10));
-    state ??= await Future<BluetoothDeviceState?>.value(hub?.state.last).timeout(const Duration(seconds: 1));
-    stateListener?.cancel();
-    final isConnected = hub != null && state == BluetoothDeviceState.connected;
+    await hub.connect(timeout: const Duration(seconds: 10));
+    state ??= await Future<BluetoothDeviceState?>.value(hub.state.last).timeout(const Duration(seconds: 1));
+    stateListener.cancel();
+    final isConnected = state == BluetoothDeviceState.connected;
     return isConnected;
   }
 

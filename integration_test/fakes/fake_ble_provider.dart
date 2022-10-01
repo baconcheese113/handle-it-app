@@ -35,8 +35,8 @@ class FakeBleProvider extends BleProvider {
     scanning = true;
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 200));
-    final mac = Platform.isIOS ? TEST_HUB_UUID : TEST_HUB_MAC;
-    final mockBluetoothDevice = FakeBluetoothDevice.fromId(TEST_HUB_MAC);
+    final id = Platform.isIOS ? TEST_HUB_UUID : TEST_HUB_MAC;
+    final mockBluetoothDevice = FakeBluetoothDevice.fromId(id);
     onScanResult(mockBluetoothDevice, TEST_HUB_MAC);
     await Future.delayed(const Duration(milliseconds: 200));
     scanning = false;
@@ -49,5 +49,10 @@ class FakeBleProvider extends BleProvider {
     await Future.delayed(const Duration(milliseconds: 200));
     scanning = false;
     notifyListeners();
+  }
+
+  @override
+  Future<bool> tryConnect(BluetoothDevice? hub) async {
+    return hub != null;
   }
 }
