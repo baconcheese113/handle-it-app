@@ -104,7 +104,7 @@ jobs:
         run: |
           cd handle-it-app
           touch .env
-          echo API_URL=http://localhost:4000 >> .env
+          echo API_URL=http://localhost:8080 >> .env
           echo FIRMWARE_SERVER_URL=${{ secrets.FIRMWARE_SERVER_URL }} >> .env
           echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
           cat .env
@@ -115,7 +115,7 @@ jobs:
           cd handle-it-server &&
           npm run start &
           sleep 5 &&
-          curl http://localhost:4000 -I
+          curl http://localhost:8080 -I
 
       - name: Run integration tests
         run: |
@@ -203,7 +203,7 @@ jobs:
         run: |
           cd handle-it-app
           touch .env
-          echo API_URL=http://10.0.2.2:4000 >> .env
+          echo API_URL=http://10.0.2.2:8080 >> .env
           echo FIRMWARE_SERVER_URL=${{ secrets.FIRMWARE_SERVER_URL }} >> .env
           echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
           cat .env
@@ -214,7 +214,7 @@ jobs:
           cd handle-it-server &&
           npm run start &
           sleep 5 &&
-          curl http://localhost:4000 -I
+          curl http://localhost:8080 -I
 
       - name: Gradle cache
         uses: gradle/gradle-build-action@v2
