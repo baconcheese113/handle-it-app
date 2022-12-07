@@ -195,6 +195,7 @@ void networkTests() {
         of: newNetworkCard,
         matching: find.byKey(const ValueKey('button.deleteNetwork')),
       );
+      await pumpUntilFound(widgetTester, newNetworkCardDelete);
       await widgetTester.ensureVisible(newNetworkCardDelete);
       await tapAndWaitMs(widgetTester, newNetworkCardDelete, 0);
     });
