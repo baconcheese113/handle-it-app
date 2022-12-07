@@ -125,7 +125,7 @@ jobs:
 
   # job responsible for running Flutter tests on Android devices
   android:
-    runs-on: macos-latest
+    runs-on: macos-11
     strategy:
       matrix:
         api-level: [28]
