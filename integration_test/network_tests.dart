@@ -189,6 +189,7 @@ void networkTests() {
 
       final newNetworkCard = find.widgetWithText(Card, networkName, skipOffstage: false);
       await pumpUntilFound(widgetTester, newNetworkCard);
+      expect(newNetworkCard, findsOneWidget);
       await widgetTester.ensureVisible(newNetworkCard);
 
       final newNetworkCardDelete = find.descendant(
@@ -196,6 +197,7 @@ void networkTests() {
         matching: find.byKey(const ValueKey('button.deleteNetwork')),
       );
       await pumpUntilFound(widgetTester, newNetworkCardDelete);
+      expect(newNetworkCardDelete, findsOneWidget);
       await widgetTester.ensureVisible(newNetworkCardDelete);
       await tapAndWaitMs(widgetTester, newNetworkCardDelete, 0);
     });
