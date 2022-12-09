@@ -234,9 +234,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2.27.0
         with:
           api-level: ${{ matrix.api-level }}
-          profile: Nexus 5
           target: playstore
-          arch: x86
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -247,9 +245,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2.27.0
         with:
           api-level: ${{ matrix.api-level }}
-          profile: Nexus 5
           target: playstore
-          arch: x86
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
