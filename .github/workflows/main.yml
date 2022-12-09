@@ -7,7 +7,6 @@ on: [push, workflow_dispatch]
 env:
   FLUTTER_VERSION: 3.3.2
   NODE_VERSION: 18.7.0
-  ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: 170 # Default is 20
 
 # 2 jobs are configured.
 # The first one runs tests on iOS devices.
