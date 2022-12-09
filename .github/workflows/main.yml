@@ -217,30 +217,30 @@ jobs:
           sleep 5 &&
           curl http://localhost:8080 -I
 
-      - name: Gradle cache
-        uses: gradle/gradle-build-action@v2.3.3
+      # - name: Gradle cache
+      #   uses: gradle/gradle-build-action@v2.3.3
       
-      - name: AVD cache
-        uses: actions/cache@v3.0.11
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/avb*
-          key: avd-${{ matrix.api-level }}
+      # - name: AVD cache
+      #   uses: actions/cache@v3.0.11
+      #   id: avd-cache
+      #   with:
+      #     path: |
+      #       ~/.android/avd/*
+      #       ~/.android/avb*
+      #     key: avd-${{ matrix.api-level }}
 
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != true
-        uses: reactivecircus/android-emulator-runner@v2.27.0
-        with:
-          api-level: ${{ matrix.api-level }}
-          profile: Nexus 5
-          target: playstore
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
+      # - name: Create AVD and generate snapshot for caching
+      #   if: steps.avd-cache.outputs.cache-hit != true
+      #   uses: reactivecircus/android-emulator-runner@v2.27.0
+      #   with:
+      #     api-level: ${{ matrix.api-level }}
+      #     profile: Nexus 5
+      #     target: playstore
+      #     arch: x86_64
+      #     force-avd-creation: false
+      #     emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+      #     disable-animations: false
+      #     script: echo "Generated AVD snapshot for caching."
 
       - name: Run integration tests
         # more info on https://github.com/ReactiveCircus/android-emulator-runner
