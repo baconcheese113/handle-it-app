@@ -252,5 +252,5 @@ jobs:
           arch: x86
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
+          disable-animations: false
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
