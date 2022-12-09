@@ -48,7 +48,8 @@ void addDeviceTests() {
       await tapAndWaitMs(widgetTester, addSensorMenuItem, 0);
 
       final startSearchButton = find.byKey(const ValueKey('button.startSearch'));
-      await pumpUntilFound(widgetTester, startSearchButton);
+      await pumpUntilFound(widgetTester, startSearchButton, timeout: const Duration(seconds: 20));
+      expect(startSearchButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, startSearchButton, 0);
 
       final saveButton = find.byKey(const ValueKey('button.save')).hitTestable();
