@@ -114,7 +114,7 @@ jobs:
         run: |
           cd handle-it-server &&
           npm run start &
-          sleep 5 &&
+          sleep 10 &&
           curl http://localhost:8080 -I
 
       - name: Run integration tests
@@ -214,7 +214,7 @@ jobs:
         run: |
           cd handle-it-server &&
           npm run start &
-          sleep 5 &&
+          sleep 10 &&
           curl http://localhost:8080 -I
 
       # - name: Gradle cache
