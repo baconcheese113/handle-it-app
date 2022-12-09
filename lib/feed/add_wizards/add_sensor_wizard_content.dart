@@ -40,7 +40,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
             final mac = (iosMac ?? d.id.id).toLowerCase();
             print("${d.name} == $HUB_NAME && $mac == ${widget.hubFrag.serial.toLowerCase()}");
             if (d.name == HUB_NAME && mac == widget.hubFrag.serial.toLowerCase()) {
-              setState(() => _foundHub = d);
+              if (mounted) setState(() => _foundHub = d);
               return true;
             }
             if (d.name.isNotEmpty) print("Scanned peripheral ${d.name}, MAC $mac");
