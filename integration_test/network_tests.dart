@@ -41,12 +41,12 @@ void networkTests() {
         }
         return null;
       });
-      await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 3));
 
       final networkNavIcon = find.byKey(const ValueKey('navIcon.network'));
       await pumpUntilFound(widgetTester, networkNavIcon);
       expect(networkNavIcon, findsOneWidget);
-      await tapAndWaitMs(widgetTester, networkNavIcon, 0);
+      await tapAndWaitMs(widgetTester, networkNavIcon, 1000);
 
       final membersTab = find.byKey(const ValueKey('tab.members'));
       await pumpUntilFound(widgetTester, membersTab);
@@ -54,19 +54,23 @@ void networkTests() {
       await tapAndWaitMs(widgetTester, membersTab, 0);
 
       final createNetworkButton = find.byKey(const ValueKey('button.createNetwork'));
+      await pumpUntilFound(widgetTester, createNetworkButton);
       expect(createNetworkButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, createNetworkButton, 0);
 
       final createNetworkName = faker.address.neighborhood();
       final networkNameInput = find.byKey(const ValueKey('input.networkName'));
+      await pumpUntilFound(widgetTester, networkNameInput);
       expect(networkNameInput, findsOneWidget);
       await widgetTester.enterText(networkNameInput, createNetworkName);
 
       final createButton = find.byKey(const ValueKey('button.create'));
+      await pumpUntilFound(widgetTester, createButton);
       expect(createButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, createButton, 0);
 
       final networksList = find.byKey(const ValueKey('list.networks'));
+      await pumpUntilFound(widgetTester, networksList);
       expect(networksList, findsOneWidget);
 
       final createNetworkText = find.text(createNetworkName, skipOffstage: false);
@@ -136,14 +140,17 @@ void networkTests() {
       await tapAndWaitMs(widgetTester, joinNetworkButton, 0);
 
       final joinNetworkNameInput = find.byKey(const ValueKey('input.networkName'));
+      await pumpUntilFound(widgetTester, joinNetworkNameInput);
       expect(joinNetworkNameInput, findsOneWidget);
       await widgetTester.enterText(joinNetworkNameInput, networkName);
 
       final joinButton = find.byKey(const ValueKey('button.join'));
+      await pumpUntilFound(widgetTester, joinButton);
       expect(joinButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, joinButton, 0);
 
       final invitesTab = find.byKey(const ValueKey('tab.invites'));
+      await pumpUntilFound(widgetTester, invitesTab);
       expect(invitesTab, findsOneWidget);
       await tapAndWaitMs(widgetTester, invitesTab, 0);
 
@@ -185,7 +192,7 @@ void networkTests() {
       expect(acceptInvitationButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, acceptInvitationButton, 0);
 
-      await tapAndWaitMs(widgetTester, membersTab, 0);
+      await tapAndWaitMs(widgetTester, membersTab, 500);
       await widgetTester.drag(networksList, const Offset(0, 500));
       await widgetTester.pumpAndSettle();
 
