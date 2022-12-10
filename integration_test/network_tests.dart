@@ -13,7 +13,7 @@ import 'fakes/fake_ble_provider.dart';
 import 'utils.dart';
 
 void networkTests() {
-  group('network_test', () {
+  group('network test', () {
     setUpAll(() async {
       IntegrationTestWidgetsFlutterBinding.ensureInitialized();
       const storage = FlutterSecureStorage();
