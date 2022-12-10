@@ -249,4 +249,5 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
+          emulator-build: 7425822
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
