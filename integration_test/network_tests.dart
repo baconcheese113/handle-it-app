@@ -34,6 +34,13 @@ void networkTests() {
         }
         return null;
       });
+
+      const MethodChannel('plugins.flutter.io/google_maps_1').setMockMethodCallHandler((MethodCall methodCall) async {
+        if (methodCall.method == 'map#waitForMap') {
+          return null;
+        }
+        return null;
+      });
       await Future.delayed(const Duration(seconds: 1));
 
       final networkNavIcon = find.byKey(const ValueKey('navIcon.network'));
@@ -61,11 +68,6 @@ void networkTests() {
 
       final networksList = find.byKey(const ValueKey('list.networks'));
       expect(networksList, findsOneWidget);
-      await widgetTester.drag(networksList, const Offset(0, 500));
-      await widgetTester.pumpAndSettle();
-
-      await Future.delayed(const Duration(seconds: 1));
-      await widgetTester.pumpAndSettle();
 
       final createNetworkText = find.text(createNetworkName, skipOffstage: false);
       await pumpUntilFound(widgetTester, createNetworkText);
