@@ -127,16 +127,16 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [28, 29, 30, 31, 32, 33]
-        arch: [x86_64]
+        # api-level: [28, 29, 30, 31, 32, 33]
+        # arch: [x86_64]
         include:
           - api-level: 24
             arch: x86
           # api level 25 always times out at 12 min
-          - api-level: 26
-            arch: x86
-          - api-level: 27
-            arch: x86
+          # - api-level: 26
+          #   arch: x86
+          # - api-level: 27
+          #   arch: x86
       fail-fast: false
     steps:
       - uses: ikalnytskyi/action-setup-postgres@v3
