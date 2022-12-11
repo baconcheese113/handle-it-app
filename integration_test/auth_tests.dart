@@ -62,12 +62,12 @@ void authTests() {
 
       final profileFinder = find.byKey(const ValueKey('navIcon.profile'));
       expect(profileFinder, findsOneWidget);
-      await widgetTester.tap(profileFinder);
+      await tapAndWaitMs(widgetTester, profileFinder, 0);
 
       final logoutFinder = find.byKey(const ValueKey('button.logout'));
       await pumpUntilFound(widgetTester, logoutFinder);
       expect(logoutFinder, findsOneWidget);
-      await widgetTester.tap(logoutFinder);
+      await tapAndWaitMs(widgetTester, logoutFinder, 1000);
     });
 
     testWidgets("Should sign-in", (widgetTester) async {

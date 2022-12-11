@@ -46,7 +46,7 @@ void networkTests() {
       final networkNavIcon = find.byKey(const ValueKey('navIcon.network'));
       await pumpUntilFound(widgetTester, networkNavIcon);
       expect(networkNavIcon, findsOneWidget);
-      await tapAndWaitMs(widgetTester, networkNavIcon, 1000);
+      await tapAndWaitMs(widgetTester, networkNavIcon, 3000);
 
       final membersTab = find.byKey(const ValueKey('tab.members'));
       await pumpUntilFound(widgetTester, membersTab);
