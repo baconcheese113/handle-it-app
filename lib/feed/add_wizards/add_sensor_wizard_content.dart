@@ -111,7 +111,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   Future<bool> cancelForm() async {
     await _foundHub?.disconnect();
     await _bleProvider.stopScan();
-    context.vRouter.pop();
+    if (mounted) context.vRouter.pop();
     return true;
   }
 

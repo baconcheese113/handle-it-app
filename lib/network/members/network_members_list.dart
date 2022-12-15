@@ -49,10 +49,8 @@ class _NetworkMembersListState extends State<NetworkMembersList> {
                 children: [
                   Consumer<NetworkProvider>(
                     builder: ((context, netProvider, child) => Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 200),
+                            Expanded(
                               child: Text(
                                 networkFrag.name,
                                 style: TextStyle(fontSize: 24, color: netProvider.registerNetwork(networkFrag.id)),

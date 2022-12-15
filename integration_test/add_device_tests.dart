@@ -10,7 +10,7 @@ import 'fakes/fake_ble_provider.dart';
 import 'utils.dart';
 
 void addDeviceTests() {
-  group('add_device', () {
+  group('add device test', () {
     setUpAll(() async {
       IntegrationTestWidgetsFlutterBinding.ensureInitialized();
       const storage = FlutterSecureStorage();
@@ -41,14 +41,15 @@ void addDeviceTests() {
       var cardMenuButton = find.byKey(const ValueKey('button.cardMenu'), skipOffstage: false).last;
       await pumpUntilFound(widgetTester, cardMenuButton);
       await widgetTester.ensureVisible(cardMenuButton);
-      await tapAndWaitMs(widgetTester, cardMenuButton, 0);
+      await tapAndWaitMs(widgetTester, cardMenuButton, 500);
 
       final addSensorMenuItem = find.byKey(const ValueKey('menuItem.addSensor'));
       await pumpUntilFound(widgetTester, addSensorMenuItem);
       await tapAndWaitMs(widgetTester, addSensorMenuItem, 0);
 
       final startSearchButton = find.byKey(const ValueKey('button.startSearch'));
-      await pumpUntilFound(widgetTester, startSearchButton);
+      await pumpUntilFound(widgetTester, startSearchButton, timeout: const Duration(seconds: 20));
+      expect(startSearchButton, findsOneWidget);
       await tapAndWaitMs(widgetTester, startSearchButton, 0);
 
       final saveButton = find.byKey(const ValueKey('button.save')).hitTestable();

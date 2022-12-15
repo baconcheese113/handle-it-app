@@ -5,7 +5,7 @@ name: main
 on: [push, workflow_dispatch]
 
 env:
-  FLUTTER_VERSION: 3.3.2
+  FLUTTER_VERSION: 3.3.9
   NODE_VERSION: 18.7.0
 
 # 2 jobs are configured.
@@ -114,7 +114,7 @@ jobs:
         run: |
           cd handle-it-server &&
           npm run start &
-          sleep 5 &&
+          sleep 10 &&
           curl http://localhost:8080 -I
 
       - name: Run integration tests
@@ -127,8 +127,16 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [28]
-          # you can add more API level if you want to run your tests on different API
+        # api-level: [28, 29, 30, 31, 32, 33]
+        # arch: [x86_64]
+        include:
+          - api-level: 24
+            arch: x86
+          # api level 25 always times out at 12 min
+          # - api-level: 26
+          #   arch: x86
+          # - api-level: 27
+          #   arch: x86
       fail-fast: false
     steps:
       - uses: ikalnytskyi/action-setup-postgres@v3
@@ -153,7 +161,7 @@ jobs:
       - name: Setup Nodejs
         uses: actions/setup-node@v3.5.1
         with:
-          node-version: 18.7.0
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: './handle-it-server/package-lock.json'
 
@@ -214,42 +222,40 @@ jobs:
         run: |
           cd handle-it-server &&
           npm run start &
-          sleep 5 &&
+          sleep 10 &&
           curl http://localhost:8080 -I
 
-      - name: Gradle cache
-        uses: gradle/gradle-build-action@v2.3.3
+      # - name: Gradle cache
+      #   uses: gradle/gradle-build-action@v2.3.3
       
-      - name: AVD cache
-        uses: actions/cache@v3.0.11
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/avb*
-          key: avd-${{ matrix.api-level }}
+      # - name: AVD cache
+      #   uses: actions/cache@v3.0.11
+      #   id: avd-cache
+      #   with:
+      #     path: |
+      #       ~/.android/avd/*
+      #       ~/.android/avb*
+      #     key: avd-${{ matrix.api-level }}
 
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != true
-        uses: reactivecircus/android-emulator-runner@v2.27.0
-        with:
-          api-level: ${{ matrix.api-level }}
-          profile: Nexus 5
-          target: playstore
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
+      # - name: Create AVD and generate snapshot for caching
+      #   if: steps.avd-cache.outputs.cache-hit != true
+      #   uses: reactivecircus/android-emulator-runner@v2.27.0
+      #   with:
+      #     api-level: ${{ matrix.api-level }}
+      #     target: playstore
+      #     arch: ${{ matrix.arch }}
+      #     force-avd-creation: false
+      #     emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+      #     disable-animations: false
+      #     script: echo "Generated AVD snapshot for caching."
 
       - name: Run integration tests
         # more info on https://github.com/ReactiveCircus/android-emulator-runner
         uses: reactivecircus/android-emulator-runner@v2.27.0
         with:
           api-level: ${{ matrix.api-level }}
-          profile: Nexus 5
           target: playstore
-          arch: x86_64
+          arch: ${{ matrix.arch }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false

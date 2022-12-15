@@ -9,7 +9,7 @@ import 'package:graphql/client.dart';
 Future<void> pumpUntilFound(
   WidgetTester tester,
   Finder finder, {
-  Duration timeout = const Duration(seconds: 10),
+  Duration timeout = const Duration(seconds: 20),
 }) async {
   bool timerDone = false;
   final timer = Timer(timeout, () => timerDone = true);
