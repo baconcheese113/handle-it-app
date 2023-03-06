@@ -135,8 +135,8 @@ jobs:
           # api level 25 always times out at 12 min
           # - api-level: 26
           #   arch: x86
-          # - api-level: 27
-          #   arch: x86
+          - api-level: 27
+            arch: x86
       fail-fast: false
     steps:
       - uses: ikalnytskyi/action-setup-postgres@v4
