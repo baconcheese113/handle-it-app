@@ -38,7 +38,7 @@ dependencies:
   flutter_blue_plus: 1.1.3
   http: 0.13.4
   version: 3.0.2 # Used to parse sensor/hub versions
-  google_maps_flutter: 2.1.8
+  google_maps_flutter: 2.2.5
   flutter_config: 2.0.0 # flutter_dotenv but also compatible with native
   provider: 6.0.3
   collection: 1.17.0 # Used for nullable array operations

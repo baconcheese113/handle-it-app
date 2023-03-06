@@ -542,18 +542,34 @@ packages:
     dependency: "direct main"
     description:
       name: google_maps_flutter
-      sha256: d2a1f357f6ceed27486fb1af3fd6f37a997527e595d8d42b245ac95fcbb1dd88
+      sha256: "24392ef192f3b00bcd93151375676805a9933574423a5bd5509a0ead2e8a4215"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.8"
+    version: "2.2.5"
+  google_maps_flutter_android:
+    dependency: transitive
+    description:
+      name: google_maps_flutter_android
+      sha256: "88d0ed9ef7be4ba4839b85e67bd305ba1c5141e23b6fd1e665ef257755d8fef6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.8"
+  google_maps_flutter_ios:
+    dependency: transitive
+    description:
+      name: google_maps_flutter_ios
+      sha256: "3a69e04df77afb60587b5270baf43dc51f1c254c79f69ddf1d9546f758d9f709"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   google_maps_flutter_platform_interface:
     dependency: transitive
     description:
       name: google_maps_flutter_platform_interface
-      sha256: "39eb667f960064428f1db78e184fbb0f2e8a4b40e254ae0275162d6d57878322"
+      sha256: a07811d2b82055815ede75e1fe4b7b76f71a0b4820b26f71bdaddd157d6a3e20
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.0"
+    version: "2.2.6"
   gql:
     dependency: transitive
     description:
@@ -1438,4 +1454,4 @@ packages:
     version: "3.1.1"
 sdks:
   dart: ">=2.19.3 <3.0.0"
-  flutter: ">=3.0.0"
+  flutter: ">=3.3.0"
