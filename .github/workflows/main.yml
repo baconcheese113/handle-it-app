@@ -5,8 +5,8 @@ name: main
 on: [push, workflow_dispatch]
 
 env:
-  FLUTTER_VERSION: 3.3.9
-  NODE_VERSION: 18.7.0
+  FLUTTER_VERSION: 3.7.6
+  NODE_VERSION: 18.12.1
 
 # 2 jobs are configured.
 # The first one runs tests on iOS devices.
