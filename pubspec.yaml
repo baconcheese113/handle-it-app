@@ -23,7 +23,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: 10.0.0
+  permission_handler: 10.2.0
   firebase_core: 2.7.0 # Used with messaging for receiving notifications
   firebase_messaging: 14.2.5 # Used with core for receiving notifications
   just_audio: 0.9.27 # Used to play notification audio
