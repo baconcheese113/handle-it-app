@@ -35,7 +35,7 @@ dependencies:
   graphql_flutter: 5.1.2
   flutter_secure_storage: 8.0.0 # Similar to shared_preferences but for storing auth token
   flutter_dotenv: 5.0.2 # TODO replace usages with flutter_config
-  timeago: 3.2.2
+  timeago: 3.4.0
   flutter_blue_plus: 1.4.0
   http: 0.13.5
   version: 3.0.2 # Used to parse sensor/hub versions
