@@ -29,7 +29,7 @@ dependencies:
   firebase_messaging: 14.2.6 # Used with core for receiving notifications
   just_audio: 0.9.31 # Used to play notification audio
   shared_preferences: 2.0.17 # Used similar to local storage on web
-  flutter_local_notifications: 9.6.1 # Used to show full screen notifications programmatically from app
+  flutter_local_notifications: 13.0.0 # Used to show full screen notifications programmatically from app
   rxdart: 0.27.7 # Used with notifications to get notification subject and capture taps
   email_validator: 2.1.17
   graphql_flutter: 5.1.1-beta.4

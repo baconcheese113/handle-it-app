@@ -36,7 +36,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       return;
     }
   }
-  const IOSNotificationDetails iosSpecifics = IOSNotificationDetails();
+  const DarwinNotificationDetails iosSpecifics = DarwinNotificationDetails();
   print("trying to show notification");
   const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails("channel_id", "channel_name",
       channelDescription: "Test bed for all dem notifications",
@@ -57,7 +57,7 @@ void main({BleProvider? bleProvider}) async {
   final NotificationAppLaunchDetails? launchDetails = await localNotifications.getNotificationAppLaunchDetails();
   String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
   print(
-      "didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute, payload: ${launchDetails?.payload}");
+      "didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute, payload: ${launchDetails?.notificationResponse?.payload}");
 
   // final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   // final pushNotificationService = PushNotificationService(_firebaseMessaging);
@@ -65,22 +65,27 @@ void main({BleProvider? bleProvider}) async {
 
   // initialize the plugin. app_icon needs to be added as a drawable resource
   const AndroidInitializationSettings androidSettings = AndroidInitializationSettings("app_icon");
-  const IOSInitializationSettings iosSettings = IOSInitializationSettings(
+  const DarwinInitializationSettings darwinSettings = DarwinInitializationSettings(
     requestAlertPermission: false,
     requestBadgePermission: false,
     requestSoundPermission: false,
   );
   const InitializationSettings initializationSettings = InitializationSettings(
     android: androidSettings,
-    iOS: iosSettings,
+    iOS: darwinSettings,
   );
+
+  onNotification(NotificationResponse response) {
+    initialRoute = Login.routeName;
+    final payload = response.payload;
+    if (payload != null) selectNotificationSubject.add(payload);
+    print("Notification payload: $payload, and initialRoute: $initialRoute");
+  }
+
   final notificationsReady = await localNotifications.initialize(
     initializationSettings,
-    onSelectNotification: (String? payload) async {
-      initialRoute = Login.routeName;
-      if (payload != null) selectNotificationSubject.add(payload);
-      print("Notification payload: $payload, and initialRoute: $initialRoute");
-    },
+    onDidReceiveNotificationResponse: onNotification,
+    // onDidReceiveBackgroundNotificationResponse: onNotification,
   );
   print("notificationsReady: $notificationsReady");
   await localNotifications.cancelAll();
@@ -94,7 +99,7 @@ void main({BleProvider? bleProvider}) async {
   runApp(App(
     initialRoute: initialRoute,
     selectNotificationSubject: selectNotificationSubject,
-    eventId: launchDetails?.payload,
+    eventId: launchDetails?.notificationResponse?.payload,
     bleProvider: bleProvider,
   ));
 }
