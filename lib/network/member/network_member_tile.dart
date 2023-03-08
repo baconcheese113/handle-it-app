@@ -43,7 +43,7 @@ class _NetworkMemberTileState extends State<NetworkMemberTile> {
         dense: true,
         onTap: canViewHub
             ? () {
-                DefaultTabController.of(context)!.animateTo(0);
+                DefaultTabController.of(context).animateTo(0);
                 final hubLoc = LatLng(locs[0].lat, locs[0].lng);
                 final selectedHub = HubObject(hub.id, member.network.id, hubLoc);
                 netProvider.setSelectedHub(selectedHub);

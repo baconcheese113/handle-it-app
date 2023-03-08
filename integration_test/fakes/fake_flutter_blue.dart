@@ -125,7 +125,7 @@ class FakeBluetoothService implements BluetoothService {
 class FakeBluetoothDevice extends BluetoothDevice {
   List<BluetoothService> _fakeServices = [];
   BluetoothDeviceState _fakeState = BluetoothDeviceState.disconnected;
-  GraphQLClient _client;
+  final GraphQLClient _client;
   FakeBluetoothDevice.fromId(id)
       : _client = getClient(),
         super.fromId(id);
