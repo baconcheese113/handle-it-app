@@ -33,7 +33,7 @@ dependencies:
   rxdart: 0.27.7 # Used with notifications to get notification subject and capture taps
   email_validator: 2.1.17
   graphql_flutter: 5.1.1-beta.4
-  flutter_secure_storage: 5.0.2 # Similar to shared_preferences but for storing auth token
+  flutter_secure_storage: 8.0.0 # Similar to shared_preferences but for storing auth token
   flutter_dotenv: 5.0.2 # TODO replace usages with flutter_config
   timeago: 3.2.2
   flutter_blue_plus: 1.4.0
