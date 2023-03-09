@@ -46,6 +46,8 @@ class BleProvider extends ChangeNotifier {
   Future<bool> _requestBlePermissions() async {
     if (Platform.isAndroid) {
       if (!await requestPermission(Permission.location) ||
+          !await requestPermission(Permission.locationWhenInUse) ||
+          !await requestPermission(Permission.notification) ||
           !await requestPermission(Permission.bluetoothScan) ||
           !await requestPermission(Permission.bluetoothConnect)) {
         notifyListeners();
