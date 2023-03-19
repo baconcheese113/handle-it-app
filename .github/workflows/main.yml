@@ -46,12 +46,12 @@ jobs:
           xcrun simctl boot "${UDID:?No Simulator with this name found}"
 
       - name: Checkout app repo
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           path: handle-it-app
 
       - name: Checkout server repo
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
@@ -83,7 +83,7 @@ jobs:
           npm run seed
 
       - name: Cache Flutter dependencies
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ runner.tool_cache }}//flutter
           key: flutter-${{ env.FLUTTER_VERSION }}-stable
@@ -148,12 +148,12 @@ jobs:
         id: postgres
 
       - name: Checkout app repo
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           path: handle-it-app
 
       - name: Checkout server repo
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v3.4.0
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
@@ -191,7 +191,7 @@ jobs:
           java-version: 11
 
       - name: Cache Flutter dependencies
-        uses: actions/cache@v3.2.6
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ runner.tool_cache }}//flutter
           key: flutter-${{ env.FLUTTER_VERSION }}-stable
@@ -229,7 +229,7 @@ jobs:
       #   uses: gradle/gradle-build-action@v2.3.3
       
       # - name: AVD cache
-      #   uses: actions/cache@v3.2.6
+      #   uses: actions/cache@v3.3.1
       #   id: avd-cache
       #   with:
       #     path: |
@@ -239,7 +239,7 @@ jobs:
 
       # - name: Create AVD and generate snapshot for caching
       #   if: steps.avd-cache.outputs.cache-hit != true
-      #   uses: reactivecircus/android-emulator-runner@v2.27.0
+      #   uses: reactivecircus/android-emulator-runner@v2.28.0
       #   with:
       #     api-level: ${{ matrix.api-level }}
       #     target: playstore
@@ -251,7 +251,7 @@ jobs:
 
       - name: Run integration tests
         # more info on https://github.com/ReactiveCircus/android-emulator-runner
-        uses: reactivecircus/android-emulator-runner@v2.27.0
+        uses: reactivecircus/android-emulator-runner@v2.28.0
         with:
           api-level: ${{ matrix.api-level }}
           target: playstore
