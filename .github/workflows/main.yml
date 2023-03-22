@@ -123,7 +123,6 @@ jobs:
 
   # job responsible for running Flutter tests on Android devices
   android:
-    needs: apk
     runs-on: macos-latest
     strategy:
       matrix:
@@ -261,8 +260,12 @@ jobs:
           disable-animations: false
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
 
+  # If artifacts are hogging too much space
+  # https://github.com/actions/upload-artifact/issues/5#issuecomment-876499762
+
   apk:
     runs-on: ubuntu-latest
+    needs: android
     steps:
       - name: Checkout app repo
         uses: actions/checkout@v3.4.0
