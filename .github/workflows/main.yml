@@ -302,7 +302,7 @@ jobs:
       - name: Build APK
         run: |
           ls -al
-          flutter build apk
+          flutter build apk --flavor production
 
       - name: Upload APK
         uses: actions/upload-artifact@v3.1.2
