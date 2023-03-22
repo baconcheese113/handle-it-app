@@ -123,6 +123,7 @@ jobs:
 
   # job responsible for running Flutter tests on Android devices
   android:
+    needs: apk
     runs-on: macos-latest
     strategy:
       matrix:
@@ -188,16 +189,6 @@ jobs:
         with:
           distribution: "zulu"
           java-version: 11
-
-      - name: Build APK
-        run: bash ./gradlew assembleDebug --stacktrace
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v3.1.2
-        with:
-          name: apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
 
       - name: Cache Flutter dependencies
         uses: actions/cache@v3.3.1
@@ -269,3 +260,57 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
+
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app repo
+        uses: actions/checkout@v3.4.0
+        with:
+          path: handle-it-app
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3.10.0
+        with:
+          distribution: "zulu"
+          java-version: 11
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3.3.1
+        with:
+          path: ${{ runner.tool_cache }}//flutter
+          key: flutter-${{ env.FLUTTER_VERSION }}-stable
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2.8.0
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install Flutter dependencies
+        run: |
+          cd handle-it-app
+          flutter --version
+          flutter pub get
+
+      - name: Add built files
+        run: |
+          cd handle-it-app
+          touch .env
+          echo API_URL=${{ secrets.API_URL }} >> .env
+          echo FIRMWARE_SERVER_URL=${{ secrets.FIRMWARE_SERVER_URL }} >> .env
+          echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
+          cat .env
+          flutter pub run build_runner build
+
+      - name: Build APK
+        run: |
+          cd handle-it-app
+          bash ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
