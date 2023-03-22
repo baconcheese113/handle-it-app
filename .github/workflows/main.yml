@@ -264,7 +264,7 @@ jobs:
   # https://github.com/actions/upload-artifact/issues/5#issuecomment-876499762
 
   apk:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: android
     steps:
       - name: Checkout app repo
