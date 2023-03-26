@@ -46,12 +46,12 @@ jobs:
           xcrun simctl boot "${UDID:?No Simulator with this name found}"
 
       - name: Checkout app repo
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           path: handle-it-app
 
       - name: Checkout server repo
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
@@ -89,7 +89,7 @@ jobs:
           key: flutter-${{ env.FLUTTER_VERSION }}-stable
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2.8.0
+        uses: subosito/flutter-action@v2.10.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -148,12 +148,12 @@ jobs:
         id: postgres
 
       - name: Checkout app repo
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           path: handle-it-app
 
       - name: Checkout server repo
-        uses: actions/checkout@v3.4.0
+        uses: actions/checkout@v3.5.0
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
@@ -197,7 +197,7 @@ jobs:
           key: flutter-${{ env.FLUTTER_VERSION }}-stable
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2.8.0
+        uses: subosito/flutter-action@v2.10.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
