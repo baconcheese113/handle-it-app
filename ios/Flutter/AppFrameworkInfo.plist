@@ -3,8 +3,8 @@
 <plist version="1.0">
 <dict>
 <!-- Added to upgrade to 3.10.0 -->
-  <key>FLTEnableImpeller</key>
-  <false/>
+  <!-- <key>FLTEnableImpeller</key>
+  <false/> -->
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleExecutable</key>
