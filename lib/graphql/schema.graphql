@@ -1,4 +1,4 @@
-# This file was generated based on ".graphqlconfig". Do not edit manually.
+# This file was generated. Do not edit manually.
 
 schema {
     query: Query
@@ -99,12 +99,12 @@ type NetworkMember {
     networkId: Int!
     role: RoleType!
     """
-    
+
     Invited: network invited them.
-    
-Requested: they requested to join network.
-    
-Active: accepted on both sides into network
+
+    Requested: they requested to join network.
+
+    Active: accepted on both sides into network
     """
     status: NetworkMemberStatus!
     user: User!
