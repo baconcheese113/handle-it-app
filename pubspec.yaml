@@ -37,7 +37,7 @@ dependencies:
   flutter_dotenv: 5.0.2 # TODO replace usages with flutter_config
   timeago: 3.4.0
   flutter_blue_plus: 1.5.2
-  http: 0.13.5
+  http: 0.13.6
   version: 3.0.2 # Used to parse sensor/hub versions
   google_maps_flutter: 2.2.8
   flutter_config: 2.0.0 # flutter_dotenv but also compatible with native
