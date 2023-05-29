@@ -20,6 +20,7 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 
 final selectNotificationSubject = BehaviorSubject<String>();
 
+@pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Received RemoteMessage ${message.data.toString()}");
   print("Checking for permissions...");
@@ -57,6 +58,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
+      ticker: "Car alert",
       showWhen: true);
   const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics, iOS: iosSpecifics);
   await localNotifications.show(1, data["title"], data["body"], platformSpecifics, payload: data["eventId"]);
@@ -104,6 +106,9 @@ void main({BleProvider? bleProvider}) async {
   print("notificationsReady: $notificationsReady");
   await localNotifications.cancelAll();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  final hasNotificationPermissions = await localNotifications.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()?.requestPermission();
+  print("android local_notifications hasPermissions: $hasNotificationPermissions");
 
   // Using HiveStore for persistence
   await initHiveForFlutter();
