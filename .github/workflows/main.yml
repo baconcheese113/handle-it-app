@@ -46,18 +46,18 @@ jobs:
           xcrun simctl boot "${UDID:?No Simulator with this name found}"
 
       - name: Checkout app repo
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
         with:
           path: handle-it-app
 
       - name: Checkout server repo
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
 
       - name: Setup Nodejs
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -148,18 +148,18 @@ jobs:
         id: postgres
 
       - name: Checkout app repo
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
         with:
           path: handle-it-app
 
       - name: Checkout server repo
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
         with:
           repository: baconcheese113/handle-it-server
           path: handle-it-server
 
       - name: Setup Nodejs
-        uses: actions/setup-node@v3.6.0
+        uses: actions/setup-node@v3.7.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
