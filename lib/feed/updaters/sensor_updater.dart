@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -119,7 +120,9 @@ class _SensorUpdaterState extends State<SensorUpdater> {
       print(">>> new MTU is $newMtu");
     });
     // not sure why mtu needs to be 3 bytes longer, but it's in example
-    await _foundSensor!.requestMtu(244 + 3);
+    if(Platform.isAndroid) {
+      await _foundSensor!.requestMtu(244 + 3);
+    }
     await Future.delayed(const Duration(milliseconds: 100));
     mtuStream.cancel();
   }
