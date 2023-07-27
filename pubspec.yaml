@@ -45,7 +45,7 @@ dependencies:
   collection: 1.17.0 # Used for nullable array operations
   graphql: 5.1.3 # Used with graphql_codegen for Options types
   vrouter: 1.2.1 # URL routing solution
-  flutter_cache_manager: 3.3.0 # Downloading hub firmware and storing
+  flutter_cache_manager: 3.3.1 # Downloading hub firmware and storing
   mcumgr: 0.0.3 # Helper for performing OTA DFU with hub
 
 dev_dependencies:
