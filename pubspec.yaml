@@ -26,7 +26,7 @@ dependencies:
     sdk: flutter
   permission_handler: 10.2.0
   firebase_core: 2.15.0 # Used with messaging for receiving notifications
-  firebase_messaging: 14.6.1 # Used with core for receiving notifications
+  firebase_messaging: 14.6.5 # Used with core for receiving notifications
   just_audio: 0.9.33 # Used to play notification audio
   shared_preferences: 2.1.1 # Used similar to local storage on web
   flutter_local_notifications: 14.1.0 # Used to show full screen notifications programmatically from app
