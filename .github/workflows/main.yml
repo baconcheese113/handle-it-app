@@ -26,7 +26,6 @@ jobs:
     steps:
       - uses: ankane/setup-postgres@v1
         with:
-          database: postgres
           postgres-version: 15
 
       - name: "List all simulators"
@@ -141,7 +140,6 @@ jobs:
     steps:
       - uses: ankane/setup-postgres@v1
         with:
-          database: postgres
           postgres-version: 15
 
       - name: Checkout app repo
