@@ -128,9 +128,6 @@ jobs:
         include:
           - api-level: 24
             arch: x86
-            os: macos-13
-          - api-level: 24
-            arch: x86
             os: macos-12
           # api level 25 always times out at 12 min
           # - api-level: 26
@@ -139,9 +136,13 @@ jobs:
           #   arch: x86
       fail-fast: false
     steps:
-      - uses: ankane/setup-postgres@v1
+      - uses: ikalnytskyi/action-setup-postgres@v4
         with:
-          postgres-version: 15
+          username: postgres
+          password: postgres
+          database: postgres
+          port: 5432
+        id: postgres
 
       - name: Checkout app repo
         uses: actions/checkout@v3.5.2
