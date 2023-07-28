@@ -65,7 +65,7 @@ jobs:
           ls -a
           cd handle-it-server
           touch .env
-          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
+          echo "DATABASE_URL=postgresql://$USER:@localhost:5432/postgres?schema=public" >> .env
           echo "FCM_TOKEN=test_fcm_token" >> .env
           echo "JWT_SECRET=test_secret" >> .env
           echo "FIREBASE_PROJECT_ID=handleit-f352d" >> .env
