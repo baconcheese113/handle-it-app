@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -67,7 +69,7 @@ class _LoginState extends State<Login> {
                       key: const ValueKey('button.login'),
                       onPressed: () async {
                         if (_email.length < 3 || _password.length < 3) return; // TODO validate
-                        final fcmToken = await FirebaseMessaging.instance.getToken();
+                        final fcmToken = Platform.isAndroid ? await FirebaseMessaging.instance.getToken() : 'kys apple';
                         print("fcmToken is $fcmToken");
                         runMutation(
                           Variables$Mutation$Login(
