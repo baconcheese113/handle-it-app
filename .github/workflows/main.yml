@@ -5,7 +5,7 @@ name: main
 on: [push, workflow_dispatch]
 
 env:
-  FLUTTER_VERSION: 3.10.6
+  FLUTTER_VERSION: 3.7.7
   NODE_VERSION: 18.12.1
 
 # 2 jobs are configured.
@@ -20,10 +20,10 @@ jobs:
         device:
           # The available simulators are listed by the "xcrun xctrace list devices" command
           # the name of the simulator could be different depending on the macos version you are using
-          - "iPhone 14 Simulator (16.2) (D2FA4C6B-D1C9-42EB-9B9E-BB6A93829C87)"
+          - "iPhone 12 Simulator"
       # if one of the jobs in the matrix expansion fails, the rest of the jobs will be cancelled
       fail-fast: true
-    runs-on: macos-13 # or macos-latest if you prefer, but be aware that the available simulators could be different if you run a different version
+    runs-on: macos-12 # or macos-latest if you prefer, but be aware that the available simulators could be different if you run a different version
     steps:
       - uses: ankane/setup-postgres@v1
         with:
