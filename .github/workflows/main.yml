@@ -5,14 +5,13 @@ name: main
 on: [push, workflow_dispatch]
 
 env:
-  FLUTTER_VERSION: 3.7.7
+  FLUTTER_VERSION: 3.7.12
   NODE_VERSION: 18.12.1
 
 # 2 jobs are configured.
 # The first one runs tests on iOS devices.
 # The second runs tests on Android devices
 jobs:
-
   # job responsible for running Flutter tests on iOS devices
   ios:
     # Creates a build matrix for your jobs. You can define different variations of an environment to run each job
@@ -20,18 +19,15 @@ jobs:
       matrix:
         device:
           # The available simulators are listed by the "xcrun xctrace list devices" command
-          - "iPhone 11 Simulator" # the name of the simulator could be different depending on the macos version you are using
+          # the name of the simulator could be different depending on the macos version you are using
+          - "iPhone 14 Simulator (16.2)"
       # if one of the jobs in the matrix expansion fails, the rest of the jobs will be cancelled
       fail-fast: true
-    runs-on: macos-latest # or macos-latest if you prefer, but be aware that the available simulators could be different if you run a different version
+    runs-on: macos-13 # or macos-latest if you prefer, but be aware that the available simulators could be different if you run a different version
     steps:
-      - uses: ikalnytskyi/action-setup-postgres@v4
+      - uses: ankane/setup-postgres@v1
         with:
-          username: postgres
-          password: postgres
-          database: postgres
-          port: 5432
-        id: postgres
+          postgres-version: 15
 
       - name: "List all simulators"
         run: "xcrun xctrace list devices"
@@ -41,7 +37,7 @@ jobs:
         # the assignment of the UDID variable consists of retrieving the ID of the simulator
         # by extracting it from the command "xcrun xctrace list devices"
         run: |
-          UDID=$(xcrun xctrace list devices | grep "^${{ matrix.device }}" | awk '{gsub(/[()]/,""); print $NF}')
+          UDID=$(xcrun xctrace list devices | grep -m 1 "^${{ matrix.device }}" | awk '{gsub(/[()]/,""); print $NF}')
           echo $UDID
           xcrun simctl boot "${UDID:?No Simulator with this name found}"
 
@@ -60,8 +56,8 @@ jobs:
         uses: actions/setup-node@v3.7.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: './handle-it-server/package-lock.json'
+          cache: "npm"
+          cache-dependency-path: "./handle-it-server/package-lock.json"
 
       - name: Build HandleIt backend
         run: |
@@ -69,7 +65,7 @@ jobs:
           ls -a
           cd handle-it-server
           touch .env
-          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres?schema=public" >> .env
+          echo "DATABASE_URL=postgresql://$USER:@localhost:5432/postgres?schema=public" >> .env
           echo "FCM_TOKEN=test_fcm_token" >> .env
           echo "JWT_SECRET=test_secret" >> .env
           echo "FIREBASE_PROJECT_ID=handleit-f352d" >> .env
@@ -120,11 +116,11 @@ jobs:
       - name: Run integration tests
         run: |
           cd handle-it-app
-          flutter test integration_test --flavor devtest --verbose
+          flutter test integration_test --flavor devtest --verbose --machine
 
   # job responsible for running Flutter tests on Android devices
   android:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         # api-level: [28, 29, 30, 31, 32, 33]
@@ -132,6 +128,7 @@ jobs:
         include:
           - api-level: 24
             arch: x86
+            os: macos-12
           # api level 25 always times out at 12 min
           # - api-level: 26
           #   arch: x86
@@ -162,8 +159,8 @@ jobs:
         uses: actions/setup-node@v3.7.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          cache-dependency-path: './handle-it-server/package-lock.json'
+          cache: "npm"
+          cache-dependency-path: "./handle-it-server/package-lock.json"
 
       - name: Run HandleIt backend
         run: |
@@ -187,7 +184,7 @@ jobs:
       - name: Set up JDK 11
         uses: actions/setup-java@v3.11.0
         with:
-          distribution: 'zulu'
+          distribution: "zulu"
           java-version: 11
 
       - name: Cache Flutter dependencies
@@ -217,7 +214,7 @@ jobs:
           echo GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }} >> .env
           cat .env
           flutter pub run build_runner build
-        
+
       - name: Start server
         run: |
           cd handle-it-server &&
@@ -225,29 +222,30 @@ jobs:
           sleep 10 &&
           curl http://localhost:8080 -I
 
-      # - name: Gradle cache
-      #   uses: gradle/gradle-build-action@v2.3.3
-      
-      # - name: AVD cache
-      #   uses: actions/cache@v3.3.1
-      #   id: avd-cache
-      #   with:
-      #     path: |
-      #       ~/.android/avd/*
-      #       ~/.android/avb*
-      #     key: avd-${{ matrix.api-level }}
+      - name: Gradle cache
+        uses: gradle/gradle-build-action@v2
 
-      # - name: Create AVD and generate snapshot for caching
-      #   if: steps.avd-cache.outputs.cache-hit != true
-      #   uses: reactivecircus/android-emulator-runner@v2.28.0
-      #   with:
-      #     api-level: ${{ matrix.api-level }}
-      #     target: playstore
-      #     arch: ${{ matrix.arch }}
-      #     force-avd-creation: false
-      #     emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-      #     disable-animations: false
-      #     script: echo "Generated AVD snapshot for caching."
+      - name: AVD cache
+        uses: actions/cache@v3
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+            ~/.android/debug.keystore
+          key: avd-${{ matrix.api-level }}-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != true
+        uses: reactivecircus/android-emulator-runner@v2.28.0
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: playstore
+          arch: ${{ matrix.arch }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
 
       - name: Run integration tests
         # more info on https://github.com/ReactiveCircus/android-emulator-runner
@@ -258,5 +256,8 @@ jobs:
           arch: ${{ matrix.arch }}
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
+          disable-animations: true
+          pre-emulator-launch-script: |
+            echo "Running pre emulator launch script. Printing the working directory now:"
+            pwd
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose

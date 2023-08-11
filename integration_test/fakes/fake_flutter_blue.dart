@@ -92,6 +92,8 @@ class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
   @override
   List<int> get lastValue => throw UnimplementedError();
   @override
+  set lastValue(List<int> lastValue) => throw UnimplementedError();
+  @override
   List<BluetoothDescriptor> get descriptors => throw UnimplementedError();
   @override
   CharacteristicProperties get properties => throw UnimplementedError();
@@ -146,7 +148,7 @@ class FakeBluetoothDevice extends BluetoothDevice {
   }
 
   @override
-  Future<void> connect({Duration? timeout, bool autoConnect = true}) async {
+  Future<void> connect({Duration? timeout, bool autoConnect = true, bool? shouldClearGattCache }) async {
     await Future.delayed(const Duration(milliseconds: 200));
     _fakeState = BluetoothDeviceState.connected;
   }

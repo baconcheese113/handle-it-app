@@ -33,3 +33,6 @@ flutterfire config \
 --ios-bundle-id=io.handleit \
 --android-app-id=io.handleit
 ```
+
+In Flutter pod install should not called manually. 
+To run pod install execute the following commands flutter clean, flutter pub get and flutter build ios.
