@@ -78,17 +78,12 @@ jobs:
           npm run build
           npm run seed
 
-      - name: Cache Flutter dependencies
-        uses: actions/cache@v3.3.1
-        with:
-          path: ${{ runner.tool_cache }}//flutter
-          key: flutter-${{ env.FLUTTER_VERSION }}-stable
-
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2.10.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
       - name: Install Flutter dependencies
         run: |
@@ -187,17 +182,12 @@ jobs:
           distribution: "zulu"
           java-version: 11
 
-      - name: Cache Flutter dependencies
-        uses: actions/cache@v3.3.1
-        with:
-          path: ${{ runner.tool_cache }}//flutter
-          key: flutter-${{ env.FLUTTER_VERSION }}-stable
-
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2.10.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
       - name: Install Flutter dependencies
         run: |
