@@ -34,7 +34,7 @@ dependencies:
   email_validator: 2.1.17
   graphql_flutter: 5.2.0-beta.5 # Used with graphql_codegen for QueryResult type
   flutter_secure_storage: 8.0.0 # Similar to shared_preferences but for storing auth token
-  flutter_dotenv: 5.0.2 # TODO replace usages with flutter_config
+  flutter_dotenv: 5.1.0 # TODO replace usages with flutter_config
   timeago: 3.5.0
   flutter_blue_plus: 1.4.0
   http: 0.13.6
