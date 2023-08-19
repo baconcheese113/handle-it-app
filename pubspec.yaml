@@ -37,13 +37,13 @@ dependencies:
   flutter_dotenv: 5.1.0 # TODO replace usages with flutter_config
   timeago: 3.5.0
   flutter_blue_plus: 1.4.0
-  http: 0.13.6
+  http: 1.1.0
   version: 3.0.2 # Used to parse sensor/hub versions
   google_maps_flutter: 2.4.0
   flutter_config: 2.0.2 # flutter_dotenv but also compatible with native
   provider: 6.0.5
   collection: 1.17.2 # Used for nullable array operations
-  graphql: 5.2.0-beta.4 # Used with graphql_codegen for Options types
+  graphql: 5.2.0-beta.5 # Used with graphql_codegen for Options types
   vrouter: 1.2.1 # URL routing solution
   flutter_cache_manager: 3.3.1 # Downloading hub firmware and storing
   mcumgr: 0.0.3 # Helper for performing OTA DFU with hub
