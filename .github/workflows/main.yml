@@ -53,7 +53,7 @@ jobs:
           path: handle-it-server
 
       - name: Setup Nodejs
-        uses: actions/setup-node@v3.7.0
+        uses: actions/setup-node@v3.8.1
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -151,7 +151,7 @@ jobs:
           path: handle-it-server
 
       - name: Setup Nodejs
-        uses: actions/setup-node@v3.7.0
+        uses: actions/setup-node@v3.8.1
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
@@ -213,10 +213,10 @@ jobs:
           curl http://localhost:8080 -I
 
       - name: Gradle cache
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v2.7.1
 
       - name: AVD cache
-        uses: actions/cache@v3
+        uses: actions/cache@v3.3.1
         id: avd-cache
         with:
           path: |
