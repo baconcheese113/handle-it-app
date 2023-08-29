@@ -14,7 +14,7 @@ class FeedCardMap extends StatelessWidget {
     }
     final firstLatLng = LatLng(locations[0].lat, locations[0].lng);
     double alpha = 1;
-    final markers = locations.reversed.map((l) {
+    final markers = locations.reversed.take(2).map((l) {
       final pos = LatLng(l.lat, l.lng);
       alpha -= .3;
       return Marker(markerId: MarkerId("${l.id}"), position: pos, alpha: alpha);
