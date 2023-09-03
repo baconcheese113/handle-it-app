@@ -213,7 +213,7 @@ jobs:
           curl http://localhost:8080 -I
 
       - name: Gradle cache
-        uses: gradle/gradle-build-action@v2.7.1
+        uses: gradle/gradle-build-action@v2.8.0
 
       - name: AVD cache
         uses: actions/cache@v3.3.1
