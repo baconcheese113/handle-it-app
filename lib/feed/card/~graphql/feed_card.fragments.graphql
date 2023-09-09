@@ -3,6 +3,7 @@ fragment feedCard_hub on Hub {
   name
   serial
   isArmed
+  batteryLevel
   ...feedCardArm_hub
   ...feedCardMap_hub
   ...feedCardMenu_hub

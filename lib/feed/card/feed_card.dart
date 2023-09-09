@@ -21,6 +21,7 @@ import 'feed_card_rssi.dart';
 class FeedCard extends StatefulWidget {
   final Fragment$feedCard_hub hubFrag;
   final Function onDelete;
+
   const FeedCard({Key? key, required this.hubFrag, required this.onDelete}) : super(key: key);
 
   @override
@@ -92,7 +93,8 @@ class _FeedCardState extends State<FeedCard> {
   Widget build(BuildContext context) {
     _bleProvider = Provider.of<BleProvider>(context, listen: true);
     final bluetoothIconColor = () {
-      if (!_bleProvider.scanning && _deviceState == BluetoothDeviceState.disconnected) return Colors.grey;
+      if (!_bleProvider.scanning && _deviceState == BluetoothDeviceState.disconnected)
+        return Colors.grey;
       if (_deviceState == BluetoothDeviceState.connected) return Colors.green;
       return Colors.amber;
     }();
@@ -105,6 +107,7 @@ class _FeedCardState extends State<FeedCard> {
     final int sensorCount = sensors.length;
 
     final carColor = carColors.firstWhereOrNull((c) => c.name == hubFrag.vehicle?.color);
+    final batLevel = _batteryLevel > -1 ? _batteryLevel : hubFrag.batteryLevel;
 
     return Card(
         child: Column(
@@ -119,7 +122,7 @@ class _FeedCardState extends State<FeedCard> {
           ]),
           trailing: Column(children: [
             FeedCardMenu(hubFrag: hubFrag, onDelete: widget.onDelete),
-            if (_batteryLevel > -1) BatteryStatus(batteryLevel: _batteryLevel, variant: Variant.small),
+            BatteryStatus(batteryLevel: batLevel, variant: Variant.small),
           ]),
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
