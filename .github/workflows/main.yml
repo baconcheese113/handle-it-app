@@ -115,7 +115,7 @@ jobs:
 
   # job responsible for running Flutter tests on Android devices
   android:
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-13
     strategy:
       matrix:
         # api-level: [28, 29, 30, 31, 32, 33]
@@ -253,7 +253,7 @@ jobs:
           script: cd handle-it-app && flutter test integration_test --flavor devtest --verbose
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     steps:
       - name: Checkout app repo
         uses: actions/checkout@v3.6.0
@@ -294,10 +294,11 @@ jobs:
         run: |
           cd handle-it-app
           flutter build apk --flavor production
-          echo "::set-output name=built-apk::build/app/outputs/flutter-apk/"
+          cd build/app/outputs/flutter-apk/
+          ls -al
 
       - name: "Upload APK"
         uses: "actions/upload-artifact@v3.1.3"
         with:
           name: "Built APK"
-          path: "${{ steps.build.outputs.built-apk }}"
+          path: "hanlde-it-app/build/app/outputs/flutter-apk/"
