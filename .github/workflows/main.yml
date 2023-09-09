@@ -295,10 +295,11 @@ jobs:
           cd handle-it-app
           flutter build apk --flavor production
           cd build/app/outputs/flutter-apk/
+          pwd
           ls -al
 
       - name: "Upload APK"
         uses: "actions/upload-artifact@v3.1.3"
         with:
           name: "Built APK"
-          path: "hanlde-it-app/build/app/outputs/flutter-apk/"
+          path: "handle-it-app/build/app/outputs/flutter-apk/"
