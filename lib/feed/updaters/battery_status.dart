@@ -6,10 +6,12 @@ enum Variant {
 }
 
 class BatteryStatus extends StatelessWidget {
-  final num batteryLevel;
+  final num? batteryLevel;
   final num? batteryVolts;
   final Variant variant;
-  const BatteryStatus({Key? key, required this.batteryLevel, this.batteryVolts, this.variant = Variant.normal})
+
+  const BatteryStatus(
+      {Key? key, this.batteryLevel, this.batteryVolts, this.variant = Variant.normal})
       : super(key: key);
 
   @override
@@ -22,8 +24,13 @@ class BatteryStatus extends StatelessWidget {
           width: 55,
           child: Column(
             children: [
-              Row(children: [const Icon(Icons.bolt, size: 16, color: Colors.white30), Text("$batteryLevel%")]),
-              LinearProgressIndicator(backgroundColor: Colors.white30, value: batteryLevel / 100, minHeight: 1),
+              Row(children: [
+                const Icon(Icons.bolt, size: 16, color: Colors.white30),
+                Text("$batteryLevel%")
+              ]),
+              if (batteryLevel != null)
+                LinearProgressIndicator(
+                    backgroundColor: Colors.white30, value: batteryLevel! / 100, minHeight: 1),
             ],
           ),
         ),
@@ -36,13 +43,15 @@ class BatteryStatus extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          CircularProgressIndicator(backgroundColor: Colors.white10, value: batteryLevel / 100),
+          if (batteryLevel != null)
+            CircularProgressIndicator(backgroundColor: Colors.white10, value: batteryLevel! / 100),
           Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text("$batteryLevel%"),
             if (batteryVolts != null) Text("${(batteryVolts! / 1000).toStringAsFixed(1)}v")
           ])),
-          const Icon(Icons.battery_full_outlined, color: Color.fromRGBO(255, 255, 255, .3), size: 48)
+          const Icon(Icons.battery_full_outlined,
+              color: Color.fromRGBO(255, 255, 255, .3), size: 48)
         ],
       ),
     );
