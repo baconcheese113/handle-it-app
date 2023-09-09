@@ -290,7 +290,10 @@ jobs:
 
       - name: "Build APK"
         id: build
-        run: 'flutter build apk --flavor production && echo "::set-output name=built-apk::build/app/outputs/flutter-apk/"'
+        run: |
+          cd handle-it-app
+          flutter build apk --flavor production
+          echo "::set-output name=built-apk::build/app/outputs/flutter-apk/"
 
       - name: "Upload APK"
         uses: "actions/upload-artifact@v3.1.3"
