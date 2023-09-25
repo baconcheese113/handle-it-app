@@ -1,14 +1,18 @@
 fragment addSensorWizardContent_hub on Hub {
-  id
-  name
-  serial
-}
-
-fragment addVehicleWizardContent_user on User {
-  id
-  hubs {
     id
     name
     serial
-  }
+    sensors {
+        doorColumn
+        doorRow
+    }
+}
+
+fragment addVehicleWizardContent_user on User {
+    id
+    hubs {
+        id
+        name
+        serial
+    }
 }

@@ -1,54 +1,69 @@
 fragment feedCard_hub on Hub {
-  id
-  name
-  serial
-  isArmed
-  batteryLevel
-  ...feedCardArm_hub
-  ...feedCardMap_hub
-  ...feedCardMenu_hub
-  ...hubUpdater_hub
-  vehicle {
     id
-    color
-  }
-  sensors {
-    id
+    name
     serial
-    isOpen
-    isConnected
-    doorRow
-    doorColumn
-    events {
-      id
-      createdAt
-      sensor {
+    isArmed
+    batteryLevel
+    version
+    latestVersion
+    ...feedCardArm_hub
+    ...feedCardMap_hub
+    ...feedCardMenu_hub
+    ...hubUpdater_hub
+    ...feedCardSensors_hub
+    locations {
         id
-        doorColumn
-        doorRow
-      }
     }
-  }
+    sensors {
+        id
+        doorRow
+        doorColumn
+        events {
+            id
+            createdAt
+            sensor {
+                id
+                doorColumn
+                doorRow
+            }
+        }
+    }
 }
 
 fragment feedCardArm_hub on Hub {
-  id
-  isArmed
+    id
+    isArmed
 }
 
 fragment feedCardMap_hub on Hub {
-  id
-  locations {
     id
-    lat
-    lng
-    hdop
-    speed
-    age
-    course
-  }
+    locations {
+        id
+        lat
+        lng
+        hdop
+        speed
+        age
+        course
+    }
 }
 
 fragment feedCardMenu_hub on Hub {
-  id
+    id
+}
+
+fragment feedCardSensors_hub on Hub {
+    id
+    vehicle {
+        color
+    }
+    sensors {
+        id
+        serial
+        doorRow
+        doorColumn
+        batteryLevel
+        latestVersion
+        version
+    }
 }

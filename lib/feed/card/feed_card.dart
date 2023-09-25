@@ -1,12 +1,11 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:handle_it/feed/card/feed_card_sensors.dart';
 import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:handle_it/feed/updaters/hub_updater.dart';
-import 'package:handle_it/feed/vehicle/vehicle_select_color.dart';
 import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -93,8 +92,9 @@ class _FeedCardState extends State<FeedCard> {
   Widget build(BuildContext context) {
     _bleProvider = Provider.of<BleProvider>(context, listen: true);
     final bluetoothIconColor = () {
-      if (!_bleProvider.scanning && _deviceState == BluetoothDeviceState.disconnected)
+      if (!_bleProvider.scanning && _deviceState == BluetoothDeviceState.disconnected) {
         return Colors.grey;
+      }
       if (_deviceState == BluetoothDeviceState.connected) return Colors.green;
       return Colors.amber;
     }();
@@ -106,7 +106,6 @@ class _FeedCardState extends State<FeedCard> {
     });
     final int sensorCount = sensors.length;
 
-    final carColor = carColors.firstWhereOrNull((c) => c.name == hubFrag.vehicle?.color);
     final batLevel = _batteryLevel > -1 ? _batteryLevel : hubFrag.batteryLevel;
 
     return Card(
@@ -114,7 +113,10 @@ class _FeedCardState extends State<FeedCard> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ListTile(
-          leading: Icon(Icons.bluetooth, color: bluetoothIconColor),
+          leading: Column(children: [
+            Icon(Icons.bluetooth, color: bluetoothIconColor),
+            Text(hubFrag.version ?? "vX.X.X"),
+          ]),
           title: Text("${hubFrag.name} (${hubFrag.serial})"),
           subtitle: Row(children: [
             Text("${pluralize('sensor', sensorCount)} |"),
@@ -127,44 +129,24 @@ class _FeedCardState extends State<FeedCard> {
         ),
         if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
           Center(child: HubUpdater(hubFrag: hubFrag, foundHub: _foundHub!)),
-        SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag)),
-        Center(
-          child: Stack(clipBehavior: Clip.none, children: [
-            Icon(
-              Icons.directions_car,
-              size: 128,
-              color: carColor?.color,
-            ),
-            for (int idx = 0; idx < sensors.length; idx++)
-              Positioned(
-                top: 30,
-                left: idx == 0 ? -40 : null,
-                right: idx == 1 ? -40 : null,
-                child: Column(
-                  crossAxisAlignment: idx == 0 ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                  children: [
-                    Icon(sensors[idx].isOpen == true ? Icons.error : Icons.shield,
-                        size: 32, color: sensors[idx].isOpen ? Colors.red : Colors.green),
-                    Text(sensors[idx].isOpen ? "Opened" : "Secure", textScaleFactor: 1.1)
-                  ],
-                ),
-              ),
-          ]),
-        ),
-        DataTable(
-          columns: const [
-            DataColumn(label: Text("Time")),
-            DataColumn(label: Text("Event")),
-          ],
-          rows: events.map((event) {
-            final column = event.sensor.doorColumn == 0 ? 'Front' : 'Back';
-            final row = event.sensor.doorRow == 0 ? 'left' : 'right';
-            return DataRow(cells: [
-              DataCell(Text(timeago.format(event.createdAt))),
-              DataCell(Text("$column $row handle pulled")),
-            ]);
-          }).toList(),
-        ),
+        if (hubFrag.locations.isNotEmpty)
+          SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag)),
+        FeedCardSensors(hubFrag: hubFrag),
+        if (events.isNotEmpty)
+          DataTable(
+            columns: const [
+              DataColumn(label: Text("Time")),
+              DataColumn(label: Text("Event")),
+            ],
+            rows: events.map((event) {
+              final column = event.sensor.doorColumn == 0 ? 'Front' : 'Back';
+              final row = event.sensor.doorRow == 0 ? 'left' : 'right';
+              return DataRow(cells: [
+                DataCell(Text(timeago.format(event.createdAt))),
+                DataCell(Text("$column $row handle pulled")),
+              ]);
+            }).toList(),
+          ),
         FeedCardArm(hubFrag: hubFrag),
       ],
     ));

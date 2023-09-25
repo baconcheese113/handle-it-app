@@ -10,6 +10,7 @@ import '../../common/ble_provider.dart';
 
 class AddSensorWizardContent extends StatefulWidget {
   final Fragment$addSensorWizardContent_hub hubFrag;
+
   const AddSensorWizardContent({Key? key, required this.hubFrag}) : super(key: key);
 
   @override
@@ -26,6 +27,11 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   late BleProvider _bleProvider;
   BluetoothDevice? _foundHub;
   BluetoothCharacteristic? _commandChar;
+
+  bool frontL = true;
+  bool frontR = true;
+  bool rearL = true;
+  bool rearR = true;
 
   Future<void> connectToKnownHub() async {
     if (!await _bleProvider.tryTurnOnBle()) return;
@@ -55,7 +61,8 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     }
     if (_formsPageViewController!.page == 0) {
       print(">>>changing page");
-      _formsPageViewController!.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _formsPageViewController!
+          .nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
@@ -63,6 +70,19 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   void initState() {
     super.initState();
     _formsPageViewController = PageController(initialPage: 0);
+
+    for (var sensor in widget.hubFrag.sensors) {
+      if (sensor.doorRow == 0 && sensor.doorColumn == 0) frontL = false;
+      if (sensor.doorRow == 0 && sensor.doorColumn == 1) frontR = false;
+      if (sensor.doorRow == 1 && sensor.doorColumn == 0) rearL = false;
+      if (sensor.doorRow == 1 && sensor.doorColumn == 1) rearR = false;
+    }
+    final canAddLeft = frontL || rearL;
+    final canAddFront = canAddLeft ? frontL : frontR;
+    setState(() {
+      _leftRightToggle = [canAddLeft, !canAddLeft];
+      _frontRearToggle = [canAddFront, !canAddFront];
+    });
 
     // To initialize provider
     Future.delayed(const Duration(milliseconds: 1), () {
@@ -105,7 +125,8 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       _processing = false;
       _sensorSerial = rawSensorId.substring(12);
     });
-    _formsPageViewController!.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    _formsPageViewController!
+        .nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
   Future<bool> cancelForm() async {
@@ -123,19 +144,35 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   Widget build(BuildContext context) {
     _bleProvider = Provider.of<BleProvider>(context, listen: true);
 
+    final isToggledLeft = _leftRightToggle[0];
+    final isToggledFront = _frontRearToggle[0];
+
+    final canAddRight = frontR || rearR;
+    final canAddRear = rearL || rearR;
+
+    final canAddLeft = frontL || rearL;
+    final canAddFront = frontL || frontR;
+    print('Availability is frontL $frontL frontR $frontR rearL $rearL rearR $rearR}');
+
+    final canToggleLeftRight = isToggledLeft ? canAddRight : canAddLeft;
+    final canToggleFrontRear = isToggledFront ? canAddRear : canAddFront;
+    print('canToggleLeftRight $canToggleLeftRight and canToggleFrontRear $canToggleFrontRear');
+
     void addSensor(bool shouldExit) async {
       setState(() => _processing = true);
       // add the sensor
       String leftOrRight = _leftRightToggle[0] ? 'Left' : 'Right';
       String frontOrRear = _frontRearToggle[0] ? 'Front' : 'Rear';
       print(">>Adding sensor id $_sensorSerial as a $leftOrRight/$frontOrRear door sensor");
-
-      String command = "SensorConnect:1";
+      final leftVal = _leftRightToggle[0] ? '0' : '1';
+      final frontVal = _frontRearToggle[0] ? '0' : '1';
+      String command = "SensorConnect:$leftVal$frontVal";
       print(">>> writing characteristic with value $command");
       await _commandChar!.write(utf8.encode(command));
 
       String sensorAddedResponse = "";
-      while (sensorAddedResponse.length < 12 || sensorAddedResponse.substring(0, 11) != "SensorAdded") {
+      while (sensorAddedResponse.length < 12 ||
+          sensorAddedResponse.substring(0, 11) != "SensorAdded") {
         List<int> bytes = await _commandChar!.read();
         print(">>readCharacteristic ${bytes.toString()}");
         sensorAddedResponse = String.fromCharCodes(bytes);
@@ -149,13 +186,15 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
         cancelForm();
         return;
       }
+
       setState(() {
-        _leftRightToggle = [true, false];
-        _frontRearToggle = [true, false];
+        _leftRightToggle = [canAddLeft, !canAddLeft];
+        _frontRearToggle = [canAddFront, !canAddFront];
         _sensorSerial = null;
         _processing = false;
       });
-      _formsPageViewController!.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _formsPageViewController!
+          .animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
 
     _forms = [
@@ -165,13 +204,15 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
             Expanded(
                 child: Padding(
                     padding: const EdgeInsets.all(40),
-                    child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
-                      Text(
-                        "Scanning for ${widget.hubFrag.name}",
-                        textScaleFactor: 1.3,
-                      ),
-                      const CircularProgressIndicator(),
-                    ])))),
+                    child: (Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Text(
+                            "Scanning for ${widget.hubFrag.name}",
+                            textScaleFactor: 1.3,
+                          ),
+                          const CircularProgressIndicator(),
+                        ])))),
             Row(mainAxisSize: MainAxisSize.max, children: [
               Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
             ])
@@ -182,19 +223,21 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
             Expanded(
                 child: Padding(
                     padding: const EdgeInsets.all(40),
-                    child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
-                      Text(
-                        "Turn on your sensor, then press start to search for a new sensor for ${widget.hubFrag.name}",
-                        textScaleFactor: 1.3,
-                      ),
-                      _processing
-                          ? const CircularProgressIndicator()
-                          : TextButton(
-                              key: const ValueKey("button.startSearch"),
-                              onPressed: startSensorSearch,
-                              child: const Text("Start"),
-                            ),
-                    ])))),
+                    child: (Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Text(
+                            "Turn on your sensor, then press start to search for a new sensor for ${widget.hubFrag.name}",
+                            textScaleFactor: 1.3,
+                          ),
+                          _processing
+                              ? const CircularProgressIndicator()
+                              : TextButton(
+                                  key: const ValueKey("button.startSearch"),
+                                  onPressed: startSensorSearch,
+                                  child: const Text("Start"),
+                                ),
+                        ])))),
             Row(mainAxisSize: MainAxisSize.max, children: [
               Expanded(child: TextButton(onPressed: cancelForm, child: const Text("Cancel"))),
             ])
@@ -208,11 +251,22 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                       Text("Found sensor $_sensorSerial!", textScaleFactor: 1.3),
                       const Padding(padding: EdgeInsets.only(top: 20)),
-                      Text(_processing ? "Saving, please wait..." : "Select which door this sensor is for"),
+                      Text(_processing
+                          ? "Saving, please wait..."
+                          : "Select which door this sensor is for"),
                       if (!_processing)
                         ToggleButtons(
                           isSelected: _leftRightToggle,
-                          onPressed: (idx) => setState(() => _leftRightToggle = [idx == 0, idx == 1]),
+                          onPressed: canToggleLeftRight
+                              ? (idx) => setState(() {
+                                    _leftRightToggle = [idx == 0, idx == 1];
+                                    if (idx == 0) {
+                                      _frontRearToggle = [frontL, !frontL];
+                                    } else {
+                                      _frontRearToggle = [frontR, !frontR];
+                                    }
+                                  })
+                              : (idx) {},
                           children: const [
                             Text("Left"),
                             Text("Right"),
@@ -220,8 +274,18 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                         ),
                       if (!_processing)
                         ToggleButtons(
+                          direction: Axis.vertical,
                           isSelected: _frontRearToggle,
-                          onPressed: (idx) => setState(() => _frontRearToggle = [idx == 0, idx == 1]),
+                          onPressed: canToggleFrontRear
+                              ? (idx) => setState(() {
+                                    _frontRearToggle = [idx == 0, idx == 1];
+                                    if (idx == 0) {
+                                      _leftRightToggle = [frontL, !frontL];
+                                    } else {
+                                      _leftRightToggle = [rearL, !rearL];
+                                    }
+                                  })
+                              : (idx) {},
                           children: const [
                             Text("Front"),
                             Text("Rear"),

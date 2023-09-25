@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_vehicle_wizard_content.mutation.graphql.dart';
 import 'package:handle_it/feed/add_wizards/~graphql/__generated__/add_wizards.fragments.graphql.dart';
-import 'package:handle_it/feed/~graphql/__generated__/feed_home.query.graphql.dart';
 import 'package:provider/provider.dart';
 import 'package:vrouter/vrouter.dart';
 
@@ -167,19 +166,6 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
     }
 
     return Mutation$AddVehicleWizardContent$Widget(
-      options: WidgetOptions$Mutation$AddVehicleWizardContent(
-        update: (cache, result) {
-          if (result?.data == null) return;
-          final newHub = result!.parsedData!.updateHub;
-          final request = Options$Query$FeedHome().asRequest;
-          final readQuery = cache.readQuery(request);
-          if (readQuery == null) return;
-          final map = Query$FeedHome.fromJson(readQuery);
-          final hubs = map.viewer.user.hubs;
-          hubs.add(Query$FeedHome$viewer$user$hubs.fromJson(newHub.toJson()));
-          cache.writeQuery(request, data: map.toJson(), broadcast: true);
-        },
-      ),
       builder: (runMutation, result) {
         void handleSetName() async {
           if (_formsPageViewController!.page! > 0) {
@@ -200,20 +186,24 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                 Expanded(
                     child: Padding(
                         padding: const EdgeInsets.all(40),
-                        child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: <Widget>[
-                          const Text(
-                            "To get started, hold the pair button on the bottom of your HandleHub for 5 seconds",
-                            textScaleFactor: 1.3,
-                          ),
-                          if (_curDevice != null) Text("...found ${_curDevice!.name}"),
-                          if (_bleProvider.scanning && _logText.isEmpty) const CircularProgressIndicator(),
-                          if (!_bleProvider.scanning && _logText.isEmpty)
-                            TextButton(
-                                key: const ValueKey("button.startScan"),
-                                onPressed: _findNewHub,
-                                child: const Text("Start scanning")),
-                          if (_logText.isNotEmpty) Text(key: const ValueKey("text.log"), _logText),
-                        ])))),
+                        child: (Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: <Widget>[
+                              const Text(
+                                "To get started, hold the pair button on the bottom of your HandleHub for 5 seconds",
+                                textScaleFactor: 1.3,
+                              ),
+                              if (_curDevice != null) Text("...found ${_curDevice!.name}"),
+                              if (_bleProvider.scanning && _logText.isEmpty)
+                                const CircularProgressIndicator(),
+                              if (!_bleProvider.scanning && _logText.isEmpty)
+                                TextButton(
+                                    key: const ValueKey("button.startScan"),
+                                    onPressed: _findNewHub,
+                                    child: const Text("Start scanning")),
+                              if (_logText.isNotEmpty)
+                                Text(key: const ValueKey("text.log"), _logText),
+                            ])))),
                 Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
                     child: TextButton(
@@ -232,7 +222,8 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                         child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                           const Text("Lets name this HandleHub", textScaleFactor: 1.3),
                           TextFormField(
-                            decoration: const InputDecoration(hintText: "Name (eg. Year/Make/Model)"),
+                            decoration:
+                                const InputDecoration(hintText: "Name (eg. Year/Make/Model)"),
                             onChanged: (String name) => {setState(() => _hubCustomName = name)},
                             initialValue: _hubCustomName,
                           )

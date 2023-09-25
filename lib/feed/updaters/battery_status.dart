@@ -16,21 +16,21 @@ class BatteryStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final batteryLevelStr = batteryLevel != null ? '$batteryLevel%' : '--';
     if (variant == Variant.small) {
       return Padding(
         padding: const EdgeInsets.only(top: 4),
         child: SizedBox(
           height: 25,
-          width: 55,
+          width: 63,
           child: Column(
             children: [
               Row(children: [
                 const Icon(Icons.bolt, size: 16, color: Colors.white30),
-                Text("$batteryLevel%")
+                Text(batteryLevelStr)
               ]),
-              if (batteryLevel != null)
-                LinearProgressIndicator(
-                    backgroundColor: Colors.white30, value: batteryLevel! / 100, minHeight: 1),
+              LinearProgressIndicator(
+                  backgroundColor: Colors.white30, value: (batteryLevel ?? 0) / 100, minHeight: 1),
             ],
           ),
         ),
@@ -43,11 +43,11 @@ class BatteryStatus extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (batteryLevel != null)
-            CircularProgressIndicator(backgroundColor: Colors.white10, value: batteryLevel! / 100),
+          CircularProgressIndicator(
+              backgroundColor: Colors.white10, value: (batteryLevel ?? 0) / 100),
           Center(
               child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text("$batteryLevel%"),
+            Text(batteryLevelStr),
             if (batteryVolts != null) Text("${(batteryVolts! / 1000).toStringAsFixed(1)}v")
           ])),
           const Icon(Icons.battery_full_outlined,

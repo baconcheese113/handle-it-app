@@ -30,6 +30,7 @@ type Hub {
     sensors: [Sensor!]!
     serial: String!
     vehicle: Vehicle
+    version: String
 }
 
 type Location {
@@ -51,29 +52,35 @@ type Location {
     speed: Float!
 }
 
+type LoginAndFetchHubPayload {
+    hub: Hub!
+    token: String!
+}
+
 type Mutation {
     acceptNetworkMembership(networkMemberId: Int!): Network!
-    createEvent(serial: String!): Event!
+    createEvent(batteryLevel: Int, batteryVolts: Int, serial: String!, version: String): Event!
     createHub(imei: String!, name: String!, serial: String!): Hub!
     createLocation(age: Int!, course: Float!, hdop: Float!, lat: Float!, lng: Float!, speed: Float!): Location!
     createNetwork(name: String!): Network!
     createNetworkMember(email: String!, networkId: Int!, role: RoleType!): NetworkMember!
-    createSensor(batteryLevel: Int, doorColumn: Int!, doorRow: Int!, isConnected: Boolean, isOpen: Boolean, serial: ID!): Sensor!
+    createSensor(batteryLevel: Int, batteryVolts: Int, doorColumn: Int!, doorRow: Int!, isConnected: Boolean, isOpen: Boolean, serial: ID!, version: String): Sensor!
     createVehicle(carQueryId: String!, hubId: ID!, makeId: String!, modelBody: String!, modelName: String!, modelTrim: String!, year: Int!): Vehicle!
     declineNetworkMembership(networkMemberId: Int!): Network!
     deleteHub(id: ID!): Hub!
     deleteNetwork(networkId: Int!): Network!
     deleteNetworkMember(networkMemberId: Int!): Network!
     deleteVehicle(id: ID!): Vehicle!
-    loginAsHub(imei: String!, serial: String!, userId: ID!): String!
+    loginAndFetchHub(imei: String!, serial: String!, userId: ID!, version: String!): LoginAndFetchHubPayload!
+    loginAsHub(imei: String!, serial: String!, userId: ID!): String! @deprecated(reason: "9/17/23. Use loginAndFetchHub instead.")
     loginWithPassword(email: String!, fcmToken: String!, password: String!): String!
     propagateEventToNetworks(eventId: Int!): Event!
     registerWithPassword(email: String!, fcmToken: String!, firstName: String, lastName: String, password: String!): String!
     requestNetworkMembership(networkName: String!): NetworkMember!
     seedUser(email: String!, firstName: String, lat: Float!, lng: Float!): User!
-    updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String): Hub!
+    updateHub(batteryLevel: Int, id: ID!, isArmed: Boolean, isCharging: Boolean, name: String, version: String): Hub!
     "Volts should be between 0 - 1023, percent between 0 - 100"
-    updateHubBatteryLevel(percent: Float!, volts: Float!): Hub!
+    updateHubBatteryLevel(percent: Float!, version: String, volts: Float!): Hub!
     updateNetworkMember(networkMemberId: Int!, role: RoleType): NetworkMember!
     updateNotificationOverride(hubId: Int!, shouldMute: Boolean!): NotificationOverride!
     updateSensor(id: ID!, isOpen: Boolean): Sensor!
@@ -128,7 +135,8 @@ type Query {
 }
 
 type Sensor {
-    batteryLevel: Int
+    "Battery level from 0 - 100"
+    batteryLevel: Float
     doorColumn: Int!
     doorRow: Int!
     events: [Event!]!
@@ -136,7 +144,9 @@ type Sensor {
     id: Int!
     isConnected: Boolean!
     isOpen: Boolean!
+    latestVersion: String!
     serial: String!
+    version: String
 }
 
 type User {
