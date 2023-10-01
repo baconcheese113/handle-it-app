@@ -27,6 +27,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
   late BleProvider _bleProvider;
   BluetoothDevice? _foundHub;
   BluetoothCharacteristic? _commandChar;
+  String _errMsg = "";
 
   bool frontL = true;
   bool frontR = true;
@@ -114,7 +115,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
     setState(() => _commandChar = commandChar);
 
     String rawSensorId = "";
-    while (rawSensorId.length < 12 || rawSensorId.substring(0, 11) != "SensorFound") {
+    while (rawSensorId.length < 12 || !rawSensorId.startsWith("SensorFound")) {
       List<int> bytes = await _commandChar!.read();
       print(">>readCharacteristic ${bytes.toString()}");
       rawSensorId = String.fromCharCodes(bytes);
@@ -171,13 +172,17 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       await _commandChar!.write(utf8.encode(command));
 
       String sensorAddedResponse = "";
-      while (sensorAddedResponse.length < 12 ||
-          sensorAddedResponse.substring(0, 11) != "SensorAdded") {
+      while (sensorAddedResponse.length < 12 || !sensorAddedResponse.startsWith("SensorAdded")) {
         List<int> bytes = await _commandChar!.read();
         print(">>readCharacteristic ${bytes.toString()}");
         sensorAddedResponse = String.fromCharCodes(bytes);
         print(">>sensorAddedResponse = $sensorAddedResponse");
         await Future.delayed(const Duration(milliseconds: 500));
+        if (sensorAddedResponse.startsWith("Error:")) {
+          setState(() => _errMsg = sensorAddedResponse.substring(6));
+          _foundHub?.disconnect();
+          return;
+        }
       }
       int sensorAddedResult = int.parse(sensorAddedResponse.substring(12));
       print("Sensor added result: $sensorAddedResult");
@@ -196,6 +201,12 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
       _formsPageViewController!
           .animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
+
+    String sensorFoundText = (() {
+      if (_errMsg.isNotEmpty) return _errMsg;
+      if (_processing) return "Saving, please wait...";
+      return "Select which door this sensor is for";
+    }());
 
     _forms = [
       WillPopScope(
@@ -251,9 +262,7 @@ class _AddSensorWizardContentState extends State<AddSensorWizardContent> {
                     child: (Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
                       Text("Found sensor $_sensorSerial!", textScaleFactor: 1.3),
                       const Padding(padding: EdgeInsets.only(top: 20)),
-                      Text(_processing
-                          ? "Saving, please wait..."
-                          : "Select which door this sensor is for"),
+                      Text(sensorFoundText),
                       if (!_processing)
                         ToggleButtons(
                           isSelected: _leftRightToggle,

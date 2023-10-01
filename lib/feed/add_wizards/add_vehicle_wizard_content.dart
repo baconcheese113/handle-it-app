@@ -35,7 +35,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
   BluetoothDevice? _foundHub;
   BluetoothDevice? _curDevice;
   late BleProvider _bleProvider;
-
+  String _errMsg = "";
   String _hubCustomName = "";
 
   void setFormPage() {
@@ -76,6 +76,7 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
       _logText = "";
       _foundHub = null;
       _curDevice = null;
+      _errMsg = "";
     });
   }
 
@@ -132,20 +133,28 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
 
     String rawHubId = "";
     int startTime = DateTime.now().millisecondsSinceEpoch;
-    while (rawHubId.length < 6 || rawHubId.substring(0, 5) != "HubId") {
+    while (rawHubId.length < 6 || !rawHubId.startsWith("HubId")) {
       print(">>attempting to read: ${DateTime.now().millisecondsSinceEpoch - startTime}ms");
       List<int> bytes = await commandChar.read();
       print(">>readCharacteristic ${bytes.toString()}");
       rawHubId = String.fromCharCodes(bytes);
       print(">>rawHubId = $rawHubId");
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(const Duration(milliseconds: 1000));
       setState(() => _logText += ".");
-      if (DateTime.now().millisecondsSinceEpoch > startTime + 60000 || _foundHub == null) {
-        setState(() => _logText += "\nNever received a response, likely a network error");
-        await Future.delayed(const Duration(seconds: 5));
-        print(">>> Read timed out, resetting...");
-        return _resetConn();
+      if (rawHubId.startsWith("Error:")) {
+        setState(() => _errMsg = "Error:${rawHubId.substring(6)}");
+        break;
       }
+      if (DateTime.now().millisecondsSinceEpoch > startTime + 60000 || _foundHub == null) {
+        setState(() => _errMsg = "Never received a response, likely a network error");
+        break;
+      }
+    }
+
+    if (_errMsg.isNotEmpty) {
+      print(">>> Error: $_errMsg");
+      await _foundHub?.disconnect();
+      return;
     }
 
     print(">>Ended rawHubId parse loop");
@@ -196,18 +205,19 @@ class _AddVehicleWizardContentState extends State<AddVehicleWizardContent> {
                               if (_curDevice != null) Text("...found ${_curDevice!.name}"),
                               if (_bleProvider.scanning && _logText.isEmpty)
                                 const CircularProgressIndicator(),
-                              if (!_bleProvider.scanning && _logText.isEmpty)
+                              if (!_bleProvider.scanning && _logText.isEmpty && _foundHub == null)
                                 TextButton(
                                     key: const ValueKey("button.startScan"),
                                     onPressed: _findNewHub,
                                     child: const Text("Start scanning")),
                               if (_logText.isNotEmpty)
                                 Text(key: const ValueKey("text.log"), _logText),
+                              if (_errMsg.isNotEmpty) Text(_errMsg),
                             ])))),
                 Row(mainAxisSize: MainAxisSize.max, children: [
                   Expanded(
                     child: TextButton(
-                      onPressed: _foundHub == null ? cancelForm : null,
+                      onPressed: _foundHub == null || _errMsg != null ? cancelForm : null,
                       child: const Text("Cancel"),
                     ),
                   ),
