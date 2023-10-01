@@ -58,8 +58,9 @@ class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
   @override
   Future<bool> setNotifyValue(bool notify) async {
     await Future.delayed(const Duration(milliseconds: 200));
-    _fakeNotifyVal =
-        notify ? Stream.periodic(const Duration(milliseconds: 500), (count) => _fakeValue) : const Stream.empty();
+    _fakeNotifyVal = notify
+        ? Stream.periodic(const Duration(milliseconds: 500), (count) => _fakeValue)
+        : const Stream.empty();
     return _fakeNotify = notify;
   }
 
@@ -79,9 +80,9 @@ class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
       _client = getClient(token: token);
       final hubId = await getHubId(_client);
       _fakeValue = utf8.encode("HubId:$hubId");
-    } else if (strVal == "StartSensorSearch:1") {
+    } else if (strVal.startsWith("StartSensorSearch:")) {
       _fakeValue = utf8.encode("SensorFound:$TEST_SENSOR_MAC");
-    } else if (strVal == "SensorConnect:1") {
+    } else if (strVal.startsWith("SensorConnect:")) {
       _fakeValue = utf8.encode("SensorAdded:1");
     }
     return null;
@@ -89,16 +90,22 @@ class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
 
   @override
   DeviceIdentifier get deviceId => throw UnimplementedError();
+
   @override
   List<int> get lastValue => throw UnimplementedError();
+
   @override
   set lastValue(List<int> lastValue) => throw UnimplementedError();
+
   @override
   List<BluetoothDescriptor> get descriptors => throw UnimplementedError();
+
   @override
   CharacteristicProperties get properties => throw UnimplementedError();
+
   @override
   Guid? get secondaryServiceUuid => throw UnimplementedError();
+
   @override
   Guid get serviceUuid => throw UnimplementedError();
 }
@@ -106,6 +113,7 @@ class FakeBluetoothCharacteristic implements BluetoothCharacteristic {
 class FakeBluetoothService implements BluetoothService {
   final Guid _fakeUuid;
   final List<FakeBluetoothCharacteristic> _fakeChars;
+
   FakeBluetoothService.create(Guid uuid, List<FakeBluetoothCharacteristic> chars)
       : _fakeUuid = uuid,
         _fakeChars = chars;
@@ -118,8 +126,10 @@ class FakeBluetoothService implements BluetoothService {
 
   @override
   DeviceIdentifier get deviceId => throw UnimplementedError();
+
   @override
   List<BluetoothService> get includedServices => throw UnimplementedError();
+
   @override
   bool get isPrimary => throw UnimplementedError();
 }
@@ -128,6 +138,7 @@ class FakeBluetoothDevice extends BluetoothDevice {
   List<BluetoothService> _fakeServices = [];
   BluetoothDeviceState _fakeState = BluetoothDeviceState.disconnected;
   final GraphQLClient _client;
+
   FakeBluetoothDevice.fromId(id)
       : _client = getClient(),
         super.fromId(id);
@@ -148,7 +159,8 @@ class FakeBluetoothDevice extends BluetoothDevice {
   }
 
   @override
-  Future<void> connect({Duration? timeout, bool autoConnect = true, bool? shouldClearGattCache }) async {
+  Future<void> connect(
+      {Duration? timeout, bool autoConnect = true, bool? shouldClearGattCache}) async {
     await Future.delayed(const Duration(milliseconds: 200));
     _fakeState = BluetoothDeviceState.connected;
   }

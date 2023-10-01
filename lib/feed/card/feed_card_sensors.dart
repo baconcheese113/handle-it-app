@@ -21,9 +21,9 @@ class _FeedCardSensorsState extends State<FeedCardSensors> with SingleTickerProv
   @override
   void initState() {
     _controller = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 0),
       vsync: this,
-    )..repeat(reverse: true);
+    ); //..repeat(reverse: true);
 
     _colorAnimation = ColorTween(begin: Colors.blue, end: Colors.purple).animate(_controller);
     super.initState();

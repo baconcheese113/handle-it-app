@@ -28,14 +28,16 @@ void networkTests() {
       await login(widgetTester);
       final faker = Faker();
 
-      const MethodChannel('plugins.flutter.io/google_maps_0').setMockMethodCallHandler((MethodCall methodCall) async {
+      const MethodChannel('plugins.flutter.io/google_maps_0')
+          .setMockMethodCallHandler((MethodCall methodCall) async {
         if (methodCall.method == 'map#waitForMap') {
           return null;
         }
         return null;
       });
 
-      const MethodChannel('plugins.flutter.io/google_maps_1').setMockMethodCallHandler((MethodCall methodCall) async {
+      const MethodChannel('plugins.flutter.io/google_maps_1')
+          .setMockMethodCallHandler((MethodCall methodCall) async {
         if (methodCall.method == 'map#waitForMap') {
           return null;
         }
@@ -46,7 +48,7 @@ void networkTests() {
       final networkNavIcon = find.byKey(const ValueKey('navIcon.network'));
       await pumpUntilFound(widgetTester, networkNavIcon);
       expect(networkNavIcon, findsOneWidget);
-      await tapAndWaitMs(widgetTester, networkNavIcon, 3000);
+      await tapAndWaitMs(widgetTester, networkNavIcon, 1000);
 
       final membersTab = find.byKey(const ValueKey('tab.members'));
       await pumpUntilFound(widgetTester, membersTab);
@@ -135,7 +137,8 @@ void networkTests() {
       ''')));
       final networkId = createNetRes.data!['createNetwork']['id'];
 
-      final joinNetworkButton = find.byKey(const ValueKey('button.joinNetwork'), skipOffstage: false);
+      final joinNetworkButton =
+          find.byKey(const ValueKey('button.joinNetwork'), skipOffstage: false);
       await widgetTester.ensureVisible(joinNetworkButton);
       await tapAndWaitMs(widgetTester, joinNetworkButton, 0);
 
@@ -190,10 +193,13 @@ void networkTests() {
         matching: find.byKey(const ValueKey('button.acceptInvitation')),
       );
       expect(acceptInvitationButton, findsOneWidget);
-      await tapAndWaitMs(widgetTester, acceptInvitationButton, 0);
+      await tapAndWaitMs(widgetTester, acceptInvitationButton, 500);
+      await widgetTester.pumpAndSettle();
 
-      await tapAndWaitMs(widgetTester, membersTab, 500);
+      await tapAndWaitMs(widgetTester, membersTab, 0);
       await widgetTester.drag(networksList, const Offset(0, 500));
+      // Multiple pumpAndSettles to decrease flakiness here
+      await widgetTester.pumpAndSettle(const Duration(milliseconds: 500));
       await widgetTester.pumpAndSettle();
 
       final newNetworkCard = find.widgetWithText(Card, networkName, skipOffstage: false);
