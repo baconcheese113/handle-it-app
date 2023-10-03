@@ -14,6 +14,7 @@ import '../../common/ble_provider.dart';
 class HubUpdater extends StatefulWidget {
   final Fragment$hubUpdater_hub hubFrag;
   final BluetoothDevice foundHub;
+
   const HubUpdater({Key? key, required this.hubFrag, required this.foundHub}) : super(key: key);
 
   @override
@@ -49,13 +50,15 @@ class _HubUpdaterState extends State<HubUpdater> {
     print(">>> initializing client");
     final services = await widget.foundHub.discoverServices();
     final smpService = services.firstWhere((s) => s.uuid == Guid(SMP_SERVICE_UUID));
-    final smpChar = smpService.characteristics.firstWhere((c) => c.uuid == Guid(SMP_UPDATE_CHARACTERISTIC_UUID));
+    final smpChar = smpService.characteristics
+        .firstWhere((c) => c.uuid == Guid(SMP_UPDATE_CHARACTERISTIC_UUID));
     // Some amount of delay needed for setNotifyValue() to work
     await Future.delayed(const Duration(milliseconds: 500));
     final notifyVal = await smpChar.setNotifyValue(true);
     print(">>> notifyVal is $notifyVal");
 
-    final mtu = Platform.isIOS ? await widget.foundHub.mtu.last : await widget.foundHub.requestMtu(252);
+    final mtu =
+        Platform.isIOS ? await widget.foundHub.mtu.last : await widget.foundHub.requestMtu(252);
     print(">>> new mtu is $mtu");
 
     final newClient = Client(
@@ -87,7 +90,10 @@ class _HubUpdaterState extends State<HubUpdater> {
   void downloadUpdate() async {
     // the downloads are so quick (<1MB) that it's not worth setting an actual value
     setState(() => _progressPercent = .5);
-    final file = await DefaultCacheManager().getSingleFile("${dotenv.env['FIRMWARE_SERVER_URL']}/hub-0-1-1.bin");
+    final version = Version.parse(widget.hubFrag.latestVersion);
+    final versionStr = "hub-${version.major}-${version.minor}-${version.patch}.bin";
+    final file = await DefaultCacheManager()
+        .getSingleFile("${dotenv.env['FIRMWARE_SERVER_URL']}/$versionStr");
     setState(() {
       _update = file;
       _progressPercent = -1;
@@ -142,13 +148,15 @@ class _HubUpdaterState extends State<HubUpdater> {
 
   @override
   Widget build(BuildContext context) {
-    if (_hubVersion == null) return const SizedBox();
-    final hubVersionCurrent = _hubVersion!.compareTo(Version.parse(widget.hubFrag.latestVersion)) >= 0;
+    if (_hubVersion == null) return const TextButton(onPressed: null, child: Text("Syncing..."));
+    final latestVersion = widget.hubFrag.latestVersion;
+    final hubVersionCurrent = _hubVersion!.compareTo(Version.parse(latestVersion)) >= 0;
     if (_installed || hubVersionCurrent) return Text("Current version: v$_hubVersion");
     if (_startTime != null && _progressPercent.isFinite && _progressPercent > 0.0) {
       final microsecondsElapsed = DateTime.now().microsecondsSinceEpoch - _startTime!;
       final totalEstMicroseconds = microsecondsElapsed / _progressPercent;
-      final timeRemaining = Duration(microseconds: (totalEstMicroseconds - microsecondsElapsed).round());
+      final timeRemaining =
+          Duration(microseconds: (totalEstMicroseconds - microsecondsElapsed).round());
       return Column(
         children: [
           LinearProgressIndicator(value: _progressPercent),
@@ -158,7 +166,10 @@ class _HubUpdaterState extends State<HubUpdater> {
       );
     }
     if (_progressPercent > -1) return LinearProgressIndicator(value: _progressPercent);
-    if (_update != null) return TextButton(onPressed: installUpdate, child: const Text("Install"));
-    return TextButton(onPressed: downloadUpdate, child: const Text("Download update"));
+    if (_update != null) {
+      return TextButton(onPressed: installUpdate, child: Text("Install v$latestVersion"));
+    }
+
+    return TextButton(onPressed: downloadUpdate, child: Text("Download v$latestVersion"));
   }
 }

@@ -6,7 +6,6 @@ import 'package:handle_it/feed/card/feed_card_sensors.dart';
 import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
 import 'package:handle_it/feed/updaters/hub_updater.dart';
-import 'package:handle_it/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -33,6 +32,7 @@ class _FeedCardState extends State<FeedCard> {
   StreamSubscription<BluetoothDeviceState>? _stateStreamSub;
   int _batteryLevel = -1;
   late BleProvider _bleProvider;
+  bool _hasConnected = false;
 
   void autoConnect() async {
     if (!await _bleProvider.hasBlePermissions()) return;
@@ -50,7 +50,14 @@ class _FeedCardState extends State<FeedCard> {
         });
     _stateStreamSub = _foundHub?.state.listen((state) {
       setState(() => _deviceState = state);
-      print(">>> New connection state is: $state");
+      print(">>> New connection state is: $state and hasConnected: $_hasConnected");
+      if (_deviceState == BluetoothDeviceState.disconnected && _hasConnected) {
+        setState(() {
+          _foundHub = null;
+          _hasConnected = false;
+        });
+      }
+      if (_deviceState == BluetoothDeviceState.connected) setState(() => _hasConnected = true);
     });
     final isConnected = await _bleProvider.tryConnect(_foundHub);
     if (!isConnected) {
@@ -70,14 +77,6 @@ class _FeedCardState extends State<FeedCard> {
     List<int> battLevelBytes = await battLevelChar.read();
     print(">>> battery level is ${battLevelBytes[0]}");
     setState(() => _batteryLevel = battLevelBytes[0]);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(milliseconds: 1), () {
-      autoConnect();
-    });
   }
 
   @override
@@ -104,7 +103,6 @@ class _FeedCardState extends State<FeedCard> {
     final events = sensors.fold<List<Fragment$feedCard_hub$sensors$events>>([], (arr, sensor) {
       return sensor.events.isNotEmpty ? [...arr, ...sensor.events] : arr;
     });
-    final int sensorCount = sensors.length;
 
     final batLevel = _batteryLevel > -1 ? _batteryLevel : hubFrag.batteryLevel;
 
@@ -119,16 +117,35 @@ class _FeedCardState extends State<FeedCard> {
           ]),
           title: Text("${hubFrag.name} (${hubFrag.serial})"),
           subtitle: Row(children: [
-            Text("${pluralize('sensor', sensorCount)} |"),
-            FeedCardRssi(foundHub: _foundHub, deviceState: _deviceState),
+            if (_foundHub != null) FeedCardRssi(foundHub: _foundHub!, deviceState: _deviceState),
           ]),
           trailing: Column(children: [
             FeedCardMenu(hubFrag: hubFrag, onDelete: widget.onDelete),
             BatteryStatus(batteryLevel: batLevel, variant: Variant.small),
           ]),
         ),
-        if (_foundHub != null && _deviceState == BluetoothDeviceState.connected)
-          Center(child: HubUpdater(hubFrag: hubFrag, foundHub: _foundHub!)),
+        if (_foundHub == null && !_bleProvider.scanning)
+          TextButton(onPressed: autoConnect, child: const Text("Connect")),
+        if (_foundHub == null && _bleProvider.scanning)
+          TextButton(onPressed: () => _bleProvider.stopScan(), child: const Text("Cancel Scan")),
+        if (_foundHub != null)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                  child: _deviceState == BluetoothDeviceState.connected
+                      ? HubUpdater(hubFrag: hubFrag, foundHub: _foundHub!)
+                      : const SizedBox()),
+              Container(color: Colors.white, width: 1, height: 45),
+              Expanded(
+                child: TextButton(
+                  onPressed: () => _foundHub?.disconnect(),
+                  style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text("Disconnect"),
+                ),
+              ),
+            ],
+          ),
         if (hubFrag.locations.isNotEmpty)
           SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag)),
         FeedCardSensors(hubFrag: hubFrag),
