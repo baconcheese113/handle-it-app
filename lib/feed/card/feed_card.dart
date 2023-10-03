@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:handle_it/feed/card/feed_card_diagnostics.dart';
 import 'package:handle_it/feed/card/feed_card_sensors.dart';
 import 'package:handle_it/feed/card/~graphql/__generated__/feed_card.fragments.graphql.dart';
 import 'package:handle_it/feed/updaters/battery_status.dart';
@@ -146,6 +147,7 @@ class _FeedCardState extends State<FeedCard> {
               ),
             ],
           ),
+        if (_foundHub != null) FeedCardDiagnostics(foundHub: _foundHub!),
         if (hubFrag.locations.isNotEmpty)
           SizedBox(height: 200, width: 400, child: FeedCardMap(hubFrag: hubFrag)),
         FeedCardSensors(hubFrag: hubFrag),
