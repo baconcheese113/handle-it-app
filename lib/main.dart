@@ -20,9 +20,19 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 
 final selectNotificationSubject = BehaviorSubject<String>();
 
+abstract class MessageData {
+  late final String? type;
+  late final String? title;
+  late final String? body;
+  late final String? eventId;
+  late final String? hubSerial;
+}
+
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Received RemoteMessage ${message.data.toString()}");
+  print("Received RemoteMessage: data:${message.data.toString()}");
+  if (message.data['body'] == null) return;
+  final data = message.data as MessageData?;
   print("Checking for permissions...");
   if (Platform.isAndroid) {
     if (!await hasPermission(Permission.location) ||
@@ -34,13 +44,12 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     }
   }
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
-  final data = message.data;
   bool hubIsNearby = false;
   if (await flutterBlue.isOn) {
-    await for (final r
-        in flutterBlue.scan(timeout: const Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
+    await for (final r in flutterBlue
+        .scan(timeout: const Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-      if (r.device.id.id.toLowerCase() != data["hubSerial"].toString().toLowerCase()) continue;
+      if (r.device.id.id.toLowerCase() != data?.hubSerial.toString().toLowerCase()) continue;
       // if (r.rssi.abs() < 75) hubIsNearby = true;
       hubIsNearby = true;
       flutterBlue.stopScan();
@@ -53,15 +62,18 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   }
   const DarwinNotificationDetails iosSpecifics = DarwinNotificationDetails();
   print("trying to show notification");
-  const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails("channel_id", "channel_name",
+  const AndroidNotificationDetails androidSpecifics = AndroidNotificationDetails(
+      "handleit_alert_channel", "Handle pull events",
       channelDescription: "Test bed for all dem notifications",
       importance: Importance.max,
       priority: Priority.max,
       fullScreenIntent: true,
       ticker: "Car alert",
       showWhen: true);
-  const NotificationDetails platformSpecifics = NotificationDetails(android: androidSpecifics, iOS: iosSpecifics);
-  await localNotifications.show(1, data["title"], data["body"], platformSpecifics, payload: data["eventId"]);
+  const NotificationDetails platformSpecifics =
+      NotificationDetails(android: androidSpecifics, iOS: iosSpecifics);
+  await localNotifications.show(1, data?.title, data?.body, platformSpecifics,
+      payload: data?.eventId);
   print("showed notification");
 }
 
@@ -70,8 +82,10 @@ void main({BleProvider? bleProvider}) async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(); //options: DefaultFirebaseOptions.currentPlatform);
 
-  final NotificationAppLaunchDetails? launchDetails = await localNotifications.getNotificationAppLaunchDetails();
-  String initialRoute = launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
+  final NotificationAppLaunchDetails? launchDetails =
+      await localNotifications.getNotificationAppLaunchDetails();
+  String initialRoute =
+      launchDetails?.didNotificationLaunchApp ?? false ? ShowAlert.routeName : Login.routeName;
   print(
       "didNotificationLaunchApp: ${launchDetails?.didNotificationLaunchApp}, initialRoute: $initialRoute, payload: ${launchDetails?.notificationResponse?.payload}");
 
@@ -106,9 +120,15 @@ void main({BleProvider? bleProvider}) async {
   print("notificationsReady: $notificationsReady");
   await localNotifications.cancelAll();
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  final hasNotificationPermissions = await localNotifications.resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()?.requestPermission();
+  final androidLocalNotifications = localNotifications
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+  final hasNotificationPermissions = await androidLocalNotifications?.requestPermission();
   print("android local_notifications hasPermissions: $hasNotificationPermissions");
+
+  const alertChannel = AndroidNotificationChannel('handleit_alert_channel', 'Handle pull events');
+  await androidLocalNotifications?.createNotificationChannel(alertChannel);
+  const batteryChannel = AndroidNotificationChannel('handleit_battery_channel', "Battery warnings");
+  await androidLocalNotifications?.createNotificationChannel(batteryChannel);
 
   // Using HiveStore for persistence
   await initHiveForFlutter();
