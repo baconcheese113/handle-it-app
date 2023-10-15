@@ -20,19 +20,27 @@ final localNotifications = FlutterLocalNotificationsPlugin();
 
 final selectNotificationSubject = BehaviorSubject<String>();
 
-abstract class MessageData {
+class MessageData {
   late final String? type;
   late final String? title;
   late final String? body;
   late final String? eventId;
   late final String? hubSerial;
+
+  MessageData(Map<String, dynamic> obj) {
+    type = obj['type'];
+    title = obj['title'];
+    body = obj['body'];
+    eventId = obj['eventId'];
+    hubSerial = obj['hubSerial'];
+  }
 }
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Received RemoteMessage: data:${message.data.toString()}");
   if (message.data['body'] == null) return;
-  final data = message.data as MessageData?;
+  final data = MessageData(message.data);
   print("Checking for permissions...");
   if (Platform.isAndroid) {
     if (!await hasPermission(Permission.location) ||
@@ -49,7 +57,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     await for (final r in flutterBlue
         .scan(timeout: const Duration(seconds: 2), withServices: [Guid(HUB_SERVICE_UUID)])) {
       print("Scanned peripheral ${r.device.name}, RSSI ${r.rssi}, MAC ${r.device.id.id}");
-      if (r.device.id.id.toLowerCase() != data?.hubSerial.toString().toLowerCase()) continue;
+      if (r.device.id.id.toLowerCase() != data.hubSerial.toString().toLowerCase()) continue;
       // if (r.rssi.abs() < 75) hubIsNearby = true;
       hubIsNearby = true;
       flutterBlue.stopScan();
@@ -72,8 +80,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       showWhen: true);
   const NotificationDetails platformSpecifics =
       NotificationDetails(android: androidSpecifics, iOS: iosSpecifics);
-  await localNotifications.show(1, data?.title, data?.body, platformSpecifics,
-      payload: data?.eventId);
+  await localNotifications.show(1, data.title, data.body, platformSpecifics, payload: data.eventId);
   print("showed notification");
 }
 
