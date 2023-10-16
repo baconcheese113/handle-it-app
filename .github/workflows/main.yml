@@ -79,7 +79,7 @@ jobs:
           npm run seed
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2.10.0
+        uses: subosito/flutter-action@v2.11.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -183,7 +183,7 @@ jobs:
           java-version: 11
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2.10.0
+        uses: subosito/flutter-action@v2.11.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
@@ -267,7 +267,7 @@ jobs:
           java-version: 11
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2.10.0
+        uses: subosito/flutter-action@v2.11.0
         with:
           channel: stable
           flutter-version: ${{ env.FLUTTER_VERSION }}
